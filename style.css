@@ -150,7 +150,7 @@ body {
 
   /* aspect-ratio: 1/1; */
 
-  background-image: url("resources/images/echobook.jpg");
+  background-image: url("/resources/images/echobook.jpg");
   background-repeat: no-repeat;
 
   background-size: cover; /* <-- background size */
@@ -176,7 +176,7 @@ body {
 
   /* aspect-ratio: 1/1; */
 
-  background-image: url("resources/images/echobook.jpg");
+  background-image: url("/resources/images/echobook.jpg");
   background-repeat: no-repeat;
   /* background-image: fill; */
 
@@ -367,7 +367,7 @@ body {
   border-radius: 10px;
   display: block;
 
-  background-image: url("resources/images/UI/WalkieTalkie-crop.png");
+  background-image: url("/resources/images/UI/WalkieTalkie-crop.png");
   background-repeat: no-repeat;
   background-size: 100%;
   
@@ -406,7 +406,7 @@ body {
   pointer-events: none;
   display: block;
   
-  background-image: url("resources/images/UI/WalkieTalkie-trim.png");
+  background-image: url("/resources/images/UI/WalkieTalkie-trim.png");
   background-repeat: no-repeat;
   background-size: 100%;
   top: 42%;
@@ -524,7 +524,7 @@ body {
 
   cursor: move;
 
-  background-image: url("resources/images/landsat/catalina-mountains.jpg");
+  background-image: url("/resources/images/landsat/catalina-mountains.jpg");
   background-repeat: no-repeat;
   background-size: 100%;
 }
@@ -667,7 +667,7 @@ body {
   width: 7vh;
   opacity: 100%;
 
-  background-image: url("resources/images/map-icon-white.png");
+  background-image: url("/resources/images/map-icon-white.png");
   /* background-color: rgb(119, 0, 255); */
   background-repeat: no-repeat;
   /* mix-blend-mode: saturation; */
@@ -729,7 +729,7 @@ bottom-image:hover > .hover {
 
   /* mix-blend-mode: exclusion; */
 
-  background-image: url("resources/images/audio-play.png");
+  background-image: url("/resources/images/audio-play.png");
   /* background-color: rgb(119, 0, 255); */
   background-repeat: no-repeat;
   background-size: 100%;
@@ -884,7 +884,7 @@ bottom-image:hover > .hover {
 
   transform: translate(-50%, -50%) scale(1);
 
-  background-image: url("resources/images/UI/Mouse.png");
+  background-image: url("/resources/images/UI/Mouse.png");
   background-size: contain;
   background-repeat: no-repeat;
   background-position: center center;
@@ -953,7 +953,7 @@ bottom-image:hover > .hover {
   vertical-align: middle;
   /* mix-blend-mode: exclusion; */
 
-  background-image: url("resources/images/BugIcon.png");
+  background-image: url("/resources/images/BugIcon.png");
   background-size: cover;
   /* background-color: rgb(119, 0, 255); */
   background-repeat: no-repeat;
@@ -965,7 +965,7 @@ bottom-image:hover > .hover {
 .bugIcon:hover {
   opacity: 0.5;
   /* mix-blend-mode: exclusion; */
-  background-image: url("resources/images/BugIcon-filled.png");
+  background-image: url("/resources/images/BugIcon-filled.png");
   transition: opacity .25s ease-in-out;
    -moz-transition: opacity .25s ease-in-out;
    -webkit-transition: opacity .25s ease-in-out;
@@ -981,7 +981,7 @@ bottom-image:hover > .hover {
 .bugIcon.filled {
   opacity: 1;
   /* mix-blend-mode: exclusion; */
-  background-image: url("resources/images/BugIcon-filled.png");
+  background-image: url("/resources/images/BugIcon-filled.png");
   transition: opacity .25s ease-in-out;
    -moz-transition: opacity .25s ease-in-out;
    -webkit-transition: opacity .25s ease-in-out;
@@ -1049,7 +1049,7 @@ button {
   width: 7vh;
   opacity: 100%;
 
-  background-image: url("resources/images/map-icon-white.png");
+  background-image: url("/resources/images/map-icon-white.png");
   /* background-color: rgb(119, 0, 255); */
   background-repeat: no-repeat;
   /* mix-blend-mode: saturation; */
@@ -1304,7 +1304,7 @@ button {
   opacity: 0%;
   font-size: 5vh;
 
-  background-image: url("resources/images/exit-icon.png");
+  background-image: url("/resources/images/exit-icon.png");
   /* background-color: rgb(119, 0, 255); */
   background-repeat: no-repeat;
   /* mix-blend-mode: saturation; */
