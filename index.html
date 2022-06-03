@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+    <link rel="stylesheet" href="https://use.typekit.net/dtb4cgj.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ECHO_THE_BAT</title>
+  </head>
+  <body>
+    <div class="progress" id="progressBar">
+      <div class="progress__fill" id="progress_fill"></div>
+      <!-- <span class="progress__text">25%</span> -->
+    </div>
+    <div class="startButton" id="startBtn" draggable="true">
+      START
+    </div>
+    
+    <div id="container">
+      <canvas id="c"></canvas>
+      <div id="labels"></div>
+      <!-- <div id="title">
+        ECHO
+      </div> -->
+
+      <div class="dropdown" id="dropdown" data-dropdown>
+        <button class="link" data-dropdown-button style="font-size: 5vh;">☰</button>
+        <div class="dropdown-menu">
+          <div class="dropdown-links">
+            <a href="#" class="link" id = "creditsButton">Credits</a>
+            <a href="#" class="link">Accessibility</a>
+            <a href="#" class="link" id = "helpButton">Help</a>
+          </div>
+        </div>
+      </div>
+      <!-- <div class="mapDropdown" id="mapIcon" data-dropdown>
+        <div class="mapLink" data-dropdown-button ></div>
+        <div class="mapDropdown-menu">
+          <div class="mapDropdown-links">
+            <a id = 'road' href="#" class="link" >Road</a>
+            <a id = 'mosaic' href="#" class="link">Mosaic</a>
+            <a id = 'geography' href="#" class="link">Geography</a>
+          </div>
+        </div>
+      </div> -->
+      <div class="back" id="backButton">
+      </div>
+    </div>
+
+    <div class="popup" id="popup-1">
+      <div class="overlay" ></div>
+      <div class="content">
+        <div class="close-btn" id ="close-btn">&times;</div>
+        <div class="item1" id ="header">Header</div>
+        <div class="item2" id ="image1"></div>
+        <div class="item3" id ="image2"></div>
+        <div class="item4" id ="text">
+          Echo is the bat we are making this interactive about. Isn't he so cute! I love him dearly. Lets just keep writing stuff to see if it will fill the box without overflowing :D
+        </div>
+      </div>
+    </div>
+
+    <div class = "iconPopup" id ="iconPopup-1">
+      <div class="close-btn" id ="close-btn2">&times;</div>
+      <div class="typewriter">
+        <h1 id="towerMessage">Echo was last spotted south of Tempe!</h1>
+      </div>
+    </div>
+
+    <div class = "youtubeLink" id = 'lessonContainer'>
+      <div class="iframe-container" id="youtube-player">
+        <iframe type="text/html" width="10" height="10" id="youtubePlayer" src="https://www.youtube.com/embed/yrs9IkbkfQE?enablejsapi=1&rel=0" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen>
+        </iframe>
+      </div>
+      <div class = "slideNumber" id ="slideNumb">1/4</div>
+      <div class = "lesson1Container" id = "lesson1Activity">
+        <div class = "drag" draggable="true" id="red" style="top: 10%" data-dropped="false"></div>
+        <div class = "drag" draggable="true" id="green" style="top: 38%" data-dropped="false"></div>
+        <div class = "drag" draggable="true" id="blue" style="top: 66%" data-dropped="false"></div>
+        <div class = "droppable" id="dropRed" style="color: red; top: 5%" data-filled="false"></div>
+        <div class = "droppable" id="dropGreen" style="color: green; top: 38%" data-filled="false"></div>
+        <div class = "droppable" id="dropBlue" style="color: blue; top: 70%" data-filled="false"></div>
+        <div class = "final" id="finalImage">
+          <div class = "resetBtn" id="lesson1Reset">RESET</div>
+        </div>
+      </div>
+      <!-- <div class="close-btn" style="top: 22%;right: 2%;" id ="close-btn3">&times;</div> -->
+      <div class = "doneBtn" id="doneButton">DONE</div>
+      <!-- <div id ="youtubelink-content">
+        Lesson 1
+      </div> -->
+      <div class="walkieTalkieButton" id="talkie-button-left" style="left: 8.25%; width: 28.75%;">
+        <img src="resources/images/UI/arrow.png" style="transform: scaleX(-1);">
+      </div>
+      <div class="walkieTalkieButton" id="talkie-button-middle" style="left:41%; width: 14%;">
+        <img src="resources/images/UI/Play.png" id ="playPauseBtn">
+      </div>
+      <div class="walkieTalkieButton" id="talkie-button-right" style="right: 12.9%; width: 28.75%;">
+        <img src="resources/images/UI/arrow.png">
+      </div>
+    </div>
+    
+    <!-- <div class="popup" id="mapPopup">
+      <div class="overlay" ></div>
+      <div class="content">
+        <div class="close-btn" id ="close-btn">&times;</div>
+        <div class="item1" id ="header">Header</div>
+        <div class="item2" id ="image1"></div>
+        <div class="item3" id ="image2"></div>
+        <div class="item4" id ="text">
+          Echo is the bat we are making this interactive about. Isn't he so cute! I love him dearly. Lets just keep writing stuff to see if it will fill the box without overflowing :D
+        </div>
+      </div>
+    </div> -->
+
+    <div class="mapChangePopup" id = "mapPopup">
+      <div class="close-btn" style="top: 1%; right: 1%;" id ="mapPopupCloseBtn">&times;</div>
+      <!-- <img src ="resources/images/arizona-geography.png" id = "mapImage"> -->
+      <div class="mapContainer">
+        <!-- <div class="youAreHere" id="youAreHere">You Are Here</div> -->
+        <img src ="resources/images/arizona-geography.jpg" id = "mapImage">
+      </div>
+      <div class="button" id ="mosaicBtn">MOSAIC</div>
+      <div class="button" id ="roadBtn">ROAD</div>
+      <div class="button" id ="geographyBtn">GEOGRAPHY</div>
+    </div>
+
+    <!-- <div class="youAreHere"></div> -->
+
+    <div class="audio-toggle" id = "audioToggle"></div>
+
+    <div class="bugIconContainer" id = "bugContainer">
+      <div class="bugIcon" id = "bugIcon1" draggable="true"></div>
+      <div class="bugIcon" id = "bugIcon2"></div>
+      <div class="bugIcon" id = "bugIcon3"></div>
+      <div class="bugIcon" id = "bugIcon4"></div>
+    </div>
+    <div class="bottom-image" id = "mapIcon"></div>
+    <div class="highlight" id = "tutorialHighlight"></div>
+    <div class = "highlightText" id = "highlightText">
+      <div>Click and Drag</div>
+    </div>
+    <div class="creditsContainer" id ="creditsContainer">
+      <div class="close-btn" id ="creditsCloseBtn">&times;</div>
+      <p>Interactive and Story based on the original Echo The Bat book by Ginger Butcher</p>
+      <p>Development: Ross Walter</p>
+      <p>3d Models: Chantil Estevez</p>
+    </div>
+
+    <div class="mouseIcon" id = "mouseICON"></div>
+    <script type="module" src="main.js"></script>
+    <script src="https://www.youtube.com/iframe_api"></script>
+  </body>
+</html>
