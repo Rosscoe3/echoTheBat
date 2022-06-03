@@ -578,7 +578,7 @@ body {
 
 .lesson1Container .resetBtn{
   width: 30%;
-  aspect-ratio: 4 / 1;
+  aspect-ratio: 5 / 1;
 
   position: relative;                      /* 3 */
    transform: translate(-50%, 0%);
@@ -594,7 +594,7 @@ body {
   text-size-adjust: inherit;
   overflow-wrap: break-word;
   font-family: roboto-condensed, sans-serif;
-  font-size: 1.5vh;
+  font-size: 1.5vw;
   text-align: center;
   padding: .5vh;
   box-sizing: border-box;
