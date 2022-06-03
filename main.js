@@ -208,7 +208,7 @@ const map = new THREE.TextureLoader(manager).load(
   "/resources/images/echobook.jpg"
 );
 const towerIconTexture = new THREE.TextureLoader(manager).load(
-  "/resources/images/towerIcon.png"
+  "/resources/images/towericon.png"
 );
 const glowTexture = new THREE.TextureLoader(manager).load(
   "/resources/images/yellow-glow.png"
