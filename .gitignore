@@ -10,8 +10,8 @@ lerna-debug.log*
 
 #exclude node modules
 node_modules/*
-!node_modules/@tweenjs
-!node_modules/dat.gui
+#!node_modules/@tweenjs
+#!node_modules/dat.gui
 
 #dist
 #dist-ssr
