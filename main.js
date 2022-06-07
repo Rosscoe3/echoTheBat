@@ -710,11 +710,13 @@ function init() {
     new THREE.Vector3(-4, 1, 5),
   ];
 
+
+  
   sceneTransitionSprites = [
-    sprite2,
-    sprite4,
     sprite6,
-    sprite8
+    sprite17,
+    sprite6,
+    sprite9
   ];
 
   //** Adds all the sprites with their given positions */
@@ -1748,8 +1750,8 @@ function locationSpriteSetup() {
     "This is the text that has been assigned to the echo the bat location UI";
 
   sprite2.userData.url = "https://landsat.gsfc.nasa.gov/outreach/camp-landsat/";
-  sprite2.userData.newScene = true;
-  sprite2.userData.ping = true;
+  //sprite2.userData.newScene = true;
+  //sprite2.userData.ping = true;
   sprite2.userData.index = 0;
 
   sprite3.userData.popup = true;
@@ -1779,7 +1781,7 @@ function locationSpriteSetup() {
   sprite5.userData.img = "/resources/images/location/colorado-river.jpg";
   sprite5.userData.index = 4;
 
-  sprite6.userData.popup = true;
+  sprite6.userData.popup = false;
   sprite6.userData.popupTitle = "Phoenix";
   sprite6.userData.popupText =
     "Mountains in Phoenix overlook the tan neighborhoods";
@@ -1787,6 +1789,8 @@ function locationSpriteSetup() {
     "/resources/images/landsat/phoenix.jpg";
   sprite6.userData.img = "/resources/images/location/phoenix.jpg";
   sprite6.userData.index = 5;
+  sprite6.userData.newScene = true;
+  sprite6.userData.ping = true;
 
   sprite7.userData.popup = true;
   sprite7.userData.popupTitle = "Phoenix";
@@ -2084,7 +2088,7 @@ function makeEchoLinePath(intersectPoint) {
   // points.push(new THREE.Vector3(-2, 0.1, 1.5));
   // points.push(new THREE.Vector3(-3, 0.1, 1));
 
-  sceneTransitionSprites
+  //sceneTransitionSprites
 
   const geometry = new THREE.BufferGeometry().setFromPoints(points);
   const lineMaterial = new THREE.LineDashedMaterial({
@@ -3522,72 +3526,76 @@ function drop(event)
 
   console.log(document.getElementById(sourceID).dataset.dropped);
 
-  if(document.getElementById(sourceID).dataset.dropped == "false")
+  if(event.target.dataset.filled == "false")
   {
-    event.target.appendChild(document.getElementById(sourceID));
-    event.target.dataset.filled = "true";
-    document.getElementById(sourceID).style.top = 0;
-    document.getElementById(sourceID).style.left = 0;
-    document.getElementById(sourceID).dataset.dropped = "true";
-
-    droppableElements.forEach(elem =>
+    if(document.getElementById(sourceID).dataset.dropped == "false")
     {
-        console.log(elem.children);
-        if(elem.dataset.filled == "true")
-        {
-          count++;
-          //event.target.id
-
-          if(event.target.id == "dropRed")
+      event.target.appendChild(document.getElementById(sourceID));
+      event.target.dataset.filled = "true";
+      document.getElementById(sourceID).style.top = 0;
+      document.getElementById(sourceID).style.left = 0;
+      document.getElementById(sourceID).dataset.dropped = "true";
+  
+      droppableElements.forEach(elem =>
+      {
+          console.log(elem.children);
+          if(elem.dataset.filled == "true")
           {
-            if(elem.children)
+            count++;
+            //event.target.id
+  
+            if(event.target.id == "dropRed")
             {
-              r = elem.children[0].id;
-              elem.dataset.filled = true;
+              if(elem.children)
+              {
+                r = elem.children[0].id;
+                elem.dataset.filled = "true";
+              }
+              else
+              {
+                r = "";
+                elem.dataset.filled = "false";
+              }
             }
-            else
+            else if(event.target.id == "dropGreen")
             {
-              r = "";
-              elem.dataset.filled = false;
+              if(elem.children)
+              {
+                g = elem.children[0].id;
+                elem.dataset.filled = "true";
+              }
+              else
+              {
+                g = "";
+                elem.dataset.filled = "false";
+              }
             }
+            else if(event.target.id == "dropBlue")
+            {
+              if(elem.children)
+              {
+                b = elem.children[0].id;
+                elem.dataset.filled = "true";
+              }
+              else
+              {
+                b = "";
+                elem.dataset.filled = "false";
+              }
+            }
+  
+            console.log("R: " + r + " G: " + g + " B: " + b);
           }
-          else if(event.target.id == "dropGreen")
+          if(count == 3)
           {
-            if(elem.children)
-            {
-              g = elem.children[0].id;
-              elem.dataset.filled = true;
-            }
-            else
-            {
-              g = "";
-              elem.dataset.filled = false;
-            }
+            allFilled = true;
+            console.log("ALL FILLED");
+            imagesFilled(r, g, b);
           }
-          else if(event.target.id == "dropBlue")
-          {
-            if(elem.children)
-            {
-              b = elem.children[0].id;
-              elem.dataset.filled = true;
-            }
-            else
-            {
-              b = "";
-              elem.dataset.filled = false;
-            }
-          }
-
-          console.log("R: " + r + " G: " + g + " B: " + b);
-        }
-        if(count == 3)
-        {
-          allFilled = true;
-          console.log("ALL FILLED");
-          imagesFilled(r, g, b);
-        }
-    });
+      });
+    }
   }
+
   else
   {
     if(event.target.firstChild)
@@ -3598,9 +3606,14 @@ function drop(event)
 }
 function imagesFilled(r, g, b)
 {
-  var bandCombo = r+g+b;
-  document.getElementById("finalImage").style.backgroundImage = "url('resources/images/landsat/catalina-mountains.jpg')";
+  var bandCombo = r.charAt(0) + g.charAt(0) + b.charAt(0);
+  document.getElementById("finalImage").style.backgroundImage = "url('resources/images/lesson1/" + bandCombo + ".jpg')";
   console.log(bandCombo);
+
+  droppableElements.forEach(elem =>{
+    
+  });
+
 }
 function resetLesson1()
 {
@@ -3614,6 +3627,9 @@ function resetLesson1()
   });
   console.log(draggableElements[0]);
 
+  r = null;
+  g = null;
+  b = null;
   //lesson1Container.classList.toggle("active");
 
   //RESET STYLES AND POSITIONS//

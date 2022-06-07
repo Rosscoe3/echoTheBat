@@ -577,7 +577,7 @@ body {
 }
 
 .lesson1Container .resetBtn{
-  width: 30%;
+  width: fit-content;
   aspect-ratio: 5 / 1;
 
   position: relative;                      /* 3 */
