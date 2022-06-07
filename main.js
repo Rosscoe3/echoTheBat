@@ -98,6 +98,7 @@ const sizes = {
 
 const sceneA = new FXScene(mapScene, mainCamera);
 const sceneB = new FXScene(lessonScene, lessonCamera);
+//const sceneC = new FXScene(loadingScreen.scene, loadingScreen.camera);
 
 //transition = new Transition( mapScene, lessonScene );
 const clock = new THREE.Clock();
@@ -204,9 +205,6 @@ var minPan = new THREE.Vector3(-4.25, 1, -5.5);
 var maxPan = new THREE.Vector3(4.15, 3, 5.5);
 
 /** SPRITES */
-const map = new THREE.TextureLoader(manager).load(
-  "/resources/images/echobook.jpg"
-);
 const towerIconTexture = new THREE.TextureLoader(manager).load(
   "/resources/images/towericon.png"
 );
@@ -215,9 +213,6 @@ const glowTexture = new THREE.TextureLoader(manager).load(
 );
 
 
-const casaGrandeTexture = new THREE.TextureLoader(manager).load(
-  "/resources/images/location/casa-grande.png"
-);
 const deathValleyTexture = new THREE.TextureLoader(manager).load(
   "/resources/images/location/death-valley.jpg"
 );
@@ -229,9 +224,6 @@ const coloradoRiverTexture = new THREE.TextureLoader(manager).load(
 );
 const phoenixTexture = new THREE.TextureLoader(manager).load(
   "/resources/images/location/phoenix.jpg"
-);
-const phoenix2Texture = new THREE.TextureLoader(manager).load(
-  "/resources/images/location/phoenix2.jpg"
 );
 const tempeTexture = new THREE.TextureLoader(manager).load(
   "/resources/images/location/tempe.jpg"
@@ -296,17 +288,12 @@ const tanqueVerdeTexture = new THREE.TextureLoader(manager).load(
 const wymolaTexture = new THREE.TextureLoader(manager).load(
   "/resources/images/location/wymola.jpg"
 );
-const petrifiedForestTexture2 = new THREE.TextureLoader(manager).load(
-  "/resources/images/location/petrifiedForest-2.png"
-);
-
 
 const arizona_road_texture = new THREE.TextureLoader(manager).load(
   "/resources/images/arizona-road.png"
 );
 let arizona_mosaic_texture;
 
-let butTexture_green;
 const bugTexture_yellow = new THREE.TextureLoader().load(
   "/resources/models/textures/bug-yellow.png"
 );
@@ -316,12 +303,11 @@ const bugTexture_blue = new THREE.TextureLoader().load(
 const bugTexture_red = new THREE.TextureLoader().load(
   "/resources/models/textures/bug-red.png"
 );
+let bugTexture_green;
 
-const material = new THREE.SpriteMaterial({ map: map });
 const towerIconMaterial = new THREE.SpriteMaterial({ map: towerIconTexture });
 const glowMaterial = new THREE.SpriteMaterial({map: glowTexture});
 
-const casaGrandeMaterial = new THREE.SpriteMaterial({ map: casaGrandeTexture });
 const deathValleyMaterial = new THREE.SpriteMaterial({
   map: deathValleyTexture,
 });
@@ -332,7 +318,6 @@ const coloradoRiverMaterial = new THREE.SpriteMaterial({
   map: coloradoRiverTexture,
 });
 const phoenixMaterial = new THREE.SpriteMaterial({ map: phoenixTexture });
-const phoenix2Material = new THREE.SpriteMaterial({ map: phoenix2Texture });
 const tempeMaterial = new THREE.SpriteMaterial({ map: tempeTexture });
 const tusconMaterial = new THREE.SpriteMaterial({ map: tusconTexture });
 const catalinaMountainsMaterial = new THREE.SpriteMaterial({
@@ -355,7 +340,6 @@ const navajoPointMaterial = new THREE.SpriteMaterial({ map: navajoPointTexture})
 const paintedDesertMaterial = new THREE.SpriteMaterial({ map: paintedDesertTexture});
 const peoriaMaterial = new THREE.SpriteMaterial({ map: peoriaTexture});
 const petrifiedForestMaterial = new THREE.SpriteMaterial({ map: petrifiedForestTexture});
-const petrifiedForest2Material = new THREE.SpriteMaterial({ map: petrifiedForestTexture2});
 const pinalCountyMaterial = new THREE.SpriteMaterial({ map: pinalCountyTexture});
 const saguaroNatParkMaterial = new THREE.SpriteMaterial({ map: saguaroNatParkTexture});
 const sanSimonRestAreaMaterial = new THREE.SpriteMaterial({ map: sanSimonRestAreaTexture});
@@ -371,36 +355,32 @@ const towerIcon5 = new THREE.Sprite(towerIconMaterial);
 
 const towerIcons = [towerIcon, towerIcon2, towerIcon3, towerIcon4, towerIcon5];
 
-const mapImages = [sprite, sprite2, towerIcon];
-var sprite,
-  sprite2,
-  sprite3,
-  sprite4,
-  sprite5,
-  sprite6,
-  sprite7,
-  sprite8,
-  sprite9,
-  sprite10,
-  sprite11,
-  sprite12,
-  sprite13,
-  sprite14,
-  sprite15,
-  sprite16,
-  sprite17,
-  sprite18,
-  sprite19,
-  sprite20,
-  sprite21,
-  sprite22,
-  sprite23,
-  sprite24,
-  sprite25,
-  sprite26,
-  sprite27,
-  sprite28,
-  sprite29, 
+//const mapImages = [sprite, sprite2, towerIcon];
+var sprite_deathValley,
+  sprite_grandCanyon,
+  sprite_coloradoRiver,
+  sprite_phoenix,
+  sprite_tempe,
+  sprite_tuscon,
+  sprite_catalinaMountains,
+  sprite_sonoranDesert,
+  sprite_rooseveltLake,
+  sprite_gilaRiver,
+  sprite_saltRiver,
+  sprite_cathedralRock,
+  sprite_fatmansLoop,
+  sprite_horseshoeBend,
+  sprite_micaViewTrail,
+  sprite_navajoPoint,
+  sprite_paintedDesert,
+  sprite_peoria,
+  sprite_petrifiedForest,
+  sprite_pinalCounty,
+  sprite_saguaroNatPark,
+  sprite_sanSimon,
+  sprite_scaddanWash,
+  sprite_tanqueVerde,
+  sprite_wymola, 
   glowSprite;
 var uiLocationSprites, labelSprites, uiLocationPositions, sceneTransitionSprites;
 
@@ -447,7 +427,7 @@ let hamburger = document.getElementById("dropdown");
 let roadButton = document.getElementById("roadBtn");
 let mosaicButton = document.getElementById("mosaicBtn");
 let geographyButton = document.getElementById("geographyBtn");
-let backButton = document.getElementById("backButton");
+//let backButton = document.getElementById("backButton");
 let youtubePlayButton = document.getElementById("playPauseBtn");
 let tutorialHighlight = document.getElementById("tutorialHighlight");
 let highlightText = document.getElementById("highlightText");
@@ -572,7 +552,7 @@ function init() {
   audioButton.classList.toggle("disabled");
   mapButton.classList.toggle("disabled");
   hamburger.classList.toggle("disabled");
-  backButton.classList.toggle("disabled");
+  //backButton.classList.toggle("disabled");
   bugIcon.classList.toggle("disabled");
   bugIcon2.classList.toggle("disabled");
   bugIcon3.classList.toggle("disabled");
@@ -615,68 +595,61 @@ function init() {
 
   glowSprite = new THREE.Sprite(glowMaterial);
 
-  sprite = new THREE.Sprite(material);
-  sprite2 = new THREE.Sprite(casaGrandeMaterial);
-  sprite3 = new THREE.Sprite(deathValleyMaterial);
-  sprite4 = new THREE.Sprite(grandCanyonMaterial);
-  sprite5 = new THREE.Sprite(coloradoRiverMaterial);
-  sprite6 = new THREE.Sprite(phoenixMaterial);
-  sprite7 = new THREE.Sprite(phoenix2Material);
-  sprite8 = new THREE.Sprite(tempeMaterial);
-  sprite9 = new THREE.Sprite(tusconMaterial);
-  sprite10 = new THREE.Sprite(catalinaMountainsMaterial);
-  sprite11 = new THREE.Sprite(sonoranDesertMaterial);
-  sprite12 = new THREE.Sprite(rooseveltLakeMaterial);
-  sprite13 = new THREE.Sprite(yumaMaterial);
-  sprite14 = new THREE.Sprite(saltRiverMaterial);
-  sprite15 = new THREE.Sprite(cathedralRockMaterial);
-  sprite16 = new THREE.Sprite(fatmansLoopMaterial);
-  sprite17 = new THREE.Sprite(horseshoeBendMaterial);
-  sprite18 = new THREE.Sprite(micaViewTrailMaterial);
-  sprite19 = new THREE.Sprite(navajoPointMaterial);
-  sprite20 = new THREE.Sprite(paintedDesertMaterial);
-  sprite21 = new THREE.Sprite(peoriaMaterial);
-  sprite22 = new THREE.Sprite(petrifiedForestMaterial);
-  sprite23 = new THREE.Sprite(petrifiedForest2Material);
-  sprite24 = new THREE.Sprite(pinalCountyMaterial);
-  sprite25 = new THREE.Sprite(saguaroNatParkMaterial);
-  sprite26 = new THREE.Sprite(sanSimonRestAreaMaterial);
-  sprite27 = new THREE.Sprite(scaddanWashMaterial);
-  sprite28 = new THREE.Sprite(tanqueVerdeMaterial);
-  sprite29 = new THREE.Sprite(wymolaMaterial);
+  sprite_deathValley = new THREE.Sprite(deathValleyMaterial);
+  sprite_grandCanyon = new THREE.Sprite(grandCanyonMaterial);
+  sprite_coloradoRiver = new THREE.Sprite(coloradoRiverMaterial);
+  sprite_phoenix = new THREE.Sprite(phoenixMaterial);
+  sprite_tempe = new THREE.Sprite(tempeMaterial);
+  sprite_tuscon = new THREE.Sprite(tusconMaterial);
+  sprite_catalinaMountains = new THREE.Sprite(catalinaMountainsMaterial);
+  sprite_sonoranDesert = new THREE.Sprite(sonoranDesertMaterial);
+  sprite_rooseveltLake = new THREE.Sprite(rooseveltLakeMaterial);
+  sprite_gilaRiver = new THREE.Sprite(yumaMaterial);
+  sprite_saltRiver = new THREE.Sprite(saltRiverMaterial);
+  sprite_cathedralRock = new THREE.Sprite(cathedralRockMaterial);
+  sprite_fatmansLoop = new THREE.Sprite(fatmansLoopMaterial);
+  sprite_horseshoeBend = new THREE.Sprite(horseshoeBendMaterial);
+  sprite_micaViewTrail = new THREE.Sprite(micaViewTrailMaterial);
+  sprite_navajoPoint = new THREE.Sprite(navajoPointMaterial);
+  sprite_paintedDesert = new THREE.Sprite(paintedDesertMaterial);
+  sprite_peoria = new THREE.Sprite(peoriaMaterial);
+  sprite_petrifiedForest = new THREE.Sprite(petrifiedForestMaterial);
+  sprite_pinalCounty = new THREE.Sprite(pinalCountyMaterial);
+  sprite_saguaroNatPark = new THREE.Sprite(saguaroNatParkMaterial);
+  sprite_sanSimon = new THREE.Sprite(sanSimonRestAreaMaterial);
+  sprite_scaddanWash = new THREE.Sprite(scaddanWashMaterial);
+  sprite_tanqueVerde = new THREE.Sprite(tanqueVerdeMaterial);
+  sprite_wymola = new THREE.Sprite(wymolaMaterial);
 
   locationSpriteSetup();
   lessonSequenceSetup();
 
   uiLocationSprites = [
-    sprite2,
-    sprite3,
-    sprite4,
-    sprite5,
-    sprite6,
-    sprite7,
-    sprite8,
-    sprite9,
-    sprite10,
-    sprite11,
-    sprite12,
-    sprite13,
-    sprite14,
-    sprite15,
-    sprite16,
-    sprite17,
-    sprite18,
-    sprite19,
-    sprite20,
-    sprite21,
-    sprite22,
-    sprite23,
-    sprite24,
-    sprite25,
-    sprite26,
-    sprite27,
-    sprite28,
-    sprite29,
+    sprite_deathValley,
+    sprite_grandCanyon,
+    sprite_coloradoRiver,
+    sprite_phoenix,
+    sprite_tempe,
+    sprite_tuscon,
+    sprite_catalinaMountains,
+    sprite_sonoranDesert,
+    sprite_rooseveltLake,
+    sprite_gilaRiver,
+    sprite_saltRiver,
+    sprite_cathedralRock,
+    sprite_fatmansLoop,
+    sprite_horseshoeBend,
+    sprite_micaViewTrail,
+    sprite_navajoPoint,
+    sprite_paintedDesert,
+    sprite_peoria,
+    sprite_petrifiedForest,
+    sprite_pinalCounty,
+    sprite_saguaroNatPark,
+    sprite_sanSimon,
+    sprite_scaddanWash,
+    sprite_tanqueVerde,
+    sprite_wymola,
   ];
   uiLocationPositions = [
     new THREE.Vector3(3, 1, 4),
@@ -713,10 +686,10 @@ function init() {
 
   
   sceneTransitionSprites = [
-    sprite6,
-    sprite17,
-    sprite6,
-    sprite9
+    sprite_phoenix,
+    sprite_horseshoeBend,
+    sprite_phoenix,
+    sprite_tuscon
   ];
 
   //** Adds all the sprites with their given positions */
@@ -733,35 +706,32 @@ function init() {
     //console.log("CURRENT INDEX: " + i);
   }
 
-  sprite2.position.set(0.1, sprite2.position.y, 3.59);
-  sprite4.position.set(-0.2, sprite4.position.y, -5.66);
-  sprite5.position.set(-1.56, sprite5.position.y, -6.2697);
-  sprite6.position.set(-0.65, sprite6.position.y, 1.7);
-  sprite7.position.set(0.4, sprite7.position.y, 1.62);
-  sprite8.position.set(-0.04, sprite8.position.y, 2.07);
-  sprite9.position.set(1.772, sprite9.position.y, 5.41);
-  sprite10.position.set(2.227, sprite10.position.y, 5.26);
-  sprite11.position.set(-2.02, sprite11.position.y, 5.07);
-  sprite12.position.set(1.77, sprite12.position.y, 1.16);
-  sprite13.position.set(-5.207, sprite13.position.y, 3.44);
-  sprite14.position.set(1.2, sprite14.position.y, 1.46);
-  sprite15.position.set(0.29, sprite15.position.y, -1.9);
-  sprite16.position.set(0.72, sprite16.position.y, -3.1);
-  sprite17.position.set(1.25, sprite17.position.y, -7.65);
-  sprite18.position.set(2.45, sprite18.position.y, 5.65);
-  sprite19.position.set(0.45, sprite19.position.y, -5.35);
-  sprite20.position.set(4.3, sprite20.position.y, -3.8);
-  sprite21.position.set(-1, sprite21.position.y, 0.79);
-  sprite22.position.set(4.95, sprite22.position.y, -2.45);
-  sprite23.position.set(5, sprite22.position.y, -2.67);
-  sprite24.position.set(0.94, sprite22.position.y, 4.26);
-  sprite25.position.set(1.26, sprite22.position.y, 5.2);
-  sprite26.position.set(6.3, sprite22.position.y, 5.56);
-  sprite27.position.set(-5.5, sprite22.position.y, 1.01);
-  sprite28.position.set(2.53, sprite22.position.y, 5.34);
-  sprite29.position.set(0.71, sprite22.position.y, 4.04);
+  sprite_grandCanyon.position.set(-0.2, sprite_grandCanyon.position.y, -5.66);
+  sprite_coloradoRiver.position.set(-1.56, sprite_coloradoRiver.position.y, -6.2697);
+  sprite_phoenix.position.set(-0.65, sprite_phoenix.position.y, 1.7);
+  sprite_tempe.position.set(-0.04, sprite_tempe.position.y, 2.07);
+  sprite_tuscon.position.set(1.772, sprite_tuscon.position.y, 5.41);
+  sprite_catalinaMountains.position.set(2.227, sprite_catalinaMountains.position.y, 5.26);
+  sprite_sonoranDesert.position.set(-2.02, sprite_sonoranDesert.position.y, 5.07);
+  sprite_rooseveltLake.position.set(1.77, sprite_rooseveltLake.position.y, 1.16);
+  sprite_gilaRiver.position.set(-5.207, sprite_gilaRiver.position.y, 3.44);
+  sprite_saltRiver.position.set(1.2, sprite_saltRiver.position.y, 1.46);
+  sprite_cathedralRock.position.set(0.29, sprite_cathedralRock.position.y, -1.9);
+  sprite_fatmansLoop.position.set(0.72, sprite_fatmansLoop.position.y, -3.1);
+  sprite_horseshoeBend.position.set(1.25, sprite_horseshoeBend.position.y, -7.65);
+  sprite_micaViewTrail.position.set(2.45, sprite_micaViewTrail.position.y, 5.65);
+  sprite_navajoPoint.position.set(0.45, sprite_navajoPoint.position.y, -5.35);
+  sprite_paintedDesert.position.set(4.3, sprite_paintedDesert.position.y, -3.8);
+  sprite_peoria.position.set(-1, sprite_peoria.position.y, 0.79);
+  sprite_petrifiedForest.position.set(4.95, sprite_petrifiedForest.position.y, -2.45);
+  sprite_pinalCounty.position.set(0.94, sprite_petrifiedForest.position.y, 4.26);
+  sprite_saguaroNatPark.position.set(1.26, sprite_petrifiedForest.position.y, 5.2);
+  sprite_sanSimon.position.set(6.3, sprite_petrifiedForest.position.y, 5.56);
+  sprite_scaddanWash.position.set(-5.5, sprite_petrifiedForest.position.y, 1.01);
+  sprite_tanqueVerde.position.set(2.53, sprite_petrifiedForest.position.y, 5.34);
+  sprite_wymola.position.set(0.71, sprite_petrifiedForest.position.y, 4.04);
 
-  glowSprite.position.set(sprite12.position.x, uiMinheight, sprite12.position.z);
+  glowSprite.position.set(sprite_rooseveltLake.position.x, uiMinheight, sprite_rooseveltLake.position.z);
   //lessonSceneRaycast.add(glowSprite);
 
   //** HTML LABEL CONTENT */
@@ -770,456 +740,408 @@ function init() {
   labelContainerElem.appendChild(elem);
 
   //** LABEL INSTANTIATION */
-  var sprite2Label = makeTextSprite("  Casa Grande", {
-    fontsize: 40,
-    fontface: "roboto-condensed",
-    borderColor: { r: 0, g: 0, b: 255, a: 0.0 },
-  });
-  sprite2Label.scale.set(0.4, 0.2, 0.4);
-  sprite2Label.position.set(
-    sprite2.position.x + 0.035,
-    uiMinheight + 0.01,
-    sprite2.position.z + 0.06
-  );
-  sprite2Label.userData.hover = false;
-  sprite2Label.material.opacity = 0.0;
-  mapScene.add(sprite2Label);
 
-  var sprite3Label = makeTextSprite("  Death Valley", {
+  var sprite_deathValley_Label = makeTextSprite("  Death Valley", {
     fontsize: 40,
     fontface: "roboto-condensed",
     borderColor: { r: 0, g: 0, b: 255, a: 0.0 },
   });
-  sprite3Label.scale.set(0.4, 0.2, 0.4);
-  sprite3Label.position.set(
-    sprite3.position.x + 0.0375,
+  sprite_deathValley_Label.scale.set(0.4, 0.2, 0.4);
+  sprite_deathValley_Label.position.set(
+    sprite_deathValley.position.x + 0.0375,
     uiMinheight + 0.01,
-    sprite3.position.z + 0.07
+    sprite_deathValley.position.z + 0.07
   );
-  sprite3Label.userData.hover = false;
-  sprite3Label.material.opacity = 0.0;
-  mapScene.add(sprite3Label);
+  sprite_deathValley_Label.userData.hover = false;
+  sprite_deathValley_Label.material.opacity = 0.0;
+  mapScene.add(sprite_deathValley_Label);
 
-  var sprite4Label = makeTextSprite("  Grand Canyon", {
+  var sprite_grandCanyon_Label = makeTextSprite("  Grand Canyon", {
     fontsize: 40,
     fontface: "roboto-condensed",
     borderColor: { r: 0, g: 0, b: 255, a: 0.0 },
   });
-  sprite4Label.scale.set(0.5, 0.25, 0.5);
-  sprite4Label.position.set(
-    sprite4.position.x + 0.01,
+  sprite_grandCanyon_Label.scale.set(0.5, 0.25, 0.5);
+  sprite_grandCanyon_Label.position.set(
+    sprite_grandCanyon.position.x + 0.01,
     uiMinheight + 0.01,
-    sprite4.position.z + 0.075
+    sprite_grandCanyon.position.z + 0.075
   );
-  sprite4Label.userData.hover = false;
-  sprite4Label.material.opacity = 0.0;
-  mapScene.add(sprite4Label);
+  sprite_grandCanyon_Label.userData.hover = false;
+  sprite_grandCanyon_Label.material.opacity = 0.0;
+  mapScene.add(sprite_grandCanyon_Label);
 
-  var sprite5Label = makeTextSprite("  Colorado River", {
+  var sprite_coloradoRiver_Label = makeTextSprite("  Colorado River", {
     fontsize: 40,
     fontface: "roboto-condensed",
     borderColor: { r: 0, g: 0, b: 255, a: 0.0 },
   });
-  sprite5Label.scale.set(0.5, 0.25, 0.5);
-  sprite5Label.position.set(
-    sprite5.position.x + 0.01,
+  sprite_coloradoRiver_Label.scale.set(0.5, 0.25, 0.5);
+  sprite_coloradoRiver_Label.position.set(
+    sprite_coloradoRiver.position.x + 0.01,
     uiMinheight + 0.01,
-    sprite5.position.z + 0.075
+    sprite_coloradoRiver.position.z + 0.075
   );
-  sprite5Label.userData.hover = false;
-  sprite5Label.material.opacity = 0.0;
-  mapScene.add(sprite5Label);
+  sprite_coloradoRiver_Label.userData.hover = false;
+  sprite_coloradoRiver_Label.material.opacity = 0.0;
+  mapScene.add(sprite_coloradoRiver_Label);
 
-  var sprite6Label = makeTextSprite("  Phoenix", {
+  var sprite_phoenix_Label = makeTextSprite("  Phoenix", {
     fontsize: 40,
     fontface: "roboto-condensed",
     borderColor: { r: 0, g: 0, b: 255, a: 0.0 },
   });
-  sprite6Label.scale.set(0.5, 0.25, 0.5);
-  sprite6Label.position.set(
-    sprite6.position.x + 0.1,
+  sprite_phoenix_Label.scale.set(0.5, 0.25, 0.5);
+  sprite_phoenix_Label.position.set(
+    sprite_phoenix.position.x + 0.1,
     uiMinheight + 0.01,
-    sprite6.position.z + 0.075
+    sprite_phoenix.position.z + 0.075
   );
-  sprite6Label.userData.hover = false;
-  sprite6Label.material.opacity = 0.0;
-  mapScene.add(sprite6Label);
+  sprite_phoenix_Label.userData.hover = false;
+  sprite_phoenix_Label.material.opacity = 0.0;
+  mapScene.add(sprite_phoenix_Label);
 
-  var sprite7Label = makeTextSprite("  Phoenix", {
+  var sprite_tempe_Label = makeTextSprite("  Tempe", {
     fontsize: 40,
     fontface: "roboto-condensed",
     borderColor: { r: 0, g: 0, b: 255, a: 0.0 },
   });
-  sprite7Label.scale.set(0.5, 0.25, 0.5);
-  sprite7Label.position.set(
-    sprite7.position.x + 0.1,
+  sprite_tempe_Label.scale.set(0.5, 0.25, 0.5);
+  sprite_tempe_Label.position.set(
+    sprite_tempe.position.x + 0.12,
     uiMinheight + 0.01,
-    sprite7.position.z + 0.075
+    sprite_tempe.position.z + 0.075
   );
-  sprite7Label.userData.hover = false;
-  sprite7Label.material.opacity = 0.0;
-  mapScene.add(sprite7Label);
+  sprite_tempe_Label.userData.hover = false;
+  sprite_tempe_Label.material.opacity = 0.0;
+  mapScene.add(sprite_tempe_Label);
 
-  var sprite8Label = makeTextSprite("  Tempe", {
+  var sprite_tuscon_Label = makeTextSprite("Tuscon", {
     fontsize: 40,
     fontface: "roboto-condensed",
     borderColor: { r: 0, g: 0, b: 255, a: 0.0 },
   });
-  sprite8Label.scale.set(0.5, 0.25, 0.5);
-  sprite8Label.position.set(
-    sprite8.position.x + 0.12,
+  sprite_tuscon_Label.scale.set(0.5, 0.25, 0.5);
+  sprite_tuscon_Label.position.set(
+    sprite_tuscon.position.x + 0.1425,
     uiMinheight + 0.01,
-    sprite8.position.z + 0.075
+    sprite_tuscon.position.z + 0.075
   );
-  sprite8Label.userData.hover = false;
-  sprite8Label.material.opacity = 0.0;
-  mapScene.add(sprite8Label);
+  sprite_tuscon_Label.userData.hover = false;
+  sprite_tuscon_Label.material.opacity = 0.0;
+  mapScene.add(sprite_tuscon_Label);
 
-  var sprite9Label = makeTextSprite("Tuscon", {
+  var sprite_catalinaMountains_Label = makeTextSprite("Catalina Mts.", {
     fontsize: 40,
     fontface: "roboto-condensed",
     borderColor: { r: 0, g: 0, b: 255, a: 0.0 },
   });
-  sprite9Label.scale.set(0.5, 0.25, 0.5);
-  sprite9Label.position.set(
-    sprite9.position.x + 0.1425,
+  sprite_catalinaMountains_Label.scale.set(0.5, 0.25, 0.5);
+  sprite_catalinaMountains_Label.position.set(
+    sprite_catalinaMountains.position.x + 0.075,
     uiMinheight + 0.01,
-    sprite9.position.z + 0.075
+    sprite_catalinaMountains.position.z + 0.075
   );
-  sprite9Label.userData.hover = false;
-  sprite9Label.material.opacity = 0.0;
-  mapScene.add(sprite9Label);
+  sprite_catalinaMountains_Label.userData.hover = false;
+  sprite_catalinaMountains_Label.material.opacity = 0.0;
+  mapScene.add(sprite_catalinaMountains_Label);
 
-  var sprite10Label = makeTextSprite("Catalina Mts.", {
+  var sprite_sonoranDesert_Label = makeTextSprite("Sonoran Desert", {
     fontsize: 40,
     fontface: "roboto-condensed",
     borderColor: { r: 0, g: 0, b: 255, a: 0.0 },
   });
-  sprite10Label.scale.set(0.5, 0.25, 0.5);
-  sprite10Label.position.set(
-    sprite10.position.x + 0.075,
+  sprite_sonoranDesert_Label.scale.set(0.5, 0.25, 0.5);
+  sprite_sonoranDesert_Label.position.set(
+    sprite_sonoranDesert.position.x + 0.035,
     uiMinheight + 0.01,
-    sprite10.position.z + 0.075
+    sprite_sonoranDesert.position.z + 0.075
   );
-  sprite10Label.userData.hover = false;
-  sprite10Label.material.opacity = 0.0;
-  mapScene.add(sprite10Label);
+  sprite_sonoranDesert_Label.userData.hover = false;
+  sprite_sonoranDesert_Label.material.opacity = 0.0;
+  mapScene.add(sprite_sonoranDesert_Label);
 
-  var sprite11Label = makeTextSprite("Sonoran Desert", {
+  var sprite_rooseveltLake_Label = makeTextSprite("Roosevelt Lake", {
     fontsize: 40,
     fontface: "roboto-condensed",
     borderColor: { r: 0, g: 0, b: 255, a: 0.0 },
   });
-  sprite11Label.scale.set(0.5, 0.25, 0.5);
-  sprite11Label.position.set(
-    sprite11.position.x + 0.035,
+  sprite_rooseveltLake_Label.scale.set(0.5, 0.25, 0.5);
+  sprite_rooseveltLake_Label.position.set(
+    sprite_rooseveltLake.position.x + 0.04,
     uiMinheight + 0.01,
-    sprite11.position.z + 0.075
+    sprite_rooseveltLake.position.z + 0.075
   );
-  sprite11Label.userData.hover = false;
-  sprite11Label.material.opacity = 0.0;
-  mapScene.add(sprite11Label);
+  sprite_rooseveltLake_Label.userData.hover = false;
+  sprite_rooseveltLake_Label.material.opacity = 0.0;
+  mapScene.add(sprite_rooseveltLake_Label);
 
-  var sprite12Label = makeTextSprite("Roosevelt Lake", {
+  var sprite_gilaRiver_Label = makeTextSprite("Gila River", {
     fontsize: 40,
     fontface: "roboto-condensed",
     borderColor: { r: 0, g: 0, b: 255, a: 0.0 },
   });
-  sprite12Label.scale.set(0.5, 0.25, 0.5);
-  sprite12Label.position.set(
-    sprite12.position.x + 0.04,
+  sprite_gilaRiver_Label.scale.set(0.5, 0.25, 0.5);
+  sprite_gilaRiver_Label.position.set(
+    sprite_gilaRiver.position.x + 0.12,
     uiMinheight + 0.01,
-    sprite12.position.z + 0.075
+    sprite_gilaRiver.position.z + 0.075
   );
-  sprite12Label.userData.hover = false;
-  sprite12Label.material.opacity = 0.0;
-  mapScene.add(sprite12Label);
+  sprite_gilaRiver_Label.userData.hover = false;
+  sprite_gilaRiver_Label.material.opacity = 0.0;
+  mapScene.add(sprite_gilaRiver_Label);
 
-  var sprite13Label = makeTextSprite("Gila River", {
+  var sprite_saltRiver_Label = makeTextSprite("Salt River", {
     fontsize: 40,
     fontface: "roboto-condensed",
     borderColor: { r: 0, g: 0, b: 255, a: 0.0 },
   });
-  sprite13Label.scale.set(0.5, 0.25, 0.5);
-  sprite13Label.position.set(
-    sprite13.position.x + 0.12,
+  sprite_saltRiver_Label.scale.set(0.5, 0.25, 0.5);
+  sprite_saltRiver_Label.position.set(
+    sprite_saltRiver.position.x + 0.12,
     uiMinheight + 0.01,
-    sprite13.position.z + 0.075
+    sprite_saltRiver.position.z + 0.075
   );
-  sprite13Label.userData.hover = false;
-  sprite13Label.material.opacity = 0.0;
-  mapScene.add(sprite13Label);
+  sprite_saltRiver_Label.userData.hover = false;
+  sprite_saltRiver_Label.material.opacity = 0.0;
+  mapScene.add(sprite_saltRiver_Label);
 
-  var sprite14Label = makeTextSprite("Salt River", {
+  var sprite_cathedralRock_Label = makeTextSprite("Cathedral Rock", {
     fontsize: 40,
     fontface: "roboto-condensed",
     borderColor: { r: 0, g: 0, b: 255, a: 0.0 },
   });
-  sprite14Label.scale.set(0.5, 0.25, 0.5);
-  sprite14Label.position.set(
-    sprite14.position.x + 0.12,
+  sprite_cathedralRock_Label.scale.set(0.5, 0.25, 0.5);
+  sprite_cathedralRock_Label.position.set(
+    sprite_cathedralRock.position.x + 0.05,
     uiMinheight + 0.01,
-    sprite14.position.z + 0.075
+    sprite_cathedralRock.position.z + 0.075
   );
-  sprite14Label.userData.hover = false;
-  sprite14Label.material.opacity = 0.0;
-  mapScene.add(sprite14Label);
+  sprite_cathedralRock_Label.userData.hover = false;
+  sprite_cathedralRock_Label.material.opacity = 0.0;
+  mapScene.add(sprite_cathedralRock_Label);
 
-  var sprite15Label = makeTextSprite("Cathedral Rock", {
+  var sprite_fatmansLoop_Label = makeTextSprite("Fatman's Loop", {
     fontsize: 40,
     fontface: "roboto-condensed",
     borderColor: { r: 0, g: 0, b: 255, a: 0.0 },
   });
-  sprite15Label.scale.set(0.5, 0.25, 0.5);
-  sprite15Label.position.set(
-    sprite15.position.x + 0.05,
+  sprite_fatmansLoop_Label.scale.set(0.5, 0.25, 0.5);
+  sprite_fatmansLoop_Label.position.set(
+    sprite_fatmansLoop.position.x + 0.05,
     uiMinheight + 0.01,
-    sprite15.position.z + 0.075
+    sprite_fatmansLoop.position.z + 0.075
   );
-  sprite15Label.userData.hover = false;
-  sprite15Label.material.opacity = 0.0;
-  mapScene.add(sprite15Label);
+  sprite_fatmansLoop_Label.userData.hover = false;
+  sprite_fatmansLoop_Label.material.opacity = 0.0;
+  mapScene.add(sprite_fatmansLoop_Label);
 
-  var sprite16Label = makeTextSprite("Fatman's Loop", {
+  var sprite_horseshoeBend_Label = makeTextSprite("Horseshoe Bend", {
     fontsize: 40,
     fontface: "roboto-condensed",
     borderColor: { r: 0, g: 0, b: 255, a: 0.0 },
   });
-  sprite16Label.scale.set(0.5, 0.25, 0.5);
-  sprite16Label.position.set(
-    sprite16.position.x + 0.05,
+  sprite_horseshoeBend_Label.scale.set(0.5, 0.25, 0.5);
+  sprite_horseshoeBend_Label.position.set(
+    sprite_horseshoeBend.position.x + 0.05,
     uiMinheight + 0.01,
-    sprite16.position.z + 0.075
+    sprite_horseshoeBend.position.z + 0.075
   );
-  sprite16Label.userData.hover = false;
-  sprite16Label.material.opacity = 0.0;
-  mapScene.add(sprite16Label);
+  sprite_horseshoeBend_Label.userData.hover = false;
+  sprite_horseshoeBend_Label.material.opacity = 0.0;
+  mapScene.add(sprite_horseshoeBend_Label);
 
-  var sprite17Label = makeTextSprite("Horseshoe Bend", {
+  var sprite_micaViewTrail_Label = makeTextSprite("Mica View Trail", {
     fontsize: 40,
     fontface: "roboto-condensed",
     borderColor: { r: 0, g: 0, b: 255, a: 0.0 },
   });
-  sprite17Label.scale.set(0.5, 0.25, 0.5);
-  sprite17Label.position.set(
-    sprite17.position.x + 0.05,
+  sprite_micaViewTrail_Label.scale.set(0.5, 0.25, 0.5);
+  sprite_micaViewTrail_Label.position.set(
+    sprite_micaViewTrail.position.x + 0.05,
     uiMinheight + 0.01,
-    sprite17.position.z + 0.075
+    sprite_micaViewTrail.position.z + 0.075
   );
-  sprite17Label.userData.hover = false;
-  sprite17Label.material.opacity = 0.0;
-  mapScene.add(sprite17Label);
+  sprite_micaViewTrail_Label.userData.hover = false;
+  sprite_micaViewTrail_Label.material.opacity = 0.0;
+  mapScene.add(sprite_micaViewTrail_Label);
 
-  var sprite18Label = makeTextSprite("Mica View Trail", {
+  var sprite_navajoPoint_Label = makeTextSprite("Navajo Point", {
     fontsize: 40,
     fontface: "roboto-condensed",
     borderColor: { r: 0, g: 0, b: 255, a: 0.0 },
   });
-  sprite18Label.scale.set(0.5, 0.25, 0.5);
-  sprite18Label.position.set(
-    sprite18.position.x + 0.05,
+  sprite_navajoPoint_Label.scale.set(0.5, 0.25, 0.5);
+  sprite_navajoPoint_Label.position.set(
+    sprite_navajoPoint.position.x + 0.075,
     uiMinheight + 0.01,
-    sprite18.position.z + 0.075
+    sprite_navajoPoint.position.z + 0.075
   );
-  sprite18Label.userData.hover = false;
-  sprite18Label.material.opacity = 0.0;
-  mapScene.add(sprite18Label);
+  sprite_navajoPoint_Label.userData.hover = false;
+  sprite_navajoPoint_Label.material.opacity = 0.0;
+  mapScene.add(sprite_navajoPoint_Label);
 
-  var sprite19Label = makeTextSprite("Navajo Point", {
+  var sprite_paintedDesert_Label = makeTextSprite("Painted Desert", {
     fontsize: 40,
     fontface: "roboto-condensed",
     borderColor: { r: 0, g: 0, b: 255, a: 0.0 },
   });
-  sprite19Label.scale.set(0.5, 0.25, 0.5);
-  sprite19Label.position.set(
-    sprite19.position.x + 0.075,
+  sprite_paintedDesert_Label.scale.set(0.5, 0.25, 0.5);
+  sprite_paintedDesert_Label.position.set(
+    sprite_paintedDesert.position.x + 0.05,
     uiMinheight + 0.01,
-    sprite19.position.z + 0.075
+    sprite_paintedDesert.position.z + 0.075
   );
-  sprite19Label.userData.hover = false;
-  sprite19Label.material.opacity = 0.0;
-  mapScene.add(sprite19Label);
+  sprite_paintedDesert_Label.userData.hover = false;
+  sprite_paintedDesert_Label.material.opacity = 0.0;
+  mapScene.add(sprite_paintedDesert_Label);
 
-  var sprite20Label = makeTextSprite("Painted Desert", {
+  var sprite_peoria_Label = makeTextSprite("Peoria", {
     fontsize: 40,
     fontface: "roboto-condensed",
     borderColor: { r: 0, g: 0, b: 255, a: 0.0 },
   });
-  sprite20Label.scale.set(0.5, 0.25, 0.5);
-  sprite20Label.position.set(
-    sprite20.position.x + 0.05,
+  sprite_peoria_Label.scale.set(0.5, 0.25, 0.5);
+  sprite_peoria_Label.position.set(
+    sprite_peoria.position.x + 0.16,
     uiMinheight + 0.01,
-    sprite20.position.z + 0.075
+    sprite_peoria.position.z + 0.075
   );
-  sprite20Label.userData.hover = false;
-  sprite20Label.material.opacity = 0.0;
-  mapScene.add(sprite20Label);
+  sprite_peoria_Label.userData.hover = false;
+  sprite_peoria_Label.material.opacity = 0.0;
+  mapScene.add(sprite_peoria_Label);
 
-  var sprite21Label = makeTextSprite("Peoria", {
+  var sprite_petrifiedForest_Label = makeTextSprite("Petrified Forest", {
     fontsize: 40,
     fontface: "roboto-condensed",
     borderColor: { r: 0, g: 0, b: 255, a: 0.0 },
   });
-  sprite21Label.scale.set(0.5, 0.25, 0.5);
-  sprite21Label.position.set(
-    sprite21.position.x + 0.16,
+  sprite_petrifiedForest_Label.scale.set(0.5, 0.25, 0.5);
+  sprite_petrifiedForest_Label.position.set(
+    sprite_petrifiedForest.position.x + 0.05,
     uiMinheight + 0.01,
-    sprite21.position.z + 0.075
+    sprite_petrifiedForest.position.z + 0.075
   );
-  sprite21Label.userData.hover = false;
-  sprite21Label.material.opacity = 0.0;
-  mapScene.add(sprite21Label);
+  sprite_petrifiedForest_Label.userData.hover = false;
+  sprite_petrifiedForest_Label.material.opacity = 0.0;
+  mapScene.add(sprite_petrifiedForest_Label);
 
-  var sprite22Label = makeTextSprite("Petrified Forest", {
+  var sprite_pinalCounty_Label = makeTextSprite("Pinal County", {
     fontsize: 40,
     fontface: "roboto-condensed",
     borderColor: { r: 0, g: 0, b: 255, a: 0.0 },
   });
-  sprite22Label.scale.set(0.5, 0.25, 0.5);
-  sprite22Label.position.set(
-    sprite22.position.x + 0.05,
+  sprite_pinalCounty_Label.scale.set(0.5, 0.25, 0.5);
+  sprite_pinalCounty_Label.position.set(
+    sprite_pinalCounty.position.x + 0.075,
     uiMinheight + 0.01,
-    sprite22.position.z + 0.075
+    sprite_pinalCounty.position.z + 0.075
   );
-  sprite22Label.userData.hover = false;
-  sprite22Label.material.opacity = 0.0;
-  mapScene.add(sprite22Label);
+  sprite_pinalCounty_Label.userData.hover = false;
+  sprite_pinalCounty_Label.material.opacity = 0.0;
+  mapScene.add(sprite_pinalCounty_Label);
 
-  var sprite23Label = makeTextSprite("Petrified Forest 2", {
+  var sprite_saguaroNatPark_Label = makeTextSprite("Saguaro Nat Park", {
     fontsize: 40,
     fontface: "roboto-condensed",
     borderColor: { r: 0, g: 0, b: 255, a: 0.0 },
   });
-  sprite23Label.scale.set(0.5, 0.25, 0.5);
-  sprite23Label.position.set(
-    sprite23.position.x + 0.05,
+  sprite_saguaroNatPark_Label.scale.set(0.5, 0.25, 0.5);
+  sprite_saguaroNatPark_Label.position.set(
+    sprite_saguaroNatPark.position.x + 0.035,
     uiMinheight + 0.01,
-    sprite23.position.z + 0.075
+    sprite_saguaroNatPark.position.z + 0.075
   );
-  sprite23Label.userData.hover = false;
-  sprite23Label.material.opacity = 0.0;
-  mapScene.add(sprite23Label);
+  sprite_saguaroNatPark_Label.userData.hover = false;
+  sprite_saguaroNatPark_Label.material.opacity = 0.0;
+  mapScene.add(sprite_saguaroNatPark_Label);
 
-  var sprite24Label = makeTextSprite("Pinal County", {
+  var sprite_sanSimon_Label = makeTextSprite("San Simon", {
     fontsize: 40,
     fontface: "roboto-condensed",
     borderColor: { r: 0, g: 0, b: 255, a: 0.0 },
   });
-  sprite24Label.scale.set(0.5, 0.25, 0.5);
-  sprite24Label.position.set(
-    sprite24.position.x + 0.075,
+  sprite_sanSimon_Label.scale.set(0.5, 0.25, 0.5);
+  sprite_sanSimon_Label.position.set(
+    sprite_sanSimon.position.x + 0.1,
     uiMinheight + 0.01,
-    sprite24.position.z + 0.075
+    sprite_sanSimon.position.z + 0.075
   );
-  sprite24Label.userData.hover = false;
-  sprite24Label.material.opacity = 0.0;
-  mapScene.add(sprite24Label);
+  sprite_sanSimon_Label.userData.hover = false;
+  sprite_sanSimon_Label.material.opacity = 0.0;
+  mapScene.add(sprite_sanSimon_Label);
 
-  var sprite25Label = makeTextSprite("Saguaro Nat Park", {
+  var sprite_scaddanWash_Label = makeTextSprite("Scaddan Wash", {
     fontsize: 40,
     fontface: "roboto-condensed",
     borderColor: { r: 0, g: 0, b: 255, a: 0.0 },
   });
-  sprite25Label.scale.set(0.5, 0.25, 0.5);
-  sprite25Label.position.set(
-    sprite25.position.x + 0.035,
+  sprite_scaddanWash_Label.scale.set(0.5, 0.25, 0.5);
+  sprite_scaddanWash_Label.position.set(
+    sprite_scaddanWash.position.x + 0.05,
     uiMinheight + 0.01,
-    sprite25.position.z + 0.075
+    sprite_scaddanWash.position.z + 0.075
   );
-  sprite25Label.userData.hover = false;
-  sprite25Label.material.opacity = 0.0;
-  mapScene.add(sprite25Label);
+  sprite_scaddanWash_Label.userData.hover = false;
+  sprite_scaddanWash_Label.material.opacity = 0.0;
+  mapScene.add(sprite_scaddanWash_Label);
 
-  var sprite26Label = makeTextSprite("San Simon", {
+  var sprite_tanqueVerde_Label = makeTextSprite("Tanque Verde", {
     fontsize: 40,
     fontface: "roboto-condensed",
     borderColor: { r: 0, g: 0, b: 255, a: 0.0 },
   });
-  sprite26Label.scale.set(0.5, 0.25, 0.5);
-  sprite26Label.position.set(
-    sprite26.position.x + 0.1,
+  sprite_tanqueVerde_Label.scale.set(0.5, 0.25, 0.5);
+  sprite_tanqueVerde_Label.position.set(
+    sprite_tanqueVerde.position.x + 0.05,
     uiMinheight + 0.01,
-    sprite26.position.z + 0.075
+    sprite_tanqueVerde.position.z + 0.075
   );
-  sprite26Label.userData.hover = false;
-  sprite26Label.material.opacity = 0.0;
-  mapScene.add(sprite26Label);
+  sprite_tanqueVerde_Label.userData.hover = false;
+  sprite_tanqueVerde_Label.material.opacity = 0.0;
+  mapScene.add(sprite_tanqueVerde_Label);
 
-  var sprite27Label = makeTextSprite("Scaddan Wash", {
+  var sprite_wymola_Label = makeTextSprite("Wymola", {
     fontsize: 40,
     fontface: "roboto-condensed",
     borderColor: { r: 0, g: 0, b: 255, a: 0.0 },
   });
-  sprite27Label.scale.set(0.5, 0.25, 0.5);
-  sprite27Label.position.set(
-    sprite27.position.x + 0.05,
+  sprite_wymola_Label.scale.set(0.5, 0.25, 0.5);
+  sprite_wymola_Label.position.set(
+    sprite_wymola.position.x + 0.14,
     uiMinheight + 0.01,
-    sprite27.position.z + 0.075
+    sprite_wymola.position.z + 0.075
   );
-  sprite27Label.userData.hover = false;
-  sprite27Label.material.opacity = 0.0;
-  mapScene.add(sprite27Label);
-
-  var sprite28Label = makeTextSprite("Tanque Verde", {
-    fontsize: 40,
-    fontface: "roboto-condensed",
-    borderColor: { r: 0, g: 0, b: 255, a: 0.0 },
-  });
-  sprite28Label.scale.set(0.5, 0.25, 0.5);
-  sprite28Label.position.set(
-    sprite28.position.x + 0.05,
-    uiMinheight + 0.01,
-    sprite28.position.z + 0.075
-  );
-  sprite28Label.userData.hover = false;
-  sprite28Label.material.opacity = 0.0;
-  mapScene.add(sprite28Label);
-
-  var sprite29Label = makeTextSprite("Wymola", {
-    fontsize: 40,
-    fontface: "roboto-condensed",
-    borderColor: { r: 0, g: 0, b: 255, a: 0.0 },
-  });
-  sprite29Label.scale.set(0.5, 0.25, 0.5);
-  sprite29Label.position.set(
-    sprite29.position.x + 0.14,
-    uiMinheight + 0.01,
-    sprite29.position.z + 0.075
-  );
-  sprite29Label.userData.hover = false;
-  sprite29Label.material.opacity = 0.0;
-  mapScene.add(sprite29Label);
+  sprite_wymola_Label.userData.hover = false;
+  sprite_wymola_Label.material.opacity = 0.0;
+  mapScene.add(sprite_wymola_Label);
 
   labelSprites = [
-    sprite2Label,
-    sprite2Label,
-    sprite3Label,
-    sprite4Label,
-    sprite5Label,
-    sprite6Label,
-    sprite7Label,
-    sprite8Label,
-    sprite9Label,
-    sprite10Label,
-    sprite11Label,
-    sprite12Label,
-    sprite13Label,
-    sprite14Label,
-    sprite15Label,
-    sprite16Label,
-    sprite17Label,
-    sprite18Label,
-    sprite19Label,
-    sprite20Label,
-    sprite21Label,
-    sprite22Label,
-    sprite23Label,
-    sprite24Label,
-    sprite25Label,
-    sprite26Label,
-    sprite27Label,
-    sprite28Label,
-    sprite29Label,
+    sprite_deathValley_Label,
+    sprite_grandCanyon_Label,
+    sprite_coloradoRiver_Label,
+    sprite_phoenix_Label,
+    sprite_tempe_Label,
+    sprite_tuscon_Label,
+    sprite_catalinaMountains_Label,
+    sprite_sonoranDesert_Label,
+    sprite_rooseveltLake_Label,
+    sprite_gilaRiver_Label,
+    sprite_saltRiver_Label,
+    sprite_cathedralRock_Label,
+    sprite_fatmansLoop_Label,
+    sprite_horseshoeBend_Label,
+    sprite_micaViewTrail_Label,
+    sprite_navajoPoint_Label,
+    sprite_paintedDesert_Label,
+    sprite_peoria_Label,
+    sprite_petrifiedForest_Label,
+    sprite_pinalCounty_Label,
+    sprite_saguaroNatPark_Label,
+    sprite_sanSimon_Label,
+    sprite_scaddanWash_Label,
+    sprite_tanqueVerde_Label,
+    sprite_wymola_Label,
   ];
 
   //** SETUP FOR USING DAT GUI CONTROLS */
@@ -1235,31 +1157,31 @@ function init() {
       z: 0,
     }
   };
-  gui.add(guiWorld.xPos, "x", -7, 7).onChange(() => {
-    phoenixModel.position.set(
+  gui.add(guiWorld.xPos, "x", -2, 1).onChange(() => {
+    outlineBug.position.set(
       guiWorld.xPos.x,
-      phoenixModel.position.y,
-      phoenixModel.position.z
+      outlineBug.position.y,
+      outlineBug.position.z
     );
-    console.log(phoenixModel.position);
+    console.log(outlineBug.position);
   });
 
-  gui.add(guiWorld.xPos, "y", -10, 10).onChange(() => {
-    phoenixModel.position.set(
-      phoenixModel.position.x,
+  gui.add(guiWorld.xPos, "y", -3, 1).onChange(() => {
+    outlineBug.rotation.set(
+      outlineBug.rotation.x,
       guiWorld.xPos.y,
-      phoenixModel.position.z
+      outlineBug.rotation.z
     );
-    console.log(phoenixModel.position);
+    console.log(outlineBug.rotation);
   });
 
-  gui.add(guiWorld.xPos, "z", -10, 10).onChange(() => {
-    phoenixModel.position.set(
-      phoenixModel.position.x,
-      phoenixModel.position.y,
+  gui.add(guiWorld.xPos, "z", -1, 1).onChange(() => {
+    outlineBug.position.set(
+      outlineBug.position.x,
+      outlineBug.position.y,
       guiWorld.xPos.z
     );
-    console.log(phoenixModel.position);
+    console.log(outlineBug.position);
   });
 
   //** TOWER ICON INSTANTIATIONS */
@@ -1295,7 +1217,7 @@ function init() {
         o.material.normalScale = { x: 0.000001, y: 0.000001 };
         o.material.bumpscale = 0.1;
         o.material.normalMapType = 0;
-        console.log(o.material);
+        //console.log(o.material);
         o.material.map.anisotropy = 10;
         // o.material.map = arizona_height_texture;
         // o.material.map.flipY = false;
@@ -1308,25 +1230,7 @@ function init() {
     arizona.add(gltf.scene);
     lessonSceneRaycast.add(arizona);
     arizona_mosaic_texture = arizona.children[0].children[0].material.map;
-    //mapScene.add(arizona);
   });
-
-  // arizonaModel.material.map = arizona_height_texture;
-  // arizonaModel.material.map.flipY = false;
-  // arizonaModel.material.needsUpdate = true;
-
-  // arizonaModel.traverse((m) => {
-  //   if (m.isMesh)
-  //   {
-  //     m.material.map = arizona_height_texture;
-  //     m.material.map.flipY = false;
-  //     console.log( m.material );
-
-  //     m.material.needsUpdate = true;
-  //   }
-  // });
-
-  //console.log("YES: " + arizonaModel);
 
   transition = new Transition(sceneB, sceneA);
 
@@ -1334,7 +1238,6 @@ function init() {
   makeCameraControls();
   makeEchoLinePath();
 
-  //towerIcon.userData.ping = true;
   echoPingLocation = makeEchoPing(towerIcon.position.x, towerIcon.position.z);
   mapScene.add(lessonSceneRaycast);
 }
@@ -1395,7 +1298,7 @@ function tutorialReset()
   highlightText.innerHTML = "Click and drag to move around the map";
   tutorialIndex++;
 
-  glowSprite.position.set(sprite12.position.x, uiMinheight - 0.01, sprite12.position.z);
+  glowSprite.position.set(sprite_rooseveltLake.position.x, uiMinheight - 0.01, sprite_rooseveltLake.position.z);
 
   tutorialIndex = 0;
   tutorial = true;
@@ -1406,9 +1309,7 @@ function tutorialReset()
 }
 
 function initLessonScene() {
-  lessonScene.background = new THREE.Color(0x000000);
-  //lessonScene.add(hemisphereLight);
-
+  
   //** LIGHTS */
   pointLight.position.set(-20, 0, 12);
   pointLight2.position.set(0, 0, 0);
@@ -1418,8 +1319,9 @@ function initLessonScene() {
   lessonScene.add(pointLight2);
   lessonScene.add(pointLight3);
   lessonScene.add(pointLight4);
-
-  lessonScene.fog = new THREE.Fog(0x66000f, 0.015, 25);
+  
+  lessonScene.background = new THREE.Color(0x000000);
+  lessonScene.fog = new THREE.Fog(0xffffff, 0.1, 0); 
 
   var lightTween = new TWEEN.Tween(pointLight)
     .to({ intensity: 1 }, 2000)
@@ -1438,14 +1340,13 @@ function initLessonScene() {
   lightTween2.start();
 
   //** 3D MODELS  */
-  //Loads Cave model
   loader.load("/resources/models/cave.glb", function (gltf) {
     //landsat = gltf.scene;
     cave.userData.name = "Cave";
     cave.scale.set(0.5, 0.5, 0.5);
     cave.add(gltf.scene);
     cave.castShadow = true;
-    lessonScene.add(cave);
+    //lessonScene.add(cave);
   });
 
   //Loads Grand Canyon model
@@ -1513,7 +1414,7 @@ function initLessonScene() {
   });
 
   //Phoenix Model
-  loader.load("/resources/models/phoenix2.glb", function (gltf) 
+  loader.load("/resources/models/phoenix.glb", function (gltf) 
   {
     var model = gltf.scene;
     model.traverse((o) => 
@@ -1522,7 +1423,6 @@ function initLessonScene() {
       { 
         o.userData.name = "Phoenix";
         var colorMap = o.material.map;
-        butTexture_green = colorMap;
         var newMaterial = new THREE.MeshBasicMaterial({});
         o.material = newMaterial;
         o.material.map = colorMap;
@@ -1539,7 +1439,8 @@ function initLessonScene() {
     phoenixModel.castShadow = true;
 
     phoenixModel.add(gltf.scene);
-    console.log(phoenixModel);
+    //console.log(phoenixModel);
+    lessonScene.add(phoenixModel);
     //console.log("outline: " + outlineBug.children[0].children[0].name);
   });
 
@@ -1557,13 +1458,15 @@ function initLessonScene() {
         o.userData.name = "bug";
         //outlineBug.geometry = o;
         var colorMap = o.material.map;
-        butTexture_green = colorMap;
+        bugTexture_green = colorMap;
         var newMaterial = new THREE.MeshToonMaterial({transparent: true});
         o.material = newMaterial;
-        o.material.map = colorMap;
+        o.material.map = bugTexture_blue;
+        o.material.map.flipY = false;
+        o.material.map.needsUpdate = true;
 
         //outlineBug.mesh = o;
-        console.log("O:" + o.name);
+        //console.log("O:" + o.name);
 
         if(o.name == "wings001")
         {
@@ -1581,27 +1484,26 @@ function initLessonScene() {
 
     //outlineBug = gltf.scene;
     outlineBug.castShadow = true;
-
     outlineBug.add(gltf.scene);
-    console.log(outlineBug);
-    //console.log("outline: " + outlineBug.children[0].children[0].name);
-  });
-  outlineBug.scale.set(0.75, 0.75, 0.75);
-  outlineBug.position.set(-2.88, -2.6359, 0);
-  outlineBug.rotation.set(0, -2.45, 0);
-  outlineBug.userData.name = "bug";
-  lessonScene.add(outlineBug);
 
+    outlineBug.rotation.set(0, -0.06, 0);
+    outlineBug.position.set(-1.68, -1.79, -0.31);
+    outlineBug.scale.set(.5, .5, .5);
+
+    outlineBug.userData.name = "bug";
+    //console.log(outlineBug);
+    //console.log("outline: " + outlineBug.children[0].children[0].name);
+    lessonScene.add(outlineBug);
+  });
+  
   const rgbeLoader = new RGBELoader();
   rgbeLoader.load('/resources/images/hdr/GrandCanyonBackdrop.hdr', function(texture){
       texture.mapping = THREE.EquirectangularReflectionMapping;
       lessonScene.background = texture;
       lessonScene.enviroment = texture;
-      console.log("LOADED IMAGE");
   });
 
   //** CAMERA INITIALIZATION */
-  //lessonCamera.rotation.x = Math.PI / -2;
   lessonCamera.rotation.y = Math.PI / 2;
   lessonCamera.position.setY(-1);
   lessonCamera.position.setX(1);
@@ -1620,8 +1522,6 @@ function initLessonScene() {
   dirLightLesson.shadow.camera.far = 3500;
   dirLightLesson.shadow.bias = -0.0001;
   //lessonScene.add( dirLightLesson );
-
-  //lessonScene.add(hemisphereLight);
 }
 
 function makeTextSprite(message, parameters) {
@@ -1715,273 +1615,241 @@ function roundRect(ctx, x, y, w, h, r) {
 }
 
 function locationSpriteSetup() {
-  sprite2.userData.locName = "Casa Grande";
-  sprite3.userData.locName = "Death Valley";
-  sprite4.userData.locName = "Grand Canyon";
-  sprite5.userData.locName = "Colorado River";
-  sprite6.userData.locName = "Phoenix";
-  sprite7.userData.locName = "Phoenix";
-  sprite8.userData.locName = "Tempe";
-  sprite9.userData.locName = "Tuscon";
-  sprite10.userData.locName = "Catalina Mountains";
-  sprite11.userData.locName = "Sonoran Desert";
-  sprite12.userData.locName = "Roosevelt Lake";
-  sprite13.userData.locName = "Gila River";
-  sprite14.userData.locName = "Salt River";
-  sprite15.userData.locName = "Cathedral Rock";
-  sprite16.userData.locName = "Fatman's Loop";
-  sprite17.userData.locName = "Horshoe Bend";
-  sprite18.userData.locName = "Mica View Trail";
-  sprite19.userData.locName = "Navajo Point";
-  sprite20.userData.locName = "Painted Desert";
-  sprite21.userData.locName = "Peoria";
-  sprite22.userData.locName = "Petrified Forest";
-  sprite23.userData.locName = "Petrified Forest 2";
-  sprite24.userData.locName = "Pinal County";
-  sprite25.userData.locName = "Saguaro Nat Park";
-  sprite26.userData.locName = "San Simon Rest Area";
-  sprite27.userData.locName = "Scaddan Wash";
-  sprite28.userData.locName = "Tanque Verde";
-  sprite29.userData.locName = "Wymola";
+  sprite_deathValley.userData.locName = "Death Valley";
+  sprite_grandCanyon.userData.locName = "Grand Canyon";
+  sprite_coloradoRiver.userData.locName = "Colorado River";
+  sprite_phoenix.userData.locName = "Phoenix";
+  sprite_tempe.userData.locName = "Tempe";
+  sprite_tuscon.userData.locName = "Tuscon";
+  sprite_catalinaMountains.userData.locName = "Catalina Mountains";
+  sprite_sonoranDesert.userData.locName = "Sonoran Desert";
+  sprite_rooseveltLake.userData.locName = "Roosevelt Lake";
+  sprite_gilaRiver.userData.locName = "Gila River";
+  sprite_saltRiver.userData.locName = "Salt River";
+  sprite_cathedralRock.userData.locName = "Cathedral Rock";
+  sprite_fatmansLoop.userData.locName = "Fatman's Loop";
+  sprite_horseshoeBend.userData.locName = "Horshoe Bend";
+  sprite_micaViewTrail.userData.locName = "Mica View Trail";
+  sprite_navajoPoint.userData.locName = "Navajo Point";
+  sprite_paintedDesert.userData.locName = "Painted Desert";
+  sprite_peoria.userData.locName = "Peoria";
+  sprite_petrifiedForest.userData.locName = "Petrified Forest";
+  sprite_pinalCounty.userData.locName = "Pinal County";
+  sprite_saguaroNatPark.userData.locName = "Saguaro Nat Park";
+  sprite_sanSimon.userData.locName = "San Simon Rest Area";
+  sprite_scaddanWash.userData.locName = "Scaddan Wash";
+  sprite_tanqueVerde.userData.locName = "Tanque Verde";
+  sprite_wymola.userData.locName = "Wymola";
 
-  sprite.userData.popup = true;
-  sprite.userData.popupTitle = "Echo The Bat";
-  sprite.userData.popupText =
-    "This is the text that has been assigned to the echo the bat location UI";
-
-  sprite2.userData.url = "https://landsat.gsfc.nasa.gov/outreach/camp-landsat/";
-  //sprite2.userData.newScene = true;
-  //sprite2.userData.ping = true;
-  sprite2.userData.index = 0;
-
-  sprite3.userData.popup = true;
-  sprite3.userData.popupTitle = "Death Valley";
-  sprite3.userData.popupText =
+  sprite_deathValley.userData.popup = true;
+  sprite_deathValley.userData.popupTitle = "Death Valley";
+  sprite_deathValley.userData.popupText =
     "Death Valley is a vast national park with over 3 million acres of designated wilderness and hundreds of miles of backcountry roads.";
-  sprite3.userData.satelliteImage =
+  sprite_deathValley.userData.satelliteImage =
     "/resources/images/landsat/grand-canyon.jpg";
-  sprite3.userData.img = "/resources/images/location/death-valley.jpg";
-  sprite3.userData.index = 2;
+  sprite_deathValley.userData.img = "/resources/images/location/death-valley.jpg";
+  sprite_deathValley.userData.index = 0;
 
-  sprite4.userData.popup = true;
-  sprite4.userData.popupTitle = "Grand Canyon";
-  sprite4.userData.popupText =
+  sprite_grandCanyon.userData.popup = true;
+  sprite_grandCanyon.userData.popupTitle = "Grand Canyon";
+  sprite_grandCanyon.userData.popupText =
     "Steep cliffs can be seen lining the rim of the Grand Canyon";
-  sprite4.userData.satelliteImage =
+  sprite_grandCanyon.userData.satelliteImage =
     "/resources/images/landsat/grand-canyon.jpg";
-  sprite4.userData.img = "/resources/images/location/grandCanyon.jpg";
-  sprite4.userData.index = 3;
+  sprite_grandCanyon.userData.img = "/resources/images/location/grandCanyon.jpg";
+  sprite_grandCanyon.userData.index = 1;
 
-  sprite5.userData.popup = true;
-  sprite5.userData.popupTitle = "Colorado River";
-  sprite5.userData.popupText =
+  sprite_coloradoRiver.userData.popup = true;
+  sprite_coloradoRiver.userData.popupTitle = "Colorado River";
+  sprite_coloradoRiver.userData.popupText =
     "The Colorado River can be seen winding through the Grand Canyon";
-  sprite5.userData.satelliteImage =
+  sprite_coloradoRiver.userData.satelliteImage =
     "/resources/images/landsat/colorado-river.jpg";
-  sprite5.userData.img = "/resources/images/location/colorado-river.jpg";
-  sprite5.userData.index = 4;
+  sprite_coloradoRiver.userData.img = "/resources/images/location/colorado-river.jpg";
+  sprite_coloradoRiver.userData.index = 2;
 
-  sprite6.userData.popup = false;
-  sprite6.userData.popupTitle = "Phoenix";
-  sprite6.userData.popupText =
+  sprite_phoenix.userData.popup = false;
+  sprite_phoenix.userData.popupTitle = "Phoenix";
+  sprite_phoenix.userData.popupText =
     "Mountains in Phoenix overlook the tan neighborhoods";
-  sprite6.userData.satelliteImage =
+  sprite_phoenix.userData.satelliteImage =
     "/resources/images/landsat/phoenix.jpg";
-  sprite6.userData.img = "/resources/images/location/phoenix.jpg";
-  sprite6.userData.index = 5;
-  sprite6.userData.newScene = true;
-  sprite6.userData.ping = true;
+  sprite_phoenix.userData.img = "/resources/images/location/phoenix.jpg";
+  sprite_phoenix.userData.index = 3;
+  sprite_phoenix.userData.newScene = true;
+  sprite_phoenix.userData.ping = true;
 
-  sprite7.userData.popup = true;
-  sprite7.userData.popupTitle = "Phoenix";
-  sprite7.userData.popupText =
-    "Phoenix is the capital city of Arizona and is located in the central region of the state.";
-  sprite7.userData.satelliteImage =
-    "/resources/images/landsat/phoenix.jpg";
-  sprite7.userData.img = "/resources/images/location/phoenix2.jpg";
-  sprite7.userData.index = 6;
-
-  sprite8.userData.popup = true;
-  sprite8.userData.popupTitle = "Tempe";
-  sprite8.userData.popupText =
+  sprite_tempe.userData.popup = true;
+  sprite_tempe.userData.popupTitle = "Tempe";
+  sprite_tempe.userData.popupText =
     "Farms look like green and brown rectangles and the mountains look bumpy from above.";
-  sprite8.userData.satelliteImage = "/resources/images/landsat/tempe.jpg";
-  sprite8.userData.img = "/resources/images/location/tempe.jpg";
-  sprite8.userData.index = 7;
+  sprite_tempe.userData.satelliteImage = "/resources/images/landsat/tempe.jpg";
+  sprite_tempe.userData.img = "/resources/images/location/tempe.jpg";
+  sprite_tempe.userData.index = 4;
 
-  sprite9.userData.popup = true;
-  sprite9.userData.popupTitle = "Tuscon";
-  sprite9.userData.popupText =
+  sprite_tuscon.userData.popup = true;
+  sprite_tuscon.userData.popupTitle = "Tuscon";
+  sprite_tuscon.userData.popupText =
     "Highway 10 cuts through the pattern of streets in Tucson.";
-  sprite9.userData.satelliteImage = "/resources/images/landsat/tuscon.jpg";
-  sprite9.userData.img = "/resources/images/location/tuscon.jpg";
-  sprite9.userData.index = 8;
-  // sprite9.userData.newScene = true;
-  // sprite9.userData.ping = true;
+  sprite_tuscon.userData.satelliteImage = "/resources/images/landsat/tuscon.jpg";
+  sprite_tuscon.userData.img = "/resources/images/location/tuscon.jpg";
+  sprite_tuscon.userData.index = 5;
 
-  sprite10.userData.popup = true;
-  sprite10.userData.popupTitle = "Catalina Mountains";
-  sprite10.userData.popupText =
+  sprite_catalinaMountains.userData.popup = true;
+  sprite_catalinaMountains.userData.popupTitle = "Catalina Mountains";
+  sprite_catalinaMountains.userData.popupText =
     "The Catalina Mountains are covered with oak, pine, and fir trees.";
-  sprite10.userData.satelliteImage =
+  sprite_catalinaMountains.userData.satelliteImage =
     "/resources/images/landsat/catalina-mountains.jpg";
-  sprite10.userData.img =
+  sprite_catalinaMountains.userData.img =
     "/resources/images/location/catalina-mountains.jpg";
-  sprite10.userData.index = 9;
+  sprite_catalinaMountains.userData.index = 6;
 
-  sprite11.userData.popup = true;
-  sprite11.userData.popupTitle = "Sonoran Desert";
-  sprite11.userData.popupText =
+  sprite_sonoranDesert.userData.popup = true;
+  sprite_sonoranDesert.userData.popupTitle = "Sonoran Desert";
+  sprite_sonoranDesert.userData.popupText =
     "Mountains tower over the landscape of the Sonoran Desert.";
-  sprite11.userData.satelliteImage =
+  sprite_sonoranDesert.userData.satelliteImage =
     "/resources/images/landsat/sonoran-desert.jpg";
-  sprite11.userData.img = "/resources/images/location/sonoran-desert.jpg";
-  sprite11.userData.index = 10;
+  sprite_sonoranDesert.userData.img = "/resources/images/location/sonoran-desert.jpg";
+  sprite_sonoranDesert.userData.index = 7;
 
-  sprite12.userData.popup = true;
-  sprite12.userData.popupTitle = "Roosevelt Lake";
-  sprite12.userData.popupText =
+  sprite_rooseveltLake.userData.popup = true;
+  sprite_rooseveltLake.userData.popupTitle = "Roosevelt Lake";
+  sprite_rooseveltLake.userData.popupText =
     "The dam and bridge on Roosevelt Lake can be seen from space.";
-  sprite12.userData.satelliteImage =
+  sprite_rooseveltLake.userData.satelliteImage =
     "/resources/images/landsat/roosevelt-lake.jpg";
-  sprite12.userData.img = "/resources/images/location/roosevelt-lake.jpg";
-  sprite12.userData.index = 11;
+  sprite_rooseveltLake.userData.img = "/resources/images/location/roosevelt-lake.jpg";
+  sprite_rooseveltLake.userData.index = 8;
 
-  sprite13.userData.popup = true;
-  sprite13.userData.popupTitle = "Gila River";
-  sprite13.userData.popupText =
+  sprite_gilaRiver.userData.popup = true;
+  sprite_gilaRiver.userData.popupTitle = "Gila River";
+  sprite_gilaRiver.userData.popupText =
     "Farms in the desert are irrigated with water from the Gila River.";
-  sprite13.userData.satelliteImage = "/resources/images/landsat/yuma.jpg";
-  sprite13.userData.img = "/resources/images/location/yuma.jpg";
-  sprite13.userData.index = 12;
+  sprite_gilaRiver.userData.satelliteImage = "/resources/images/landsat/yuma.jpg";
+  sprite_gilaRiver.userData.img = "/resources/images/location/yuma.jpg";
+  sprite_gilaRiver.userData.index = 9;
 
-  sprite14.userData.popup = true;
-  sprite14.userData.popupTitle = "Salt River";
-  sprite14.userData.popupText = "A dam on the Salt River formed Apache Lake.";
-  sprite14.userData.satelliteImage =
+  sprite_saltRiver.userData.popup = true;
+  sprite_saltRiver.userData.popupTitle = "Salt River";
+  sprite_saltRiver.userData.popupText = "A dam on the Salt River formed Apache Lake.";
+  sprite_saltRiver.userData.satelliteImage =
     "/resources/images/landsat/salt-river.jpg";
-  sprite14.userData.img = "/resources/images/location/salt-river.jpg";
-  sprite14.userData.index = 13;
+  sprite_saltRiver.userData.img = "/resources/images/location/salt-river.jpg";
+  sprite_saltRiver.userData.index = 10;
 
-  sprite15.userData.popup = true;
-  sprite15.userData.popupTitle = "Cathedral Rock";
-  sprite15.userData.popupText = "A dam on the Salt River formed Apache Lake.";
-  sprite15.userData.satelliteImage =
+  sprite_cathedralRock.userData.popup = true;
+  sprite_cathedralRock.userData.popupTitle = "Cathedral Rock";
+  sprite_cathedralRock.userData.popupText = "A dam on the Salt River formed Apache Lake.";
+  sprite_cathedralRock.userData.satelliteImage =
     "/resources/images/landsat/salt-river.jpg";
-  sprite15.userData.img = "/resources/images/location/cathedralRock.jpg";
-  sprite15.userData.index = 14;
+  sprite_cathedralRock.userData.img = "/resources/images/location/cathedralRock.jpg";
+  sprite_cathedralRock.userData.index = 11;
 
-  sprite16.userData.popup = true;
-  sprite16.userData.popupTitle = "Fatman's Loop";
-  sprite16.userData.popupText = "A dam on the Salt River formed Apache Lake.";
-  sprite16.userData.satelliteImage =
+  sprite_fatmansLoop.userData.popup = true;
+  sprite_fatmansLoop.userData.popupTitle = "Fatman's Loop";
+  sprite_fatmansLoop.userData.popupText = "A dam on the Salt River formed Apache Lake.";
+  sprite_fatmansLoop.userData.satelliteImage =
     "/resources/images/landsat/salt-river.jpg";
-  sprite16.userData.img = "/resources/images/location/fatmansLoop.jpg";
-  sprite16.userData.index = 15;
+  sprite_fatmansLoop.userData.img = "/resources/images/location/fatmansLoop.jpg";
+  sprite_fatmansLoop.userData.index = 12;
 
-  sprite17.userData.popup = true;
-  sprite17.userData.popupTitle = "Horseshoe Bend";
-  sprite17.userData.popupText = "A dam on the Salt River formed Apache Lake.";
-  sprite17.userData.satelliteImage =
+  sprite_horseshoeBend.userData.popup = true;
+  sprite_horseshoeBend.userData.popupTitle = "Horseshoe Bend";
+  sprite_horseshoeBend.userData.popupText = "A dam on the Salt River formed Apache Lake.";
+  sprite_horseshoeBend.userData.satelliteImage =
     "/resources/images/landsat/salt-river.jpg";
-  sprite17.userData.img = "/resources/images/location/horseshoeBend.jpg";
-  sprite17.userData.index = 16;
+  sprite_horseshoeBend.userData.img = "/resources/images/location/horseshoeBend.jpg";
+  sprite_horseshoeBend.userData.index = 13;
 
-  sprite18.userData.popup = true;
-  sprite18.userData.popupTitle = "Mica View Trail";
-  sprite18.userData.popupText = "A dam on the Salt River formed Apache Lake.";
-  sprite18.userData.satelliteImage =
+  sprite_micaViewTrail.userData.popup = true;
+  sprite_micaViewTrail.userData.popupTitle = "Mica View Trail";
+  sprite_micaViewTrail.userData.popupText = "A dam on the Salt River formed Apache Lake.";
+  sprite_micaViewTrail.userData.satelliteImage =
     "/resources/images/landsat/mica-view-trail.jpg";
-  sprite18.userData.img = "/resources/images/location/micaViewTrail.jpg";
-  sprite18.userData.index = 17;
+  sprite_micaViewTrail.userData.img = "/resources/images/location/micaViewTrail.jpg";
+  sprite_micaViewTrail.userData.index = 14;
 
-  sprite19.userData.popup = true;
-  sprite19.userData.popupTitle = "Navajo Point";
-  sprite19.userData.popupText = "A dam on the Salt River formed Apache Lake.";
-  sprite19.userData.satelliteImage =
+  sprite_navajoPoint.userData.popup = true;
+  sprite_navajoPoint.userData.popupTitle = "Navajo Point";
+  sprite_navajoPoint.userData.popupText = "A dam on the Salt River formed Apache Lake.";
+  sprite_navajoPoint.userData.satelliteImage =
     "/resources/images/landsat/salt-river.jpg";
-  sprite19.userData.img = "/resources/images/location/navajoPoint.jpg";
-  sprite19.userData.index = 18;
+  sprite_navajoPoint.userData.img = "/resources/images/location/navajoPoint.jpg";
+  sprite_navajoPoint.userData.index = 15;
 
-  sprite20.userData.popup = true;
-  sprite20.userData.popupTitle = "Painted Desert";
-  sprite20.userData.popupText = "A dam on the Salt River formed Apache Lake.";
-  sprite20.userData.satelliteImage =
+  sprite_paintedDesert.userData.popup = true;
+  sprite_paintedDesert.userData.popupTitle = "Painted Desert";
+  sprite_paintedDesert.userData.popupText = "A dam on the Salt River formed Apache Lake.";
+  sprite_paintedDesert.userData.satelliteImage =
     "/resources/images/landsat/salt-river.jpg";
-  sprite20.userData.img = "/resources/images/location/paintedDesert.jpg";
-  sprite20.userData.index = 19;
+  sprite_paintedDesert.userData.img = "/resources/images/location/paintedDesert.jpg";
+  sprite_paintedDesert.userData.index = 16;
 
-  sprite21.userData.popup = true;
-  sprite21.userData.popupTitle = "Peoria";
-  sprite21.userData.popupText = "A dam on the Salt River formed Apache Lake.";
-  sprite21.userData.satelliteImage =
+  sprite_peoria.userData.popup = true;
+  sprite_peoria.userData.popupTitle = "Peoria";
+  sprite_peoria.userData.popupText = "A dam on the Salt River formed Apache Lake.";
+  sprite_peoria.userData.satelliteImage =
     "/resources/images/landsat/salt-river.jpg";
-  sprite21.userData.img = "/resources/images/location/peoria.jpg";
-  sprite21.userData.index = 20;
+  sprite_peoria.userData.img = "/resources/images/location/peoria.jpg";
+  sprite_peoria.userData.index = 17;
 
-  sprite22.userData.popup = true;
-  sprite22.userData.popupTitle = "Petrified Forest";
-  sprite22.userData.popupText = "A dam on the Salt River formed Apache Lake.";
-  sprite22.userData.satelliteImage =
+  sprite_petrifiedForest.userData.popup = true;
+  sprite_petrifiedForest.userData.popupTitle = "Petrified Forest";
+  sprite_petrifiedForest.userData.popupText = "A dam on the Salt River formed Apache Lake.";
+  sprite_petrifiedForest.userData.satelliteImage =
     "/resources/images/landsat/salt-river.jpg";
-  sprite22.userData.img = "/resources/images/location/petrifiedForest.jpg";
-  sprite22.userData.index = 21;
+  sprite_petrifiedForest.userData.img = "/resources/images/location/petrifiedForest.jpg";
+  sprite_petrifiedForest.userData.index = 18;
 
-  sprite23.userData.popup = true;
-  sprite23.userData.popupTitle = "Petrified Forest 2";
-  sprite23.userData.popupText = "A dam on the Salt River formed Apache Lake.";
-  sprite23.userData.satelliteImage =
+  sprite_pinalCounty.userData.popup = true;
+  sprite_pinalCounty.userData.popupTitle = "Pinal County";
+  sprite_pinalCounty.userData.popupText = "A dam on the Salt River formed Apache Lake.";
+  sprite_pinalCounty.userData.satelliteImage =
     "/resources/images/landsat/salt-river.jpg";
-  sprite23.userData.img = "/resources/images/location/salt-river.jpg";
-  sprite23.userData.index = 22;
+  sprite_pinalCounty.userData.img = "/resources/images/location/pinalCounty.jpg";
+  sprite_pinalCounty.userData.index = 19;
 
-  sprite24.userData.popup = true;
-  sprite24.userData.popupTitle = "Pinal County";
-  sprite24.userData.popupText = "A dam on the Salt River formed Apache Lake.";
-  sprite24.userData.satelliteImage =
+  sprite_saguaroNatPark.userData.popup = true;
+  sprite_saguaroNatPark.userData.popupTitle = "Saguaro Nat Park";
+  sprite_saguaroNatPark.userData.popupText = "A dam on the Salt River formed Apache Lake.";
+  sprite_saguaroNatPark.userData.satelliteImage =
     "/resources/images/landsat/salt-river.jpg";
-  sprite24.userData.img = "/resources/images/location/pinalCounty.jpg";
-  sprite24.userData.index = 23;
+  sprite_saguaroNatPark.userData.img = "/resources/images/location/saguaroNatPark.jpg";
+  sprite_saguaroNatPark.userData.index = 20;
 
-  sprite25.userData.popup = true;
-  sprite25.userData.popupTitle = "Saguaro Nat Park";
-  sprite25.userData.popupText = "A dam on the Salt River formed Apache Lake.";
-  sprite25.userData.satelliteImage =
+  sprite_sanSimon.userData.popup = true;
+  sprite_sanSimon.userData.popupTitle = "San Simon Rest Area";
+  sprite_sanSimon.userData.popupText = "A dam on the Salt River formed Apache Lake.";
+  sprite_sanSimon.userData.satelliteImage =
     "/resources/images/landsat/salt-river.jpg";
-  sprite25.userData.img = "/resources/images/location/saguaroNatPark.jpg";
-  sprite25.userData.index = 24;
+  sprite_sanSimon.userData.img = "/resources/images/location/sanSimonRestArea.jpg";
+  sprite_sanSimon.userData.index = 21;
 
-  sprite26.userData.popup = true;
-  sprite26.userData.popupTitle = "San Simon Rest Area";
-  sprite26.userData.popupText = "A dam on the Salt River formed Apache Lake.";
-  sprite26.userData.satelliteImage =
+  sprite_scaddanWash.userData.popup = true;
+  sprite_scaddanWash.userData.popupTitle = "Scaddan Wash";
+  sprite_scaddanWash.userData.popupText = "A dam on the Salt River formed Apache Lake.";
+  sprite_scaddanWash.userData.satelliteImage =
     "/resources/images/landsat/salt-river.jpg";
-  sprite26.userData.img = "/resources/images/location/sanSimonRestArea.jpg";
-  sprite26.userData.index = 25;
+  sprite_scaddanWash.userData.img = "/resources/images/location/scaddanWash.jpg";
+  sprite_scaddanWash.userData.index = 22;
 
-  sprite27.userData.popup = true;
-  sprite27.userData.popupTitle = "Scaddan Wash";
-  sprite27.userData.popupText = "A dam on the Salt River formed Apache Lake.";
-  sprite27.userData.satelliteImage =
-    "/resources/images/landsat/salt-river.jpg";
-  sprite27.userData.img = "/resources/images/location/scaddanWash.jpg";
-  sprite27.userData.index = 26;
-
-  sprite28.userData.popup = true;
-  sprite28.userData.popupTitle = "Tanque Verde";
-  sprite28.userData.popupText = "A dam on the Salt River formed Apache Lake.";
-  sprite28.userData.satelliteImage =
+  sprite_tanqueVerde.userData.popup = true;
+  sprite_tanqueVerde.userData.popupTitle = "Tanque Verde";
+  sprite_tanqueVerde.userData.popupText = "A dam on the Salt River formed Apache Lake.";
+  sprite_tanqueVerde.userData.satelliteImage =
     "/resources/images/landsat/tanque-verde.jpg";
-  sprite28.userData.img = "/resources/images/location/tanqueVerde.jpg";
-  sprite28.userData.index = 27;
+  sprite_tanqueVerde.userData.img = "/resources/images/location/tanqueVerde.jpg";
+  sprite_tanqueVerde.userData.index = 23;
 
-  sprite29.userData.popup = true;
-  sprite29.userData.popupTitle = "Wymola";
-  sprite29.userData.popupText = "A dam on the Salt River formed Apache Lake.";
-  sprite29.userData.satelliteImage =
+  sprite_wymola.userData.popup = true;
+  sprite_wymola.userData.popupTitle = "Wymola";
+  sprite_wymola.userData.popupText = "A dam on the Salt River formed Apache Lake.";
+  sprite_wymola.userData.satelliteImage =
     "/resources/images/landsat/salt-river.jpg";
-  sprite29.userData.img = "/resources/images/location/wymola.jpg";
-  sprite29.userData.index = 28;
+  sprite_wymola.userData.img = "/resources/images/location/wymola.jpg";
+  sprite_wymola.userData.index = 24;
 }
 
 //** TOWER ICON INSTANTIATIONS */
@@ -2118,10 +1986,11 @@ function updateLinePath() {
 //** Updates the Lesson Scenes objects after lesson is complete*/
 function updateLessonScene()
 {
+  //**HORSESHOEBEND SCENE**//
   if(currentLessonSceneIndex == 1)
   {
     console.log("UPDATE SCENE");
-    lessonScene.remove(cave);
+    lessonScene.remove(phoenixModel);
     lessonScene.add(grandCanyonModel);
     //lessonCamera.setFocalLength(10);
     lessonScene.fog.color.set("#FFFFFF");
@@ -2141,23 +2010,50 @@ function updateLessonScene()
     // pointLight.intensity = 0;
 
   }
-  else if (currentLessonSceneIndex == 2)
+  //**CAVE SCENE**//
+  else if(currentLessonSceneIndex == 2)
   {
-    console.log("UPDATE SCENE");
     lessonScene.remove(grandCanyonModel);
-    lessonScene.add(phoenixModel);
-    //lessonCamera.setFocalLength(10);
+    lessonScene.add(cave);
 
-    lessonScene.fog.near = 0.1;
-    lessonScene.fog.far = 0;
-    
-    outlineBug.rotation.set(0, -5.48, 0);
-    outlineBug.position.set(0.534, -1.325, 0.246);
-    outlineBug.scale.set(.125, .125, .125);
-    outlineBug.children[0].children[0].material.map = bugTexture_blue;
+    outlineBug.position.set(-2.88, -2.6359, 0);
+    outlineBug.rotation.set(0, -2.45, 0);
+    outlineBug.scale.set(0.75, 0.75, 0.75);
+    outlineBug.children[0].children[0].material.map = bugTexture_green;
     outlineBug.children[0].children[0].material.map.flipY = false;
     outlineBug.children[0].children[0].material.map.needsUpdate = true;
+
+    lessonScene.background = new THREE.Color(0x000000);
+    lessonScene.fog.near = 0.015;
+    lessonScene.fog.far = 25;
+    lessonScene.fog.color.set("#66000f");
+    
+    lessonScene.add(cave);
+
+    lessonScene.add(pointLight);
+    lessonScene.add(pointLight2);
+    lessonScene.add(pointLight3);
+    lessonScene.add(pointLight4);
   }
+
+  //**PHOENIX SCENE**//
+  // else if (currentLessonSceneIndex == 2)
+  // {
+  //   console.log("UPDATE SCENE");
+  //   lessonScene.remove(grandCanyonModel);
+  //   lessonScene.add(phoenixModel);
+  //   //lessonCamera.setFocalLength(10);
+
+  //   lessonScene.fog.near = 0.1;
+  //   lessonScene.fog.far = 0;
+    
+  //   outlineBug.rotation.set(0, -5.48, 0);
+  //   outlineBug.position.set(0.534, -1.325, 0.246);
+  //   outlineBug.scale.set(.125, .125, .125);
+  //   outlineBug.children[0].children[0].material.map = bugTexture_blue;
+  //   outlineBug.children[0].children[0].material.map.flipY = false;
+  //   outlineBug.children[0].children[0].material.map.needsUpdate = true;
+  // }
 
   //** RESET LESSON SCREEN UI */
   if(lessonDoneBtn.classList.contains("active"))
@@ -2229,8 +2125,8 @@ function hoverObject() {
         iconScalingTween(intersects[0].object, true);
 
         console.log("On Object");
-        console.log("name: " + intersects[0].object.userData.locName);
-        console.log("spriteIndex: " + intersects[0].object.userData.index);
+        //console.log("name: " + intersects[0].object.userData.locName);
+        //console.log("spriteIndex: " + intersects[0].object.userData.index);
 
         // if(!labelSprites[intersects[0].object.userData.index].userData.hover)
         // {
@@ -2482,7 +2378,7 @@ function clickEvent() {
           bugAmount++;
           console.log("BUG: " + bugAmount);
           //lessonScene.remove(intersects[0].object);
-    
+          tweenBug();
           toggleLessonPopup();
         } 
         else if (intersectObject.name == "left_Button" || intersectObject.name == "right_Button") 
@@ -2537,6 +2433,22 @@ function clickEvent() {
       //tutorialSequence();
     }
   }
+}
+
+function tweenBug(lessonSceneNumber)
+{
+  var bugTween = new TWEEN.Tween(outlineBug.position)
+    .to(
+      {
+        x: lessonCamera.position.x,
+        y: lessonCamera.position.y - 1,
+        z: lessonCamera.position.z,
+      },
+      1500)
+    bugTween.easing(TWEEN.Easing.Quadratic.Out);
+    bugTween.onUpdate(() => {
+    });
+    bugTween.start();
 }
 
 function doubleClickEvent() {
@@ -2709,7 +2621,7 @@ function cameraTweenTo(intersects, camPos, yPos, transition, center) {
 
 function iconScalingTween(obj, scaleUp) {
   let finalScale;
-  console.log(obj);
+  //console.log(obj);
 
   if (scaleUp) {
     finalScale = new THREE.Vector3(maxSpriteSize, maxSpriteSize, maxSpriteSize);
@@ -2733,14 +2645,14 @@ function iconScalingTween(obj, scaleUp) {
 
 function textFadeTween(obj, fadeIn) {
   let finalOpacity;
-  console.log(obj);
+  //console.log(obj);
 
   if (fadeIn) {
     finalOpacity = 1.0;
-    console.log("FADE IN TEXT!");
+    //console.log("FADE IN TEXT!");
   } else {
     finalOpacity = 0.0;
-    console.log("FADE OUT TEXT!");
+    //console.log("FADE OUT TEXT!");
   }
 
   var fadeTween = new TWEEN.Tween(obj.material).to(
@@ -3186,8 +3098,8 @@ function TransitionDone() {
     startLesson();
 
     //Toggle UI When scene Transitions
-    backButton.classList.toggle("disabled");
-    backButton.classList.toggle("active");
+    //backButton.classList.toggle("disabled");
+    //backButton.classList.toggle("active");
 
     controls.enabled = false;
     //lessonSceneControls.enabled = true;
@@ -3607,13 +3519,15 @@ function drop(event)
 function imagesFilled(r, g, b)
 {
   var bandCombo = r.charAt(0) + g.charAt(0) + b.charAt(0);
+  bandCombo = "";
+  
+  droppableElements.forEach(elem =>{
+    console.log(elem.children[0].id);
+    bandCombo += elem.children[0].id.charAt(0);
+  });
+  
   document.getElementById("finalImage").style.backgroundImage = "url('resources/images/lesson1/" + bandCombo + ".jpg')";
   console.log(bandCombo);
-
-  droppableElements.forEach(elem =>{
-    
-  });
-
 }
 function resetLesson1()
 {
@@ -3683,8 +3597,8 @@ lessonDoneBtn.addEventListener("click", function (ev) {
 
       lessonComplete();
 
-      backButton.classList.toggle("active");
-      backButton.classList.toggle("disabled");
+      //backButton.classList.toggle("active");
+      //backButton.classList.toggle("disabled");
       mapButton.classList.toggle("disabled");
 
       console.log("MAP ICON SCENE: " + currentSceneNumber);
@@ -3890,32 +3804,32 @@ geographyButton.addEventListener('click', function(ev) {
   clickSound.play();
 });
 
-backButton.addEventListener("click", function (ev) {
-  ev.stopPropagation(); // prevent event from bubbling up to .container
+// backButton.addEventListener("click", function (ev) {
+//   ev.stopPropagation(); // prevent event from bubbling up to .container
 
-  if (!transitioning && !isTweening) {
-    if (currentSceneNumber == 2) {
-      new TWEEN.Tween(transitionParams)
-        .to({ transition: 0 }, 2000)
-        // .delay( 2000 )
-        //.yoyo( true )
-        .start(TransitionStart())
-        .onComplete(TransitionDone);
-      updateLinePath();
+//   if (!transitioning && !isTweening) {
+//     if (currentSceneNumber == 2) {
+//       new TWEEN.Tween(transitionParams)
+//         .to({ transition: 0 }, 2000)
+//         // .delay( 2000 )
+//         //.yoyo( true )
+//         .start(TransitionStart())
+//         .onComplete(TransitionDone);
+//       updateLinePath();
 
-      lessonComplete();
+//       lessonComplete();
 
-      backButton.classList.toggle("active");
-      backButton.classList.toggle("disabled");
-      mapButton.classList.toggle("disabled");
+//       backButton.classList.toggle("active");
+//       backButton.classList.toggle("disabled");
+//       mapButton.classList.toggle("disabled");
 
-      console.log("MAP ICON SCENE: " + currentSceneNumber);
-    } else if (currentSceneNumber == 1) {
-    }
-  }
+//       console.log("MAP ICON SCENE: " + currentSceneNumber);
+//     } else if (currentSceneNumber == 1) {
+//     }
+//   }
 
-  clickSound.play();
-});
+//   clickSound.play();
+// });
 
 //** CLICK IN WINDOW USED FOR POPUPS */
 window.addEventListener("click", () => {
