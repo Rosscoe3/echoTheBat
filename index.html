@@ -2,20 +2,26 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+    <!-- <link rel="icon" type="image/svg+xml" href="favicon.svg" /> -->
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+    <link rel="manifest" href="/site.webmanifest">
     <link rel="stylesheet" href="https://use.typekit.net/dtb4cgj.css">
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ECHO_THE_BAT</title>
+    <title>ECHO THE BAT</title>
   </head>
   <body>
+    <!-- START SCREEN UI -->
     <div class="progress" id="progressBar">
       <div class="progress__fill" id="progress_fill"></div>
       <!-- <span class="progress__text">25%</span> -->
     </div>
-    <div class="startButton" id="startBtn" draggable="true">
+    <div class="startButton" id="startBtn">
       START
     </div>
     
+    <!-- CONTAINER FOR WEBGL SCREEN -->
     <div id="container">
       <canvas id="c"></canvas>
       <div id="labels"></div>
@@ -27,9 +33,9 @@
         <button class="link" data-dropdown-button style="font-size: 5vh;">☰</button>
         <div class="dropdown-menu">
           <div class="dropdown-links">
-            <a href="#" class="link" id = "creditsButton">Credits</a>
-            <a href="#" class="link">Accessibility</a>
             <a href="#" class="link" id = "helpButton">Help</a>
+            <a href="#" class="link">Accessibility</a>
+            <a href="#" class="link" id = "creditsButton">Credits</a>
           </div>
         </div>
       </div>
@@ -47,6 +53,18 @@
       </div>
     </div>
 
+    <!-- MAP INTERACTIVE UI -->
+    <div class="mapChangePopup" id = "mapPopup">
+      <div class="close-btn" style="top: 1%; right: 1%;" id ="mapPopupCloseBtn">&times;</div>
+      <!-- <img src ="resources/images/arizona-geography.png" id = "mapImage"> -->
+      <div class="mapContainer">
+        <!-- <div class="youAreHere" id="youAreHere">You Are Here</div> -->
+        <img src ="resources/images/arizona-geography.jpg" id = "mapImage">
+      </div>
+      <div class="button" id ="mosaicBtn">MOSAIC</div>
+      <div class="button" id ="roadBtn">ROAD</div>
+      <div class="button" id ="geographyBtn">GEOGRAPHY</div>
+    </div>
     <div class="popup" id="popup-1">
       <div class="overlay" ></div>
       <div class="content">
@@ -59,14 +77,12 @@
         </div>
       </div>
     </div>
-
     <div class = "iconPopup" id ="iconPopup-1">
       <div class="close-btn" id ="close-btn2">&times;</div>
       <div class="typewriter">
         <h1 id="towerMessage">Echo was last spotted south of Tempe!</h1>
       </div>
     </div>
-
     <div class = "youtubeLink" id = 'lessonContainer'>
       <div class="iframe-container" id="youtube-player">
         <iframe type="text/html" width="10" height="10" id="youtubePlayer" src="https://www.youtube.com/embed/yrs9IkbkfQE?enablejsapi=1&rel=0" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen>
@@ -77,12 +93,14 @@
         <div class = "drag" draggable="true" id="red" style="top: 10%; background-image: url('resources/images/lesson1/r.jpg');" data-dropped="false"></div>
         <div class = "drag" draggable="true" id="green" style="top: 38%; background-image: url('resources/images/lesson1/g.jpg');" data-dropped="false"></div>
         <div class = "drag" draggable="true" id="blue" style="top: 66%; background-image: url('resources/images/lesson1/b.jpg');" data-dropped="false"></div>
-        <div class = "droppable" id="dropRed" style="color: red; top: 5%" data-filled="false"></div>
-        <div class = "droppable" id="dropGreen" style="color: green; top: 38%" data-filled="false"></div>
+        <div class = "droppable" id="dropRed" style="color: red; top: 10%" data-filled="false"></div>
+        <div class = "droppable" id="dropGreen" style="color: green; top: 40%" data-filled="false"></div>
         <div class = "droppable" id="dropBlue" style="color: blue; top: 70%" data-filled="false"></div>
         <div class = "final" id="finalImage">
           <div class = "resetBtn" id="lesson1Reset">RESET</div>
+          <div class = "combinationText" id="comboText">You made a true color image!</div>
         </div>
+        <div class = "instructions" id="finalImages">Arrange images to create a composite</div>
       </div>
       <!-- <div class="close-btn" style="top: 22%;right: 2%;" id ="close-btn3">&times;</div> -->
       <div class = "doneBtn" id="doneButton">DONE</div>
@@ -112,23 +130,10 @@
         </div>
       </div>
     </div> -->
-
-    <div class="mapChangePopup" id = "mapPopup">
-      <div class="close-btn" style="top: 1%; right: 1%;" id ="mapPopupCloseBtn">&times;</div>
-      <!-- <img src ="resources/images/arizona-geography.png" id = "mapImage"> -->
-      <div class="mapContainer">
-        <!-- <div class="youAreHere" id="youAreHere">You Are Here</div> -->
-        <img src ="resources/images/arizona-geography.jpg" id = "mapImage">
-      </div>
-      <div class="button" id ="mosaicBtn">MOSAIC</div>
-      <div class="button" id ="roadBtn">ROAD</div>
-      <div class="button" id ="geographyBtn">GEOGRAPHY</div>
-    </div>
-
     <!-- <div class="youAreHere"></div> -->
 
+    <!-- MAP SCREEN UI -->
     <div class="audio-toggle" id = "audioToggle"></div>
-
     <div class="bugIconContainer" id = "bugContainer">
       <div class="bugIcon" id = "bugIcon1" draggable="true"></div>
       <div class="bugIcon" id = "bugIcon2"></div>
@@ -136,10 +141,6 @@
       <div class="bugIcon" id = "bugIcon4"></div>
     </div>
     <div class="bottom-image" id = "mapIcon"></div>
-    <div class="highlight" id = "tutorialHighlight"></div>
-    <div class = "highlightText" id = "highlightText">
-      <div>Click and Drag</div>
-    </div>
     <div class="creditsContainer" id ="creditsContainer">
       <div class="close-btn" id ="creditsCloseBtn">&times;</div>
       <p>Interactive and Story based on the original Echo The Bat book by Ginger Butcher</p>
@@ -147,7 +148,15 @@
       <p>3d Models: Chantil Estevez</p>
     </div>
 
+    <!-- TUTORIAL -->
+    <div class="highlight" id = "tutorialHighlight"></div>
+    <div class = "highlightText" id = "highlightText">
+      <div>Click and Drag</div>
+    </div>
     <div class="mouseIcon" id = "mouseICON"></div>
+    <div class="tutClickImage" id = "tutClickImage"></div>
+
+    <!-- SCRIPTS -->
     <script type="module" src="/main.js"></script>
     <script src="https://www.youtube.com/iframe_api"></script>
   </body>

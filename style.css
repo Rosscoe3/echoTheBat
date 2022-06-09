@@ -578,7 +578,7 @@ body {
 
 .lesson1Container .resetBtn{
   width: fit-content;
-  aspect-ratio: 5 / 1;
+  /* aspect-ratio: 5 / 1; */
 
   position: relative;                      /* 3 */
    transform: translate(-50%, 0%);
@@ -594,6 +594,38 @@ body {
   text-size-adjust: inherit;
   overflow-wrap: break-word;
   font-family: roboto-condensed, sans-serif;
+  font-size: 40%;
+  text-align: center;
+  padding: 1%;
+  box-sizing: border-box;
+  border-radius: 10%;
+  
+  transition: all .1s ease-in-out;
+   -moz-transition: all .1s ease-in-out;
+   -webkit-transition: all .1s ease-in-out;
+}
+.lesson1Container .resetBtn:hover{
+  opacity: 50%;
+  
+  transition: all .1s ease-in-out;
+   -moz-transition: all .1s ease-in-out;
+   -webkit-transition: all .1s ease-in-out;
+}
+
+.lesson1Container .final .combinationText{
+  width: fit-content;
+  aspect-ratio: 5 / 1;
+
+  position: relative;                      /* 3 */
+   transform: translate(-50%, 0%);
+  
+  opacity: 0%;
+  left: 50%;
+  bottom: 30%;
+
+  text-size-adjust: inherit;
+  overflow-wrap: break-word;
+  font-family: roboto-condensed, sans-serif;
   font-size: 1vw;
   text-align: center;
   padding: .5vh;
@@ -604,8 +636,32 @@ body {
    -moz-transition: all .1s ease-in-out;
    -webkit-transition: all .1s ease-in-out;
 }
-.lesson1Container .resetBtn:hover{
-  opacity: 50%;
+.lesson1Container .final .combinationText.active{
+  opacity: 100%;
+  transition: all .1s ease-in-out;
+   -moz-transition: all .1s ease-in-out;
+   -webkit-transition: all .1s ease-in-out;
+}
+.lesson1Container .instructions{
+  width: fit-content;
+
+  position: relative;                      /* 3 */
+   transform: translate(-50%, 0%);
+  
+  /* color: black;
+  border-style: dashed; */
+
+  left: 50%;
+  top: 0%;
+
+  text-size-adjust: inherit;
+  overflow-wrap: break-word;
+  font-family: roboto-condensed, sans-serif;
+  font-size: 34%;
+  text-align: center;
+  padding: .5vh;
+  box-sizing: border-box;
+  border-radius: 1vh;
   
   transition: all .1s ease-in-out;
    -moz-transition: all .1s ease-in-out;
@@ -719,6 +775,7 @@ bottom-image:hover > .hover {
   pointer-events: none;
 }
 
+/* AUDIO */
 .audio-toggle {
   position: absolute; top: 0px; 
   top: 1.5vw;
@@ -751,6 +808,7 @@ bottom-image:hover > .hover {
    -webkit-transition: opacity .25s ease-in-out;
 }
 
+/* CREDITS  */
 .creditsContainer {
   position: absolute;
   transform: translate(-50%, -50%) scale(0);
@@ -776,7 +834,6 @@ bottom-image:hover > .hover {
 
   transition: all .25s ease-in-out;
 }
-
 .creditsContainer.active {
   opacity: 100%;
   transform: translate(-50%, -50%) scale(1);
@@ -784,7 +841,6 @@ bottom-image:hover > .hover {
 
   transition: all .25s ease-in-out;
 }
-
 .creditsContainer .close-btn {
   cursor: pointer;
   position: absolute;
@@ -801,8 +857,8 @@ bottom-image:hover > .hover {
   border-radius: 50%;
 }
 
-.highlight
-{
+/* TUTORIAL */
+.highlight{
   position: absolute;
   
   opacity: 0%;
@@ -820,15 +876,12 @@ bottom-image:hover > .hover {
   -moz-transition: opacity .25s ease-in-out;
   -webkit-transition: opacity .25s ease-in-out;  
 }
-
-.highlight.active
-{
+.highlight.active{
   opacity: 50%;
   transition: opacity .25s ease-in-out;
    -moz-transition: opacity .25s ease-in-out;
    -webkit-transition: opacity .25s ease-in-out;
 }
-
 .highlightText{
   position: absolute;
 
@@ -859,7 +912,6 @@ bottom-image:hover > .hover {
 
   transition: all 500ms ease-in-out;
 }
-
 .highlightText.active{
   opacity: 100%;
   transition: all 500ms ease-in-out;
@@ -889,16 +941,24 @@ bottom-image:hover > .hover {
   background-repeat: no-repeat;
   background-position: center center;
 }
-
 .mouseIcon.active{
   opacity: 100%;
 
-  animation-name: mouseIcon;
+  /* animation-name: mouseIcon;
+  animation-duration: 3s;
+  animation-iteration-count: infinite; */
+}
+.mouseIcon.active.init{
+  animation-name: mouseIconInit;
   animation-duration: 3s;
   animation-iteration-count: infinite;
 }
-
-@keyframes mouseIcon {
+.mouseIcon.active.mapClick{
+  animation-name: mouseIconClickMap;
+  animation-duration: 5s;
+  animation-iteration-count: infinite;
+}
+@keyframes mouseIconInit {
   0% {
     opacity: 0%;
     left: 40%;
@@ -912,7 +972,63 @@ bottom-image:hover > .hover {
     left: 70%;
   }
 }
+@keyframes mouseIconClickMap {
+  0% {
+    opacity: 0%;
+    left: 45%;
+  }
+  75% {
+    opacity: 100%;
+    left: 97.5%;
+    top: 95%;
+  }
+  100% {
+    opacity: 0%;
+    left: 97.5%;
+    top: 95%;
+  }
+}
 
+.tutClickImage{
+  position: absolute;
+  cursor: pointer;
+  top:50%;
+  left: 50%;
+  opacity: 0%;
+  width: 10vh;
+  height: 10vh;
+
+  color: white;
+  /* background-color: white; */
+
+  transform: translate(-50%, -50%) scale(0);
+
+  background-image: url("/resources/images/location/horseshoeBend.jpg");
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center center;
+
+  transition: all .25s ease-in-out;
+   -moz-transition: all .25s ease-in-out;
+   -webkit-transition: all .25s ease-in-out;
+}
+.tutClickImage.active:hover{
+  transform: translate(-50%, -50%) scale(1.5);
+  opacity: 50%;
+
+  transition: all .25s ease-in-out;
+   -moz-transition: all .25s ease-in-out;
+   -webkit-transition: all .25s ease-in-out;
+}
+.tutClickImage.active{
+  opacity: 100%;
+  transform: translate(-50%, -50%) scale(1);
+  transition: all .25s ease-in-out;
+   -moz-transition: all .25s ease-in-out;
+   -webkit-transition: all .25s ease-in-out;
+}
+
+/* BUG ICONS*/
 .bugIconContainer{
   position: absolute;
 
@@ -940,7 +1056,6 @@ bottom-image:hover > .hover {
 
   transition: all 500ms ease-in-out;
 }
-
 .bugIcon {
   /* position: absolute; top: 0px; 
   top: 1.5vw;
