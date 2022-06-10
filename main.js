@@ -56,10 +56,13 @@ manager.onError = function (url) {
 
 //** CONTROLS AND SCENE SETUP */
 const loader = new GLTFLoader(manager);
+const canvas = document.querySelector("#c");
 const lessonSceneRaycast = new THREE.Scene();
+
 const mapScene = new THREE.Scene();
 const lessonScene = new THREE.Scene();
-const canvas = document.querySelector("#c");
+const hubScene = new THREE.Scene();
+
 const mainCamera = new THREE.PerspectiveCamera(
   75,
   window.innerWidth / window.innerHeight,
@@ -72,6 +75,13 @@ const lessonCamera = new THREE.PerspectiveCamera(
   0.1,
   1000
 );
+const hubCamera = new THREE.PerspectiveCamera(
+  75,
+  window.innerWidth / window.innerHeight,
+  0.1,
+  1000
+);
+
 let renderer = new THREE.WebGLRenderer({ canvas, antalias: true });
 const maxAnisotropy = renderer.capabilities.getMaxAnisotropy();
 let labelRenderer;
@@ -98,6 +108,7 @@ const sizes = {
 
 const sceneA = new FXScene(mapScene, mainCamera);
 const sceneB = new FXScene(lessonScene, lessonCamera);
+const sceneC = new FXScene(hubScene, hubCamera);
 //const sceneC = new FXScene(loadingScreen.scene, loadingScreen.camera);
 
 //transition = new Transition( mapScene, lessonScene );
@@ -111,8 +122,9 @@ let togglePopupOpen = false;
 let toggleTowerPopupOpen = false;
 let toggleLessonPopupOpen = false;
 let cameraPos = new THREE.Vector3(0, 5, 0);
-let transition;
+let transition, transition2;
 let transitioning = false;
+let hubTransitioning = false;
 let isTweening = false;
 let cameraMoving = false;
 let currentSceneNumber = 0;
@@ -394,13 +406,10 @@ const focusCube = new THREE.Mesh(
     transparent: true,
   })
 );
-// let outlineBug = new THREE.Mesh(geometry, 
-//   new THREE.MeshBasicMaterial({
-//     color: 0x00ff00,
-//     wireframe: false,
-//     transparent: true,
-//   })
-// );
+
+const cubeGeometry = new THREE.BoxGeometry( 1, 1, 1 );
+const cubeMaterial = new THREE.MeshBasicMaterial( { color: 0x00ff00, transparent: true } );
+const cube = new THREE.Mesh( cubeGeometry, cubeMaterial );
 
 let outlineBug = new THREE.Group();
 let phoenixModel = new THREE.Group();
@@ -459,11 +468,14 @@ let combinationText = document.getElementById("comboText");
 let draggableElements = document.querySelectorAll(".drag");
 let droppableElements = document.querySelectorAll(".droppable");
 
+let transitionCover = document.getElementById("screenTransition");
+
 locationNameElem.textContent = "";
 var echoPingLocation;
 
 init();
 initLessonScene();
+initHubScene();
 
 //** USED FOR LOADING YOUTUBE VIDEO AND API */
 function loadVideo() {
@@ -555,7 +567,7 @@ function init() {
   audioButton.classList.toggle("disabled");
   mapButton.classList.toggle("disabled");
   hamburger.classList.toggle("disabled");
-  //backButton.classList.toggle("disabled");
+  backButton.classList.toggle("disabled");
   bugIcon.classList.toggle("disabled");
   bugIcon2.classList.toggle("disabled");
   bugIcon3.classList.toggle("disabled");
@@ -1158,30 +1170,30 @@ function init() {
     }
   };
   gui.add(guiWorld.xPos, "x", -10, 10).onChange(() => {
-    outlineBug.position.set(
+    cube.position.set(
       guiWorld.xPos.x,
-      outlineBug.position.y,
-      outlineBug.position.z
+      cube.position.y,
+      cube.position.z
     );
-    console.log(outlineBug.position);
+    console.log(cube.position);
   });
 
   gui.add(guiWorld.xPos, "y", -10, 10).onChange(() => {
-    outlineBug.position.set(
-      outlineBug.position.x,
+    cube.position.set(
+      cube.position.x,
       guiWorld.xPos.y,
-      outlineBug.position.z
+      cube.position.z
     );
-    console.log(outlineBug.scale);
+    console.log(cube.position);
   });
 
   gui.add(guiWorld.xPos, "z", -10, 10).onChange(() => {
-    outlineBug.position.set(
-      outlineBug.position.x,
-      outlineBug.position.y,
+    cube.position.set(
+      cube.position.x,
+      cube.position.y,
       guiWorld.xPos.z
     );
-    console.log(outlineBug.position);
+    console.log(cube.position);
   });
 
   //** TOWER ICON INSTANTIATIONS */
@@ -1233,6 +1245,7 @@ function init() {
   });
 
   transition = new Transition(sceneB, sceneA);
+  transition2 = new Transition(sceneA, sceneC);
 
   //** INITIALIZING FUNCTIONS */
   makeCameraControls();
@@ -1324,7 +1337,6 @@ function tutorialReset()
 }
 
 function initLessonScene() {
-  
   //** LIGHTS */
   pointLight.position.set(-20, 0, 12);
   pointLight2.position.set(0, 0, 0);
@@ -1539,7 +1551,7 @@ function initLessonScene() {
   rgbeLoader.load('/resources/images/hdr/GrandCanyonBackdrop.hdr', function(texture){
       texture.mapping = THREE.EquirectangularReflectionMapping;
       lessonScene.background = texture;
-      lessonScene.enviroment = texture
+      lessonScene.enviroment = texture;
       hdr1 = texture;
   });
 
@@ -1562,6 +1574,25 @@ function initLessonScene() {
   dirLightLesson.shadow.camera.far = 3500;
   dirLightLesson.shadow.bias = -0.0001;
   //lessonScene.add( dirLightLesson );
+}
+
+function initHubScene()
+{
+  hubScene.fog = new THREE.Fog(0xffffff, 0.1, 0);
+  hubScene.add( cube );
+  
+  cube.userData.name = "CUBE";
+  cube.position.set(-5.5, 0, 0);
+
+  const rgbeLoader = new RGBELoader();
+  rgbeLoader.load('/resources/images/hdr/GrandCanyonBackdrop.hdr', function(texture){
+      texture.mapping = THREE.EquirectangularReflectionMapping;
+      hubScene.background = texture;
+      hubScene.enviroment = texture;
+  });
+
+  //** CAMERA INITIALIZATION */
+  hubCamera.rotation.y = Math.PI / 2;
 }
 
 function makeTextSprite(message, parameters) {
@@ -2174,8 +2205,35 @@ function onMouseMove(event) {
 function hoverObject() {
   var intersects;
 
+  //** HUB SCENE */
+  if (currentSceneNumber == 0)
+  {
+    raycaster.setFromCamera(mouse, hubCamera);
+    intersects = raycaster.intersectObjects(hubScene.children);
+
+    if (intersects.length > 0 && intersects[0].object.userData.name == "CUBE")
+    {
+      intersectObject = intersects[0].object;
+      intersected = true;
+      intersectObject.material.opacity = 0.5;
+      intersectObject.material.side = THREE.FrontSide;
+      console.log("On Object");
+    }
+    else
+    {
+      if (intersected) 
+      {
+        console.log("Off Object");
+        intersectObject.userData.scaling = false;
+        intersected = false;
+        intersectObject.material.opacity = 1;
+        //iconScalingTween(intersectObject, false);
+        intersectObject = null;
+      }
+    }
+  }
   //** MAP SCENE */
-  if (currentSceneNumber == 1) {
+  else if (currentSceneNumber == 1) {
     raycaster.setFromCamera(mouse, mainCamera);
     intersects = raycaster.intersectObjects(lessonSceneRaycast.children);
 
@@ -2216,11 +2274,11 @@ function hoverObject() {
         {
           if(!intersects[0].object.userData.tower && tutorialIndex == 2)
           {
-            tutorialSequence();
+            //tutorialSequence();
           }
           if(intersects[0].object.userData.tower && tutorialIndex == 3)
           {
-            tutorialSequence();
+            //tutorialSequence();
           }
         }
       } 
@@ -2259,7 +2317,6 @@ function hoverObject() {
     raycaster.setFromCamera(mouse, lessonCamera);
     intersects = raycaster.intersectObjects(outlineBug.children[0].children);
     //console.log(intersects);
-    //*****CHECK FOR LOCATION UI
     if (intersects.length > 0 && intersects[0].object.userData.name == "bug") 
     {
       if (intersects[0].object != intersectObject) 
@@ -2371,7 +2428,25 @@ function clickEvent() {
 
   if(!tutorial)
   {
-    if (currentSceneNumber == 1) 
+    if(currentSceneNumber == 0)
+    {
+      raycaster.setFromCamera(mouse, hubCamera);
+      intersects = raycaster.intersectObjects(hubScene.children);
+
+      if(intersects[0])
+      {
+        intersectObject = intersects[0].object;
+        
+        if(intersects[0].object.userData.name == "CUBE")
+        {
+          //transitioning = true;
+          hubToMapTransition();
+          console.log(intersects[0].object.userData.name);
+        }
+      }
+
+    }
+    else if (currentSceneNumber == 1) 
     {
       if (cameraMoving) 
       {
@@ -3096,7 +3171,20 @@ function TextureAnimator(texture, tilesHoriz, tilesVert, tileDispDuration) {
 function renderTransition() {
   let clockdelta;
 
-  transition.render(clock.getDelta());
+  if(hubTransitioning)
+  {
+    console.log("TRANSITION 2");
+    transition2.render(clock.getDelta());
+  }
+  else
+  {
+    console.log("TRANSITION 1");
+    transition.render(clock.getDelta());
+  }
+
+
+  //RENDER TRANSITION 2
+  //transition2.render(clock.getDelta());
 
   // new TWEEN.Tween( clockdelta )
   //   .to( { transition: 1 }, 5000 )
@@ -3148,8 +3236,11 @@ function animate() {
   if (!transitioning) {
     renderer.render(currentScene, currentCamera);
   } else {
-    renderTransition();
+    //renderTransition();
   }
+
+  //console.log("Current Scene: " + currentSceneNumber);
+  //console.log("HUB TRANSITION: " + hubTransitioning);
 
   //** LIMITS THE CAMERA FROM GOING OUT OF THE BOUNDS */
   // mainCamera.position.clamp(minPan, maxPan);
@@ -3162,6 +3253,7 @@ function TransitionStart() {
   console.log("TRANSITION HAS STARTED");
   transitioning = true;
   transitionSound.play();
+  transitionCover.classList.toggle("active");
   //controls.enabled = false;
 }
 
@@ -3169,35 +3261,101 @@ function TransitionDone() {
   console.log("TRANSITION IS DONE");
   transitioning = false;
   //controls.enabled = true;
+  //console.log(string);
 
-  if (currentSceneNumber == 1) {
-    currentScene = lessonScene;
-    currentCamera = lessonCamera;
-    currentSceneNumber = 2;
-    console.log("TRANSITIONED TO LESSON SCENE");
-    startLesson();
+  transitionCover.classList.toggle("active");
 
-    //Toggle UI When scene Transitions
-    //backButton.classList.toggle("disabled");
-    //backButton.classList.toggle("active");
+  //**HUB TO MAP**//
+  if(hubTransitioning)
+  {
+    if (currentSceneNumber == 0) {
+      currentScene = mapScene;
+      currentCamera = mainCamera;
+      currentSceneNumber = 1;
+      console.log("TRANSITIONED TO MAP SCENE");
 
-    controls.enabled = false;
-    renderer.render(currentScene, currentCamera);
-    //lessonSceneControls.enabled = true;
-  } else if (currentSceneNumber == 2) {
-    currentScene = mapScene;
-    currentCamera = mainCamera;
-    currentSceneNumber = 1;
-    console.log("TRANSITIONED TO MAIN SCENE");
+      if(mapButton.classList.contains("disabled"))
+      {
+        mapButton.classList.toggle("disabled");
+      }
+      if(!backButton.classList.contains("active"))
+      {
+        backButton.classList.toggle("active");
+      }
 
-    updateLessonScene();
-    cameraTweenTo(undefined, false, 3, false);
+      controls.enabled = true;
+      renderer.render(currentScene, currentCamera);
+    } 
+    else if (currentSceneNumber == 1) {
+      currentScene = hubScene;
+      currentCamera = hubCamera;
+      currentSceneNumber = 0;
+      console.log("TRANSITIONED TO HUB SCENE");
+      controls.enabled = false;
+      renderer.render(currentScene, currentCamera);
 
-    //Toggle UI When scene Transitions
-    //hamburger.classList.toggle("disabled");
-    controls.enabled = true;
-    renderer.render(currentScene, currentCamera);
-    //lessonSceneControls.enabled = false;
+      if(!mapButton.classList.contains("disabled"))
+      {
+        mapButton.classList.toggle("disabled");
+      }
+      if(backButton.classList.contains("active"))
+      {
+        backButton.classList.toggle("active");
+      }
+    }
+
+    hubTransitioning = false;
+  }
+  //**MAP TO LESSON**//
+  else
+  {
+    if (currentSceneNumber == 1) {
+      currentScene = lessonScene;
+      currentCamera = lessonCamera;
+      currentSceneNumber = 2;
+      console.log("TRANSITIONED TO LESSON SCENE");
+      startLesson();
+
+      if(!mapButton.classList.contains("disabled"))
+      {
+        mapButton.classList.toggle("disabled");
+      }
+      if(backButton.classList.contains("active"))
+      {
+        backButton.classList.toggle("active");
+      }
+  
+      //Toggle UI When scene Transitions
+      //backButton.classList.toggle("disabled");
+      //backButton.classList.toggle("active");
+  
+      controls.enabled = false;
+      renderer.render(currentScene, currentCamera);
+      //lessonSceneControls.enabled = true;
+    } else if (currentSceneNumber == 2) {
+      currentScene = mapScene;
+      currentCamera = mainCamera;
+      currentSceneNumber = 1;
+      console.log("TRANSITIONED TO MAP SCENE");
+
+      if(mapButton.classList.contains("disabled"))
+      {
+        mapButton.classList.toggle("disabled");
+      }
+      if(!backButton.classList.contains("active"))
+      {
+        backButton.classList.toggle("active");
+      }
+      
+      updateLessonScene();
+      cameraTweenTo(undefined, false, 3, false);
+  
+      //Toggle UI When scene Transitions
+      //hamburger.classList.toggle("disabled");
+      controls.enabled = true;
+      renderer.render(currentScene, currentCamera);
+      //lessonSceneControls.enabled = false;
+    }
   }
 }
 
@@ -3212,12 +3370,25 @@ function pingLocationReached() {
   //hamburger.classList.toggle("disabled");
   mapButton.classList.toggle("disabled");
 
+  transitionParams.transition = 0;
   new TWEEN.Tween(transitionParams)
     .to({ transition: 1 }, 2000)
     // .delay( 2000 )
     //.yoyo( true )
     .start(TransitionStart())
     .onComplete(TransitionDone);
+}
+
+function hubToMapTransition()
+{
+  console.log("HUB TO MAP!");
+  
+  hubTransitioning = true;
+
+  transitionParams.transition = 0;
+  new TWEEN.Tween(transitionParams).to({ transition: 1 }, 2000)
+  .start(TransitionStart())
+  .onComplete(TransitionDone);
 }
 
 function youAreHereUpdate() {
@@ -3715,7 +3886,7 @@ startButton.addEventListener("click", function (ev) {
     startButton.classList.toggle("active");
     audioButton.classList.toggle("disabled");
     hamburger.classList.toggle("disabled");
-    mapButton.classList.toggle("disabled");
+    //mapButton.classList.toggle("disabled");
     bugIcon.classList.toggle("disabled");
     bugIcon2.classList.toggle("disabled");
     bugIcon3.classList.toggle("disabled");
@@ -3727,7 +3898,14 @@ startButton.addEventListener("click", function (ev) {
 
     //tutorialSequence();
 
-    currentSceneNumber = 1;
+    currentSceneNumber = 0;
+    controls.enabled = false;
+
+    currentCamera = hubCamera;
+    currentScene = hubScene;
+
+    //currentSceneNumber = 1;
+    //controls.enabled = true;
     music.play();
   }
   console.log("START BUTTON");
@@ -3881,37 +4059,36 @@ geographyButton.addEventListener('click', function(ev) {
   clickSound.play();
 });
 
-// backButton.addEventListener("click", function (ev) {
-//   ev.stopPropagation(); // prevent event from bubbling up to .container
+backButton.addEventListener("click", function (ev) {
+  ev.stopPropagation(); // prevent event from bubbling up to .container
 
-//   if (!transitioning && !isTweening) {
-//     if (currentSceneNumber == 2) {
-//       new TWEEN.Tween(transitionParams)
-//         .to({ transition: 0 }, 2000)
-//         // .delay( 2000 )
-//         //.yoyo( true )
-//         .start(TransitionStart())
-//         .onComplete(TransitionDone);
-//       updateLinePath();
+  if (!transitioning && !isTweening) {
+    if (currentSceneNumber == 2) {
+    } else if (currentSceneNumber == 1) 
+    {
+      hubTransitioning = true;
+      transitionParams.transition = 1;
+      new TWEEN.Tween(transitionParams)
+        .to({ transition: 0 }, 2000)
+        // .delay( 2000 )
+        //.yoyo( true )
+        .start(TransitionStart())
+        .onComplete(TransitionDone);
+    }
+  }
 
-//       lessonComplete();
-
-//       backButton.classList.toggle("active");
-//       backButton.classList.toggle("disabled");
-//       mapButton.classList.toggle("disabled");
-
-//       console.log("MAP ICON SCENE: " + currentSceneNumber);
-//     } else if (currentSceneNumber == 1) {
-//     }
-//   }
-
-//   clickSound.play();
-// });
+  clickSound.play();
+});
 
 //** CLICK IN WINDOW USED FOR POPUPS */
 window.addEventListener("click", () => {
   if (!transitioning && !isTweening) {
-    if (currentSceneNumber == 1) {
+    
+    if(currentSceneNumber == 0)
+    {
+      clickEvent();
+    }
+    else if (currentSceneNumber == 1) {
       if (!togglePopupOpen) {
         clickEvent();
       }
@@ -3927,7 +4104,11 @@ window.addEventListener("dblclick", doubleClickEvent, false);
 
 window.addEventListener("mousemove", function (event) {
   if (!transitioning && !isTweening) {
-    if (currentSceneNumber == 1) {
+    if(currentSceneNumber == 0)
+    {
+      onMouseMove(event);
+    }
+    else if (currentSceneNumber == 1) {
       if (!togglePopupOpen) {
         onMouseMove(event);
       }
@@ -3948,6 +4129,9 @@ window.addEventListener("resize", () => {
 
   lessonCamera.aspect = sizes.width / sizes.height;
   lessonCamera.updateProjectionMatrix();
+
+  hubCamera.aspect = sizes.width / sizes.height;
+  hubCamera.updateProjectionMatrix();
 
   renderer.setSize(sizes.width, sizes.height);
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
@@ -4174,5 +4358,4 @@ lessonDoneBtn.addEventListener("click", function (ev) {
 
   clickSound.play();
 });
-
 animate();

@@ -120,6 +120,34 @@ body {
   color: red;
 }
 
+/* SCREEN TRANSITION*/
+.screenTransition
+{
+  pointer-events: none;
+  
+  position: absolute;
+  background-color: white;
+  opacity: 0%;
+  z-index: 300;
+
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(1);
+
+  width: 100vw;
+  height: 100vh;
+
+  transition: all 1s ease-in-out;
+   -moz-transition: all 1s ease-in-out;
+   -webkit-transition: all 1s ease-in-out;
+}
+.screenTransition.active{
+  opacity: 100%;
+  transition: all 1s ease-in-out;
+   -moz-transition: all 1s ease-in-out;
+   -webkit-transition: all 1s ease-in-out;
+}
+
 /* POPUP FOR SIDE BY SIDE COMPARISON*/
 .popup {
 }
@@ -1411,7 +1439,8 @@ button {
 }
 
 .back{
-  position: absolute; bottom: 0px; 
+  position: absolute; bottom: 0px;
+  pointer-events: none; 
   left: 1.5vh;
   bottom: 1.5vh;
   height: 5vh;
@@ -1428,15 +1457,8 @@ button {
   /* color: white; */
 }
 .back.active{
+  pointer-events: auto;
   opacity: 100%;
-  /* mix-blend-mode: exclusion; */
-  transition: opacity .25s ease-in-out;
-   -moz-transition: opacity .25s ease-in-out;
-   -webkit-transition: opacity .25s ease-in-out;
-}
-.back.disabled{
-  pointer-events: none;
-  opacity: 0%;
   /* mix-blend-mode: exclusion; */
   transition: opacity .25s ease-in-out;
    -moz-transition: opacity .25s ease-in-out;
