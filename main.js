@@ -134,6 +134,8 @@ var intersectObject;
 var intersected = false;
 var audioPlaying = true;
 var bugAmount = 0;
+var bugFlyTween;
+var bugRotTween;
 const pingWrldPosTemp = new THREE.Vector3();
 var maxSpriteSize = 0.2;
 var minSpriteSize = 0.15;
@@ -1169,31 +1171,31 @@ function init() {
       z: 0,
     }
   };
-  gui.add(guiWorld.xPos, "x", -10, 10).onChange(() => {
-    cube.position.set(
+  gui.add(guiWorld.xPos, "x", -2, 2).onChange(() => {
+    outlineBug.position.set(
       guiWorld.xPos.x,
-      cube.position.y,
-      cube.position.z
+      outlineBug.position.y,
+      outlineBug.position.z
     );
-    console.log(cube.position);
+    console.log(outlineBug.position);
   });
 
-  gui.add(guiWorld.xPos, "y", -10, 10).onChange(() => {
-    cube.position.set(
-      cube.position.x,
+  gui.add(guiWorld.xPos, "y", -2, 2).onChange(() => {
+    outlineBug.position.set(
+      outlineBug.position.x,
       guiWorld.xPos.y,
-      cube.position.z
+      outlineBug.position.z
     );
-    console.log(cube.position);
+    console.log(outlineBug.position);
   });
 
-  gui.add(guiWorld.xPos, "z", -10, 10).onChange(() => {
-    cube.position.set(
-      cube.position.x,
-      cube.position.y,
+  gui.add(guiWorld.xPos, "z", -2, 2).onChange(() => {
+    outlineBug.position.set(
+      outlineBug.position.x,
+      outlineBug.position.y,
       guiWorld.xPos.z
     );
-    console.log(cube.position);
+    console.log(outlineBug.position);
   });
 
   //** TOWER ICON INSTANTIATIONS */
@@ -1503,6 +1505,7 @@ function initLessonScene() {
     var model = gltf.scene;
     model.traverse((o) => 
     {
+      //**EDIT ITS IMPORTED MATERIAL**//
       if (o.isMesh)
       { 
         o.userData.name = "bug";
@@ -1510,12 +1513,12 @@ function initLessonScene() {
         var colorMap = o.material.map;
         bugTexture_green = colorMap;
         var newMaterial = new THREE.MeshToonMaterial({transparent: true});
+        //var newMaterial = new THREE.MeshBasicMaterial({transparent: true});
         o.material = newMaterial;
         o.material.map = bugTexture_blue;
         o.material.map.flipY = false;
         o.material.map.needsUpdate = true;
-
-        //outlineBug.mesh = o;
+        o.material.side = THREE.DoubleSide;
         //console.log("O:" + o.name);
 
         if(o.name == "wings001")
@@ -1536,15 +1539,29 @@ function initLessonScene() {
     outlineBug.castShadow = true;
     outlineBug.add(gltf.scene);
 
-    outlineBug.rotation.set(0, -0.06, 0);
-    outlineBug.position.set(-1.68, -1.79, -0.31);
-    outlineBug.scale.set(.5, .5, .5);
-
     outlineBug.userData.name = "bug";
     //console.log(outlineBug);
     //console.log("outline: " + outlineBug.children[0].children[0].name);
     lessonScene.add(outlineBug);
   });
+  outlineBug.rotation.set(-0.25, -0.06, -0.25);
+  outlineBug.position.set(-1.68, -1.79, -0.31);
+  outlineBug.scale.set(.5, .5, .5);
+
+  //** INITIAL BUG TWEEN */
+  bugFlyTween = new TWEEN.Tween(outlineBug.position)
+    .to({ y: -0.85, z: -1.5}, 3000)
+    .yoyo(true)
+    .repeat(Infinity);
+  bugFlyTween.easing(TWEEN.Easing.Quadratic.InOut);
+  bugFlyTween.start();
+
+  bugRotTween = new TWEEN.Tween(outlineBug.rotation)
+    .to({x: 0.25, y: 3, z: 0.25}, 2750)
+    .yoyo(true)
+    .repeat(Infinity);
+  bugRotTween.easing(TWEEN.Easing.Quadratic.InOut);
+  bugRotTween.start();
   
   var hdr1;
   const rgbeLoader = new RGBELoader();
@@ -2067,18 +2084,26 @@ function updateLessonScene()
     lessonScene.fog.color.set("#FFFFFF");
     lessonScene.fog.far = 25;
     
-    
-    outlineBug.rotation.set(0, -5.48, 0);
-    outlineBug.position.set(0.534, -1.325, 0.246);
+    outlineBug.rotation.set(-.5, -5.48, -0.25);
+    outlineBug.position.set(0.5, -1.2, 0.5);
     outlineBug.scale.set(.125, .125, .125);
     outlineBug.children[0].children[0].material.map = bugTexture_yellow;
     outlineBug.children[0].children[0].material.map.flipY = false;
     outlineBug.children[0].children[0].material.map.needsUpdate = true;
-    // lightTween.stop();
-    // lightTween2.stop();
 
-    // pointLight.intensity = 0;
-    // pointLight.intensity = 0;
+    bugFlyTween = new TWEEN.Tween(outlineBug.position)
+    .to({ y: -1.1, z: -0.5}, 4000)
+    .yoyo(true)
+    .repeat(Infinity);
+    bugFlyTween.easing(TWEEN.Easing.Quadratic.InOut);
+    bugFlyTween.start();
+
+    bugRotTween = new TWEEN.Tween(outlineBug.rotation)
+    .to({x: 0.5, y: -4, z: 0.25}, 3750)
+    .yoyo(true)
+    .repeat(Infinity);
+    bugRotTween.easing(TWEEN.Easing.Quadratic.InOut);
+    bugRotTween.start();
 
   }
   //** GRASSHOPPER */
@@ -2087,12 +2112,26 @@ function updateLessonScene()
     lessonScene.remove(grandCanyonModel);
     lessonScene.add(grasshopperModel);
 
-    outlineBug.position.set(0.58, -1.15, 0);
-    outlineBug.rotation.set(0, -2.45, 0);
+    outlineBug.position.set(0.5, -1.15, 0.25);
+    outlineBug.rotation.set(-0.5, -2.45, -0.25);
     outlineBug.scale.set(0.075, 0.075, 0.075);
     outlineBug.children[0].children[0].material.map = bugTexture_red;
     outlineBug.children[0].children[0].material.map.flipY = false;
     outlineBug.children[0].children[0].material.map.needsUpdate = true;
+
+    bugFlyTween = new TWEEN.Tween(outlineBug.position)
+    .to({ y: -1.05, z: -0.25}, 4000)
+    .yoyo(true)
+    .repeat(Infinity);
+    bugFlyTween.easing(TWEEN.Easing.Quadratic.InOut);
+    bugFlyTween.start();
+
+    bugRotTween = new TWEEN.Tween(outlineBug.rotation)
+    .to({x: 0.5, y: 1, z: 0.25}, 3750)
+    .yoyo(true)
+    .repeat(Infinity);
+    bugRotTween.easing(TWEEN.Easing.Quadratic.InOut);
+    bugRotTween.start();
 
     //lessonScene.background = hdr1;
     //lessonScene.enviroment = hdr1;
@@ -2129,27 +2168,29 @@ function updateLessonScene()
     lessonScene.add(pointLight3);
     lessonScene.add(pointLight4);
   }
+  //**PHOENIX SCENE**//
+  else if (currentLessonSceneIndex == 0)
+  {
+    // console.log("UPDATE SCENE");
+    // lessonScene.remove(grandCanyonModel);
+    // lessonScene.add(phoenixModel);
+    // //lessonCamera.setFocalLength(10);
+
+    // lessonScene.fog.near = 0.1;
+    // lessonScene.fog.far = 0;
+
+    //bugFlyTween.to({ y: -0.85}, 2000);
+    //bugFlyTween.start();
+    
+    // outlineBug.rotation.set(0, -5.48, 0);
+    // outlineBug.position.set(0.534, -1.325, 0.246);
+    // outlineBug.scale.set(.125, .125, .125);
+    // outlineBug.children[0].children[0].material.map = bugTexture_blue;
+    // outlineBug.children[0].children[0].material.map.flipY = false;
+    // outlineBug.children[0].children[0].material.map.needsUpdate = true;
+  }
 
   console.log("Lesson Index:" + currentLessonIndex);
-
-  //**PHOENIX SCENE**//
-  // else if (currentLessonSceneIndex == 2)
-  // {
-  //   console.log("UPDATE SCENE");
-  //   lessonScene.remove(grandCanyonModel);
-  //   lessonScene.add(phoenixModel);
-  //   //lessonCamera.setFocalLength(10);
-
-  //   lessonScene.fog.near = 0.1;
-  //   lessonScene.fog.far = 0;
-    
-  //   outlineBug.rotation.set(0, -5.48, 0);
-  //   outlineBug.position.set(0.534, -1.325, 0.246);
-  //   outlineBug.scale.set(.125, .125, .125);
-  //   outlineBug.children[0].children[0].material.map = bugTexture_blue;
-  //   outlineBug.children[0].children[0].material.map.flipY = false;
-  //   outlineBug.children[0].children[0].material.map.needsUpdate = true;
-  // }
 
   //** RESET LESSON SCREEN UI */
   if(lessonDoneBtn.classList.contains("active"))
@@ -2164,10 +2205,72 @@ function updateLessonScene()
   }
 }
 
+//** USED WHEN THE LESSON IS DONE TO CHANGE WHICH POPUP LEADS TO THE NEXT LESSON */
+function lessonComplete()
+{
+  sceneTransitionSprites[currentLessonSceneIndex].userData.ping = false;
+  sceneTransitionSprites[currentLessonSceneIndex].userData.popup = true;
+  currentLessonSceneIndex++
+  console.log("Lesson Scene Index: " + currentLessonSceneIndex);
+
+  if(currentLessonSceneIndex == 1)
+  {
+    sceneTransitionSprites[currentLessonSceneIndex].userData.ping = true;
+    sceneTransitionSprites[currentLessonSceneIndex].userData.popup = false;
+    document.getElementById("towerMessage").innerHTML = "May or may not be the grand canyon";
+    echoPingLocation = makeEchoPing(towerIcons[currentLessonSceneIndex].position.x, towerIcons[currentLessonSceneIndex].position.z);
+  }
+  else if(currentLessonSceneIndex == 2)
+  {
+    sceneTransitionSprites[currentLessonSceneIndex].userData.ping = true;
+    sceneTransitionSprites[currentLessonSceneIndex].userData.popup = false;
+    document.getElementById("towerMessage").innerHTML = "May or may not be Phoenix";
+    echoPingLocation = makeEchoPing(towerIcons[currentLessonSceneIndex].position.x, towerIcons[currentLessonSceneIndex].position.z);
+  }
+  else if(currentLessonSceneIndex == 3)
+  {
+    sceneTransitionSprites[currentLessonSceneIndex].userData.ping = true;
+    sceneTransitionSprites[currentLessonSceneIndex].userData.popup = false;
+    document.getElementById("towerMessage").innerHTML = "May or may not be Tempe";
+    echoPingLocation = makeEchoPing(towerIcons[currentLessonSceneIndex].position.x, towerIcons[currentLessonSceneIndex].position.z);
+  }
+}
+
+//** SETS UP LESSON SLIDES DEPENDING ON WHICH SCENE YOU ARE IN */
+function startLesson()
+{
+  currentLessonIndex = 0;
+
+  //** LESSON 1 */
+  if(currentSceneNumber == 2)
+  {
+    
+    console.log("LESSON SEQUENCE: " + lessonSequences[0][0]);
+    //youtubePlayer.src = lessonSequences[0][0];
+  }
+  //** LESSON 2 */
+  else if(currentSceneNumber == 3)
+  {
+
+  }
+  //** LESSON 3 */
+  else if(currentSceneNumber == 4)
+  {
+
+  }
+  //** LESSON 4 */
+  else if(currentSceneNumber == 5)
+  {
+
+  }
+
+  document.getElementById("slideNumb").innerHTML = (currentLessonIndex+1) + "/" +  lessonSequences[0].length;
+}
+
 //** SETS UP CONTROLS FOR THE CAMERA CONTROLLER */
 function makeCameraControls() {
   controls.enableDamping = true;
-  controls.dampingFactor = 0.01;
+  controls.dampingFactor = 0.1;
   controls.screenSpacePanning = false;
 
   //controls.autoRotate = true;
@@ -2231,6 +2334,16 @@ function hoverObject() {
         intersectObject = null;
       }
     }
+
+    //**Used to change the cursor**//
+    if (intersects && intersects.length > 0) 
+    { 
+      document.body.style.cursor = 'grab' 
+    } 
+    else 
+    { 
+      document.body.style.cursor = 'default' 
+    }
   }
   //** MAP SCENE */
   else if (currentSceneNumber == 1) {
@@ -2281,19 +2394,22 @@ function hoverObject() {
             //tutorialSequence();
           }
         }
-      } 
+      }
       else 
       {
         //console.log('same object');
       }
-    } 
+
+      document.body.style.cursor = 'pointer';
+    }
     else 
     {
       if (intersected) 
       {
-        console.log("Off Object");
-        console.log("name: " + intersectObject.userData.name);
-        console.log("index: " + intersectObject.userData.index);
+        //console.log("Off Object");
+        //console.log("name: " + intersectObject.userData.name);
+        //console.log("index: " + intersectObject.userData.index);
+        //document.body.style.cursor = 'grab';
 
         try 
         {
@@ -2310,6 +2426,8 @@ function hoverObject() {
         intersectObject = null;
       }
     }
+
+    //console.log(intersects[0]);
   }
   //** LESSON SCENE */
   else if (currentSceneNumber == 2) 
@@ -2325,6 +2443,8 @@ function hoverObject() {
         intersected = true;
         intersectObject.material.opacity = 0.5;
         intersectObject.material.side = THREE.FrontSide;
+
+        document.body.style.cursor = 'grab'
 
         //iconScalingTween(intersects[0].object, true);
 
@@ -2345,7 +2465,10 @@ function hoverObject() {
         intersectObject.material.opacity = 1;
         //iconScalingTween(intersectObject, false);
         intersectObject = null;
+        //document.body.style.cursor = 'default'
       }
+
+      document.body.style.cursor = 'default'
     }
   }
 
@@ -2428,6 +2551,7 @@ function clickEvent() {
 
   if(!tutorial)
   {
+    //** HUBWORLD  */ 
     if(currentSceneNumber == 0)
     {
       raycaster.setFromCamera(mouse, hubCamera);
@@ -2446,6 +2570,7 @@ function clickEvent() {
       }
 
     }
+    //** MAP SCENE */ 
     else if (currentSceneNumber == 1) 
     {
       if (cameraMoving) 
@@ -2496,8 +2621,9 @@ function clickEvent() {
         }
       }
   
-      console.log(intersects[0]);
-    } 
+      //console.log(intersects[0]);
+    }
+    //** LESSON SCENE */ 
     else if (currentSceneNumber == 2) 
     {
       raycaster.setFromCamera(mouse, lessonCamera);
@@ -2520,6 +2646,8 @@ function clickEvent() {
           //lessonScene.remove(intersects[0].object);
           tweenBug();
           toggleLessonPopup();
+          bugFlyTween.stop();
+          bugRotTween.stop();
         } 
         else if (intersectObject.name == "left_Button" || intersectObject.name == "right_Button") 
         {
@@ -2599,10 +2727,10 @@ function tweenBug(lessonSceneNumber)
     .to(
       {
         x: lessonCamera.position.x,
-        y: lessonCamera.position.y - 1,
+        y: lessonCamera.position.y - 0.5,
         z: lessonCamera.position.z,
       },
-      1500)
+      2000)
     bugTween.easing(TWEEN.Easing.Quadratic.Out);
     bugTween.onUpdate(() => {
     });
@@ -2823,68 +2951,6 @@ function textFadeTween(obj, fadeIn) {
   fadeTween.easing(TWEEN.Easing.Quadratic.InOut);
   fadeTween.onUpdate(() => {});
   fadeTween.start();
-}
-
-//** USED WHEN THE LESSON IS DONE TO CHANGE WHICH POPUP LEADS TO THE NEXT LESSON */
-function lessonComplete()
-{
-  sceneTransitionSprites[currentLessonSceneIndex].userData.ping = false;
-  sceneTransitionSprites[currentLessonSceneIndex].userData.popup = true;
-  currentLessonSceneIndex++
-  console.log("Lesson Scene Index: " + currentLessonSceneIndex);
-
-  if(currentLessonSceneIndex == 1)
-  {
-    sceneTransitionSprites[currentLessonSceneIndex].userData.ping = true;
-    sceneTransitionSprites[currentLessonSceneIndex].userData.popup = false;
-    document.getElementById("towerMessage").innerHTML = "May or may not be the grand canyon";
-    echoPingLocation = makeEchoPing(towerIcons[currentLessonSceneIndex].position.x, towerIcons[currentLessonSceneIndex].position.z);
-  }
-  else if(currentLessonSceneIndex == 2)
-  {
-    sceneTransitionSprites[currentLessonSceneIndex].userData.ping = true;
-    sceneTransitionSprites[currentLessonSceneIndex].userData.popup = false;
-    document.getElementById("towerMessage").innerHTML = "May or may not be Phoenix";
-    echoPingLocation = makeEchoPing(towerIcons[currentLessonSceneIndex].position.x, towerIcons[currentLessonSceneIndex].position.z);
-  }
-  else if(currentLessonSceneIndex == 3)
-  {
-    sceneTransitionSprites[currentLessonSceneIndex].userData.ping = true;
-    sceneTransitionSprites[currentLessonSceneIndex].userData.popup = false;
-    document.getElementById("towerMessage").innerHTML = "May or may not be Tempe";
-    echoPingLocation = makeEchoPing(towerIcons[currentLessonSceneIndex].position.x, towerIcons[currentLessonSceneIndex].position.z);
-  }
-}
-
-//** SETS UP LESSON SLIDES DEPENDING ON WHICH SCENE YOU ARE IN */
-function startLesson()
-{
-  currentLessonIndex = 0;
-
-  //** LESSON 1 */
-  if(currentSceneNumber == 2)
-  {
-    
-    console.log("LESSON SEQUENCE: " + lessonSequences[0][0]);
-    //youtubePlayer.src = lessonSequences[0][0];
-  }
-  //** LESSON 2 */
-  else if(currentSceneNumber == 3)
-  {
-
-  }
-  //** LESSON 3 */
-  else if(currentSceneNumber == 4)
-  {
-
-  }
-  //** LESSON 4 */
-  else if(currentSceneNumber == 5)
-  {
-
-  }
-
-  document.getElementById("slideNumb").innerHTML = (currentLessonIndex+1) + "/" +  lessonSequences[0].length;
 }
 
 //** USED TO GO NAVIGATE BETWEEN SLIDES */
@@ -3207,6 +3273,19 @@ function lessonCameraMove() {
     0.1
   );
 }
+
+function hubCameraMove() {
+  hubCamera.rotation.y = THREE.MathUtils.lerp(
+    hubCamera.rotation.y,
+    (-mouse.x * Math.PI) / 20 + Math.PI / 2,
+    0.1
+  );
+  hubCamera.rotation.z = THREE.MathUtils.lerp(
+    hubCamera.rotation.x,
+    (-mouse.y * Math.PI) / 20,
+    0.1
+  );
+}
 //** ANIMATION LOOP, ADD THINGS THAT MOVE HERE */
 function animate() {
   if (gameStarted == false) {
@@ -3220,6 +3299,7 @@ function animate() {
   hoverObject();
   //htmlTrack3d();
   lessonCameraMove();
+  hubCameraMove();
 
   //console.log("TRANSITIONING: " + transitioning);
   //console.log("Current Lesson SCENE Index: " + currentLessonSceneIndex);
@@ -3238,6 +3318,8 @@ function animate() {
   } else {
     //renderTransition();
   }
+
+  //console.log(controls.)
 
   //console.log("Current Scene: " + currentSceneNumber);
   //console.log("HUB TRANSITION: " + hubTransitioning);
@@ -4102,6 +4184,7 @@ window.addEventListener("click", () => {
 //** DOUBLE CLICK IN WINDOW */
 window.addEventListener("dblclick", doubleClickEvent, false);
 
+//**EVENT FOR WHEN MOUSE IS MOVING**//
 window.addEventListener("mousemove", function (event) {
   if (!transitioning && !isTweening) {
     if(currentSceneNumber == 0)
@@ -4288,25 +4371,29 @@ lessonButton_middle.addEventListener("click", function (ev) {
     {
       var iframe = document.getElementsByTagName("iframe")[0].contentWindow;
       
-      if(videoPlaying)
+      //** MAKE SURE CURRENT SLIDE IS A YOUTUBE VIDEO *//
+      if(lessonSequences[currentLessonSceneIndex][currentLessonIndex].startsWith("https"))
       {
-        iframe.postMessage(
-          '{"event":"command","func":"pauseVideo","args":""}',
-          "*"
+        if(videoPlaying)
+        {
+          iframe.postMessage(
+            '{"event":"command","func":"pauseVideo","args":""}',
+            "*"
+            );
+          
+            videoPlaying = false;
+            youtubePlayButton.src = "resources/images/UI/Play.png";  
+        }
+        else
+        {
+          iframe.postMessage(
+            '{"event":"command","func":"playVideo","args":""}',
+            "*"
           );
-        
-          videoPlaying = false;
-          youtubePlayButton.src = "resources/images/UI/Play.png";  
-      }
-      else
-      {
-        iframe.postMessage(
-          '{"event":"command","func":"playVideo","args":""}',
-          "*"
-        );
-
-        videoPlaying = true;
-        youtubePlayButton.src = "resources/images/UI/Pause.png";  
+  
+          videoPlaying = true;
+          youtubePlayButton.src = "resources/images/UI/Pause.png";  
+        }
       }
       
       console.log("MIDDLE LESSON BUTTON");
@@ -4358,4 +4445,19 @@ lessonDoneBtn.addEventListener("click", function (ev) {
 
   clickSound.play();
 });
+
+//**EVENT TO CHANGE MOUSE CURSOR TO 'GRABBING'**//
+controls.addEventListener( 'start', function ( event ) {
+
+	console.log("IS DRAGGING");
+  document.body.style.cursor = 'grabbing';
+
+} );
+controls.addEventListener( 'end', function ( event ) {
+
+	console.log("END DRAGGING");
+  document.body.style.cursor = 'grab';
+
+} );
+
 animate();

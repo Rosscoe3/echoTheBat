@@ -121,8 +121,7 @@ body {
 }
 
 /* SCREEN TRANSITION*/
-.screenTransition
-{
+.screenTransition {
   pointer-events: none;
   
   position: absolute;
@@ -134,14 +133,14 @@ body {
   left: 50%;
   transform: translate(-50%, -50%) scale(1);
 
-  width: 100vw;
-  height: 100vh;
+  width: 200vw;
+  height: 200vh;
 
   transition: all 1s ease-in-out;
    -moz-transition: all 1s ease-in-out;
    -webkit-transition: all 1s ease-in-out;
 }
-.screenTransition.active{
+.screenTransition.active {
   opacity: 100%;
   transition: all 1s ease-in-out;
    -moz-transition: all 1s ease-in-out;
@@ -634,7 +633,7 @@ body {
 }
 .lesson1Container .resetBtn:hover{
   opacity: 50%;
-  
+  cursor: pointer;
   transition: all .1s ease-in-out;
    -moz-transition: all .1s ease-in-out;
    -webkit-transition: all .1s ease-in-out;
@@ -728,7 +727,7 @@ body {
 }
 .youtubeLink .doneBtn.active:hover{
   opacity: 50%;
-  
+  cursor: pointer;
   transition: all .1s ease-in-out;
    -moz-transition: all .1s ease-in-out;
    -webkit-transition: all .1s ease-in-out;
@@ -764,6 +763,7 @@ body {
 }
 .bottom-image:hover {
   opacity: 0.5;
+  cursor: pointer;
   transition: opacity .25s ease-in-out;
    -moz-transition: opacity .25s ease-in-out;
    -webkit-transition: opacity .25s ease-in-out;
@@ -811,6 +811,7 @@ bottom-image:hover > .hover {
   height: 7vh;
   width: 7vh;
   opacity: 100%;
+  cursor: pointer;
 
   /* mix-blend-mode: exclusion; */
 
@@ -826,6 +827,8 @@ bottom-image:hover > .hover {
   transition: opacity .25s ease-in-out;
    -moz-transition: opacity .25s ease-in-out;
    -webkit-transition: opacity .25s ease-in-out;
+  
+   cursor: pointer;
 }
 .audio-toggle.disabled {
   pointer-events: none;
@@ -843,6 +846,7 @@ bottom-image:hover > .hover {
   top: 50%;
   left: 50%;
   opacity: 0%;
+  cursor: default;
 
   width: 50%;
   height: fit-content;
@@ -1383,6 +1387,7 @@ button {
   padding: 20px;
   box-sizing: border-box;
   border-radius: 1rem;
+  cursor: default;
   
   /* font-size: 2vw; */
   
@@ -1407,9 +1412,10 @@ button {
   transition: all 500ms ease-in-out;
   transform: translate(-50%, -50%) scale(1);
   opacity: 100%;
+  cursor: pointer;
 }
 .startButton.disabled{
-  pointer-events: none;
+  cursor: wait;
   opacity: 0.25;
 }
 
@@ -1467,6 +1473,7 @@ button {
 .back:hover
 {
   opacity: 50%;
+  cursor: pointer;
   /* mix-blend-mode: exclusion; */
   transition: opacity .25s ease-in-out;
    -moz-transition: opacity .25s ease-in-out;
