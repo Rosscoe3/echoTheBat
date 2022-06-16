@@ -76,7 +76,7 @@ const lessonCamera = new THREE.PerspectiveCamera(
   1000
 );
 const hubCamera = new THREE.PerspectiveCamera(
-  75,
+  50,
   window.innerWidth / window.innerHeight,
   0.1,
   1000
@@ -417,6 +417,8 @@ let outlineBug = new THREE.Group();
 let phoenixModel = new THREE.Group();
 let grasshopperModel = new THREE.Group();
 
+let hubworldModel = new THREE.Group();
+
 //Load Arizona Map Model
 let arizona = new THREE.Group();
 let cave = new THREE.Group();
@@ -582,6 +584,7 @@ function init() {
   renderer.setPixelRatio(window.devicePixelRatio);
   renderer.physicallyCorrectLights = true;
   renderer.setSize(window.innerWidth, window.innerHeight);
+  renderer.outputEncoding = THREE.sRGBEncoding;
 
   mainCamera.rotation.x = Math.PI / -2;
   mainCamera.position.setX(1.64);
@@ -720,6 +723,7 @@ function init() {
     //console.log("CURRENT INDEX: " + i);
   }
 
+  sprite_deathValley.position.set(-4.75, sprite_deathValley.position.y, 4);
   sprite_grandCanyon.position.set(-0.2, sprite_grandCanyon.position.y, -5.66);
   sprite_coloradoRiver.position.set(-1.56, sprite_coloradoRiver.position.y, -6.2697);
   sprite_phoenix.position.set(-0.65, sprite_phoenix.position.y, 1.7);
@@ -1171,31 +1175,31 @@ function init() {
       z: 0,
     }
   };
-  gui.add(guiWorld.xPos, "x", -2, 2).onChange(() => {
-    outlineBug.position.set(
+  gui.add(guiWorld.xPos, "x", -10, 10).onChange(() => {
+    hubworldModel.position.set(
       guiWorld.xPos.x,
-      outlineBug.position.y,
-      outlineBug.position.z
+      hubworldModel.position.y,
+      hubworldModel.position.z
     );
-    console.log(outlineBug.position);
+    console.log(hubworldModel.position);
   });
 
-  gui.add(guiWorld.xPos, "y", -2, 2).onChange(() => {
-    outlineBug.position.set(
-      outlineBug.position.x,
+  gui.add(guiWorld.xPos, "y", -10, 10).onChange(() => {
+    hubworldModel.position.set(
+      hubworldModel.position.x,
       guiWorld.xPos.y,
-      outlineBug.position.z
+      hubworldModel.position.z
     );
-    console.log(outlineBug.position);
+    console.log(hubworldModel.position);
   });
 
-  gui.add(guiWorld.xPos, "z", -2, 2).onChange(() => {
-    outlineBug.position.set(
-      outlineBug.position.x,
-      outlineBug.position.y,
+  gui.add(guiWorld.xPos, "z", -10, 10).onChange(() => {
+    hubworldModel.position.set(
+      hubworldModel.position.x,
+      hubworldModel.position.y,
       guiWorld.xPos.z
     );
-    console.log(outlineBug.position);
+    console.log(hubworldModel.position);
   });
 
   //** TOWER ICON INSTANTIATIONS */
@@ -1608,6 +1612,36 @@ function initHubScene()
       hubScene.enviroment = texture;
   });
 
+  loader.load("/resources/models/Hub-World-2.glb", function (gltf) 
+  {
+    var model = gltf.scene;
+    model.traverse((o) => 
+    {
+      if (o.isMesh)
+      { 
+        var colorMap = o.material.map;
+        var newMaterial = new THREE.MeshBasicMaterial({});
+        o.material = newMaterial;
+        o.material.map = colorMap;
+
+        console.log("O:" + o.name);
+
+        if(o.name == "Computer_Monitor")
+        {
+          console.log(o.children[0]);
+          var newMaterial = new THREE.MeshBasicMaterial({color: 0x444ff});
+          //o.children[0].material = newMaterial;
+        }
+      }
+    });
+    
+    hubworldModel.add(gltf.scene);
+    //console.log(phoenixModel);
+    hubScene.add(hubworldModel);
+    //console.log("outline: " + outlineBug.children[0].children[0].name);
+  });
+  hubworldModel.position.set(-1.37, -0.5, -0.5);
+
   //** CAMERA INITIALIZATION */
   hubCamera.rotation.y = Math.PI / 2;
 }
@@ -1734,7 +1768,7 @@ function locationSpriteSetup() {
   sprite_deathValley.userData.popupText =
     "Death Valley is a vast national park with over 3 million acres of designated wilderness and hundreds of miles of backcountry roads.";
   sprite_deathValley.userData.satelliteImage =
-    "/resources/images/landsat/grand-canyon.jpg";
+    "/resources/images/landsat/algodones-dunes.jpg";
   sprite_deathValley.userData.img = "/resources/images/location/death-valley.jpg";
   sprite_deathValley.userData.index = 0;
 
@@ -1831,7 +1865,7 @@ function locationSpriteSetup() {
   sprite_cathedralRock.userData.popupTitle = "Cathedral Rock";
   sprite_cathedralRock.userData.popupText = "A dam on the Salt River formed Apache Lake.";
   sprite_cathedralRock.userData.satelliteImage =
-    "/resources/images/landsat/salt-river.jpg";
+    "/resources/images/landsat/cathedral-rock.jpg";
   sprite_cathedralRock.userData.img = "/resources/images/location/cathedralRock.jpg";
   sprite_cathedralRock.userData.index = 11;
 
@@ -1839,7 +1873,7 @@ function locationSpriteSetup() {
   sprite_fatmansLoop.userData.popupTitle = "Fatman's Loop";
   sprite_fatmansLoop.userData.popupText = "A dam on the Salt River formed Apache Lake.";
   sprite_fatmansLoop.userData.satelliteImage =
-    "/resources/images/landsat/salt-river.jpg";
+    "/resources/images/landsat/fatmans-loop.jpg";
   sprite_fatmansLoop.userData.img = "/resources/images/location/fatmansLoop.jpg";
   sprite_fatmansLoop.userData.index = 12;
 
@@ -1847,7 +1881,7 @@ function locationSpriteSetup() {
   sprite_horseshoeBend.userData.popupTitle = "Horseshoe Bend";
   sprite_horseshoeBend.userData.popupText = "A dam on the Salt River formed Apache Lake.";
   sprite_horseshoeBend.userData.satelliteImage =
-    "/resources/images/landsat/salt-river.jpg";
+    "/resources/images/landsat/horseshoe-bend.jpg";
   sprite_horseshoeBend.userData.img = "/resources/images/location/horseshoeBend.jpg";
   sprite_horseshoeBend.userData.index = 13;
 
@@ -1863,7 +1897,7 @@ function locationSpriteSetup() {
   sprite_navajoPoint.userData.popupTitle = "Navajo Point";
   sprite_navajoPoint.userData.popupText = "A dam on the Salt River formed Apache Lake.";
   sprite_navajoPoint.userData.satelliteImage =
-    "/resources/images/landsat/salt-river.jpg";
+    "/resources/images/landsat/navajo-point.jpg";
   sprite_navajoPoint.userData.img = "/resources/images/location/navajoPoint.jpg";
   sprite_navajoPoint.userData.index = 15;
 
@@ -1879,7 +1913,7 @@ function locationSpriteSetup() {
   sprite_peoria.userData.popupTitle = "Peoria";
   sprite_peoria.userData.popupText = "A dam on the Salt River formed Apache Lake.";
   sprite_peoria.userData.satelliteImage =
-    "/resources/images/landsat/salt-river.jpg";
+    "/resources/images/landsat/peoria.jpg";
   sprite_peoria.userData.img = "/resources/images/location/peoria.jpg";
   sprite_peoria.userData.index = 17;
 
@@ -1903,7 +1937,7 @@ function locationSpriteSetup() {
   sprite_saguaroNatPark.userData.popupTitle = "Saguaro Nat Park";
   sprite_saguaroNatPark.userData.popupText = "A dam on the Salt River formed Apache Lake.";
   sprite_saguaroNatPark.userData.satelliteImage =
-    "/resources/images/landsat/salt-river.jpg";
+    "/resources/images/landsat/saguaro-nat-park.jpg";
   sprite_saguaroNatPark.userData.img = "/resources/images/location/saguaroNatPark.jpg";
   sprite_saguaroNatPark.userData.index = 20;
 
@@ -1919,7 +1953,7 @@ function locationSpriteSetup() {
   sprite_scaddanWash.userData.popupTitle = "Scaddan Wash";
   sprite_scaddanWash.userData.popupText = "A dam on the Salt River formed Apache Lake.";
   sprite_scaddanWash.userData.satelliteImage =
-    "/resources/images/landsat/salt-river.jpg";
+    "/resources/images/landsat/scaddan-wash.jpg";
   sprite_scaddanWash.userData.img = "/resources/images/location/scaddanWash.jpg";
   sprite_scaddanWash.userData.index = 22;
 
