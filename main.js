@@ -418,6 +418,7 @@ let phoenixModel = new THREE.Group();
 let grasshopperModel = new THREE.Group();
 
 let hubworldModel = new THREE.Group();
+let computerScreen;
 
 //Load Arizona Map Model
 let arizona = new THREE.Group();
@@ -1620,7 +1621,7 @@ function initHubScene()
       if (o.isMesh)
       { 
         var colorMap = o.material.map;
-        var newMaterial = new THREE.MeshBasicMaterial({});
+        var newMaterial = new THREE.MeshBasicMaterial({transparent: true});
         o.material = newMaterial;
         o.material.map = colorMap;
 
@@ -1629,6 +1630,7 @@ function initHubScene()
         if(o.name == "Computer_Monitor")
         {
           console.log(o.children[0]);
+          computerScreen = o;
           var newMaterial = new THREE.MeshBasicMaterial({color: 0x444ff});
           //o.children[0].material = newMaterial;
         }
@@ -2346,7 +2348,7 @@ function hoverObject() {
   if (currentSceneNumber == 0)
   {
     raycaster.setFromCamera(mouse, hubCamera);
-    intersects = raycaster.intersectObjects(hubScene.children);
+    intersects = raycaster.intersectObjects(hubworldModel.children[0].children);
 
     if (intersects.length > 0 && intersects[0].object.userData.name == "CUBE")
     {
@@ -2356,18 +2358,31 @@ function hoverObject() {
       intersectObject.material.side = THREE.FrontSide;
       console.log("On Object");
     }
+    else if (intersects.length > 0 && intersects[0].object.name == "Computer_Monitor")
+    {
+      intersectObject = intersects[0].object;
+      intersected = true;
+      intersectObject.material.opacity = 0.5;
+      //intersectObject.children[0].material.opacity = 0.5;
+      intersectObject.material.side = THREE.FrontSide;
+      console.log("On Computer");
+    }
     else
     {
       if (intersected) 
       {
         console.log("Off Object");
+        
         intersectObject.userData.scaling = false;
+      
         intersected = false;
         intersectObject.material.opacity = 1;
         //iconScalingTween(intersectObject, false);
         intersectObject = null;
       }
     }
+
+    //console.log(intersects[0]);
 
     //**Used to change the cursor**//
     if (intersects && intersects.length > 0) 
@@ -2589,13 +2604,13 @@ function clickEvent() {
     if(currentSceneNumber == 0)
     {
       raycaster.setFromCamera(mouse, hubCamera);
-      intersects = raycaster.intersectObjects(hubScene.children);
+      intersects = raycaster.intersectObjects(hubworldModel.children[0].children);
 
       if(intersects[0])
       {
         intersectObject = intersects[0].object;
         
-        if(intersects[0].object.userData.name == "CUBE")
+        if(intersects[0].object.name == "Computer_Monitor")
         {
           //transitioning = true;
           hubToMapTransition();
