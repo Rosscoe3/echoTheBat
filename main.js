@@ -27,28 +27,29 @@ manager.onLoad = function () {
   console.log("Loading complete!");
   RESOURCES_LOADED = true;
   startButton.classList.toggle("disabled");
+  document.querySelector(".progress__fill").style.width = 100 + "%";
   document.querySelector(".progress").classList.toggle("disabled");
 };
 manager.onProgress = function (url, itemsLoaded, itemsTotal) {
-  // console.log(
-  //   "Loading file: " +
-  //     url +
-  //     ".\nLoaded " +
-  //     itemsLoaded +
-  //     " of " +
-  //     itemsTotal +
-  //     " files."
-  // );
+  console.log(
+    "Loading file: " +
+      url +
+      ".\nLoaded " +
+      itemsLoaded +
+      " of " +
+      itemsTotal +
+      " files."
+  );
 
-  var progress = (itemsTotal / itemsLoaded) * 100;
-  //console.log("Progress: " + progress);
+  //var progress = (itemsTotal / itemsLoaded) * 100;
+  var progress = (itemsTotal / 191) * 100;
 
   //Prevent from going over 100%
-  if (progress > 100.0) {
-    progress = 100.0;
+  if (progress < 100.0) {
+    //progress = 100.0;
+    document.querySelector(".progress__fill").style.width = progress + "%";
   }
 
-  document.querySelector(".progress__fill").style.width = progress + "%";
 };
 manager.onError = function (url) {
   console.log("There was an error loading " + url);
@@ -82,7 +83,20 @@ const hubCamera = new THREE.PerspectiveCamera(
   1000
 );
 
-let renderer = new THREE.WebGLRenderer({ canvas, antalias: true });
+let renderer = new THREE.WebGLRenderer({ 
+  canvas, 
+  antialias: true,
+  alpha: false, 
+  powerPreference: "high-performance" });
+
+ 
+  // alpha: false, 
+  // antialias: true,
+  // alphaBuffer: false,
+  // depth: false,
+  // powerPreference: "high-performance"
+  
+
 const maxAnisotropy = renderer.capabilities.getMaxAnisotropy();
 let labelRenderer;
 const controls = new MapControls(mainCamera, renderer.domElement);
@@ -474,6 +488,7 @@ let draggableElements = document.querySelectorAll(".drag");
 let droppableElements = document.querySelectorAll(".droppable");
 
 let transitionCover = document.getElementById("screenTransition");
+let startScreenCover = document.getElementById("startScreenBlock");
 
 locationNameElem.textContent = "";
 var echoPingLocation;
@@ -586,6 +601,8 @@ function init() {
   renderer.physicallyCorrectLights = true;
   renderer.setSize(window.innerWidth, window.innerHeight);
   renderer.outputEncoding = THREE.sRGBEncoding;
+
+  //renderer.toneMappingExposure = 1.5;
 
   mainCamera.rotation.x = Math.PI / -2;
   mainCamera.position.setX(1.64);
@@ -1601,7 +1618,7 @@ function initLessonScene() {
 function initHubScene()
 {
   hubScene.fog = new THREE.Fog(0xffffff, 0.1, 0);
-  hubScene.add( cube );
+  //hubScene.add( cube );
   
   cube.userData.name = "CUBE";
   cube.position.set(-5.5, 0, 0);
@@ -1613,7 +1630,7 @@ function initHubScene()
       hubScene.enviroment = texture;
   });
 
-  loader.load("/resources/models/Hub-World-2.glb", function (gltf) 
+  loader.load("/resources/models/Hub-World.glb", function (gltf) 
   {
     var model = gltf.scene;
     model.traverse((o) => 
@@ -2277,6 +2294,12 @@ function startLesson()
 {
   currentLessonIndex = 0;
 
+  if(lessonButton_right.classList.contains("disabled"))
+  {
+    lessonButton_right.classList.toggle("disabled");
+  }
+  lessonButton_left.classList.toggle("disabled");
+
   //** LESSON 1 */
   if(currentSceneNumber == 2)
   {
@@ -2467,11 +2490,17 @@ function hoverObject() {
           console.log("CHANGED OFF");
         } catch (e) {}
 
+        
         uiHoverOffSound.play();
         // document.getElementById("title").innerHTML = "ECHO";
         intersectObject.userData.scaling = false;
         intersected = false;
-        iconScalingTween(intersectObject, false);
+
+        if(intersectObject.userData.name == "locationUI")
+        {
+          iconScalingTween(intersectObject, false);
+        }
+
         intersectObject = null;
       }
     }
@@ -2606,6 +2635,8 @@ function clickEvent() {
       raycaster.setFromCamera(mouse, hubCamera);
       intersects = raycaster.intersectObjects(hubworldModel.children[0].children);
 
+      console.log("hubworld click");
+
       if(intersects[0])
       {
         intersectObject = intersects[0].object;
@@ -2737,6 +2768,8 @@ function clickEvent() {
   }
   else
   {
+    console.log("tutorial click");
+
     //** IF ITS THE TUTORIAL */
     if(tutorialIndex == 0)
     {
@@ -2961,6 +2994,7 @@ function iconScalingTween(obj, scaleUp) {
   if (scaleUp) {
     finalScale = new THREE.Vector3(maxSpriteSize, maxSpriteSize, maxSpriteSize);
   } else {
+    console.log("rescale!");
     finalScale = new THREE.Vector3(minSpriteSize, minSpriteSize, minSpriteSize);
   }
 
@@ -3024,6 +3058,19 @@ function navigateLesson(forward)
 
         console.log("LESSON SEQUENCE: " + lessonSequences[currentLessonSceneIndex][currentLessonIndex]);
 
+        //** USED TO TOGGLE ARROWS */
+        if(currentLessonIndex == lessonSequences[currentLessonSceneIndex].length - 1)
+        {
+          if(!lessonButton_right.classList.contains("disabled"))
+          {
+            lessonButton_right.classList.toggle("disabled");
+          }
+        }
+        else if(lessonButton_left.classList.contains("disabled"))
+        {
+          lessonButton_left.classList.toggle("disabled");
+        }
+
         //** IF THE CURRENT INDEX IS A YOUTUBE LINK */
         if(lessonSequences[currentLessonSceneIndex][currentLessonIndex].startsWith("https"))
         {
@@ -3075,10 +3122,6 @@ function navigateLesson(forward)
           }
         }
       }
-      //** AT THE END OF THE LESSON */
-      else
-      {
-      }
     }
   }
   //Backward Navigation
@@ -3088,6 +3131,11 @@ function navigateLesson(forward)
     if(currentSceneNumber == 2)
     {
      
+      if(lessonButton_right.classList.contains("disabled"))
+      {
+        lessonButton_right.classList.toggle("disabled");
+      }
+
       if(lessonSequences[currentLessonSceneIndex].length >= currentLessonIndex && currentLessonIndex > 0)
       {
         currentLessonIndex--;
@@ -3098,6 +3146,19 @@ function navigateLesson(forward)
         console.log("Is it disabled?: " + document.getElementById("youtube-player").classList.contains("disabled"));
 
         console.log("LESSON SEQUENCE: " + lessonSequences[currentLessonSceneIndex][currentLessonIndex]);
+
+        //** USED TO TOGGLE ARROWS */
+        if(currentLessonIndex == 0)
+        {
+          if(!lessonButton_left.classList.contains("disabled"))
+          {
+            lessonButton_left.classList.toggle("disabled");
+          }
+        }
+        else if(lessonButton_right.classList.contains("disabled"))
+        {
+          lessonButton_right.classList.toggle("disabled");
+        }
 
         //** IF THE CURRENT INDEX IS A YOUTUBE LINK */
         if(lessonSequences[currentLessonSceneIndex][currentLessonIndex].startsWith("https"))
@@ -3156,6 +3217,10 @@ function navigateLesson(forward)
       //** AT THE END OF THE LESSON */
       else
       {
+        if(!lessonButton_left.classList.contains("disabled"))
+        {
+          lessonButton_left.classList.toggle("disabled");
+        }
       }
     }
   }
@@ -3340,7 +3405,7 @@ function animate() {
   if (gameStarted == false) {
     requestAnimationFrame(animate);
 
-    renderer.render(loadingScreen.scene, loadingScreen.camera);
+    renderer.render(hubScene, hubCamera);
     return;
   }
 
@@ -3359,8 +3424,6 @@ function animate() {
 
   renderer.setPixelRatio(window.devicePixelRatio);
   renderer.setSize(window.innerWidth, window.innerHeight);
-
-  //labelRenderer.render( mapScene, mainCamera );
 
   if (!transitioning) {
     renderer.render(currentScene, currentCamera);
@@ -4022,6 +4085,7 @@ startButton.addEventListener("click", function (ev) {
     bugIcon2.classList.toggle("disabled");
     bugIcon3.classList.toggle("disabled");
     bugIcon4.classList.toggle("disabled");
+    startScreenCover.classList.toggle("disabled");
     
     //tutorialHighlight.classList.toggle("active");
     //highlightText.classList.toggle("active");
@@ -4378,7 +4442,7 @@ lessonButton_right.addEventListener("click", function (ev) {
       // youtubePlayer.src = "https://www.youtube.com/embed/DGE-N8_LQBo";
 
       navigateLesson(true);
-      youtubePlayButton.src = "resources/images/UI/Play.png";
+      youtubePlayButton.src = "resources/images/UI/play-white.png";
       videoPlaying = false;
     } 
     else if (currentSceneNumber == 1) 
@@ -4401,7 +4465,7 @@ lessonButton_left.addEventListener("click", function (ev) {
       // iframe.postMessage('{"event":"command","func":"pauseVideo","args":""}', "*");
 
       navigateLesson(false);
-      youtubePlayButton.src = "resources/images/UI/Play.png";
+      youtubePlayButton.src = "resources/images/UI/play-white.png";
       videoPlaying = false;
     } 
     else if (currentSceneNumber == 1) 
@@ -4431,7 +4495,7 @@ lessonButton_middle.addEventListener("click", function (ev) {
             );
           
             videoPlaying = false;
-            youtubePlayButton.src = "resources/images/UI/Play.png";  
+            youtubePlayButton.src = "resources/images/UI/play-white.png";  
         }
         else
         {
@@ -4441,7 +4505,7 @@ lessonButton_middle.addEventListener("click", function (ev) {
           );
   
           videoPlaying = true;
-          youtubePlayButton.src = "resources/images/UI/Pause.png";  
+          youtubePlayButton.src = "resources/images/UI/pause-white.png";  
         }
       }
       

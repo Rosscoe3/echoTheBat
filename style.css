@@ -447,8 +447,9 @@ body {
 
 .youtubeLink .walkieTalkieButton{
   position: absolute;
-  background: white;
-  opacity: 0%;
+  pointer-events: auto;
+  opacity: 100%;
+
 
   top: 77.2%;
   height: 10.7%;
@@ -458,7 +459,15 @@ body {
 }
 
 .youtubeLink .walkieTalkieButton:hover{
-  opacity: 100%;
+  opacity: 50%;
+  transition: opacity .25s ease-in-out;
+   -moz-transition: opacity .25s ease-in-out;
+   -webkit-transition: opacity .25s ease-in-out;
+}
+
+.youtubeLink .walkieTalkieButton.disabled{
+  opacity: 0%;
+  pointer-events: none;
   transition: opacity .25s ease-in-out;
    -moz-transition: opacity .25s ease-in-out;
    -webkit-transition: opacity .25s ease-in-out;
@@ -1382,7 +1391,7 @@ button {
   opacity: 0%;
   width: fit-content;
   height: fit-content;
-  z-index: 1;
+  z-index: 2;
   text-align: top;
   padding: 20px;
   box-sizing: border-box;
@@ -1419,10 +1428,33 @@ button {
   opacity: 0.25;
 }
 
+.startScreen{
+  pointer-events: none;
+  
+  position: absolute;
+  background-color: black;
+  opacity: 100%;
+  z-index: 1;
+
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(1);
+
+  width: 200vw;
+  height: 200vh;
+  transition: all 500ms ease-in-out;
+}
+.startScreen.disabled {
+  opacity: 0%;
+  transition: all 500ms ease-in-out;
+}
+
 .progress {
   position: absolute;
   left: calc(50vw - 25vw);
   top: calc(50vh + 15vh);
+  background: rgb(71, 71, 71);
+  border-radius: 10px;
   width: 50vw;
   height: 1vh;
   z-index: 100;
