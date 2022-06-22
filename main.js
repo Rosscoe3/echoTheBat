@@ -490,6 +490,16 @@ let droppableElements = document.querySelectorAll(".droppable");
 let transitionCover = document.getElementById("screenTransition");
 let startScreenCover = document.getElementById("startScreenBlock");
 
+let computerScreenVideo = document.getElementById("video");
+let computerScreenTexture = new THREE.VideoTexture(computerScreenVideo);
+var computerScreenMaterial = new THREE.MeshBasicMaterial({
+    map: computerScreenTexture, 
+    side: THREE.FrontSide, 
+    toneMapped: false,
+    transparent: true,
+});
+
+
 locationNameElem.textContent = "";
 var echoPingLocation;
 
@@ -1649,7 +1659,11 @@ function initHubScene()
           console.log(o.children[0]);
           computerScreen = o;
           var newMaterial = new THREE.MeshBasicMaterial({color: 0x444ff});
-          //o.children[0].material = newMaterial;
+        }
+        if(o.name == "Computer_Screen")
+        {
+          o.material = computerScreenMaterial;
+          o.material.map.flipY = false;
         }
       }
     });
@@ -1663,6 +1677,8 @@ function initHubScene()
 
   //** CAMERA INITIALIZATION */
   hubCamera.rotation.y = Math.PI / 2;
+
+  computerScreenVideo.play();
 }
 
 function makeTextSprite(message, parameters) {
@@ -2381,14 +2397,13 @@ function hoverObject() {
       intersectObject.material.side = THREE.FrontSide;
       console.log("On Object");
     }
-    else if (intersects.length > 0 && intersects[0].object.name == "Computer_Monitor")
+    else if (intersects.length > 0 && intersects[0].object.name == "Computer_Screen")
     {
       intersectObject = intersects[0].object;
       intersected = true;
-      intersectObject.material.opacity = 0.5;
+      intersectObject.material.opacity = 0.75;
       //intersectObject.children[0].material.opacity = 0.5;
       intersectObject.material.side = THREE.FrontSide;
-      console.log("On Computer");
     }
     else
     {
@@ -2404,8 +2419,6 @@ function hoverObject() {
         intersectObject = null;
       }
     }
-
-    //console.log(intersects[0]);
 
     //**Used to change the cursor**//
     if (intersects && intersects.length > 0) 
@@ -2641,7 +2654,7 @@ function clickEvent() {
       {
         intersectObject = intersects[0].object;
         
-        if(intersects[0].object.name == "Computer_Monitor")
+        if(intersects[0].object.name == "Computer_Monitor" || intersects[0].object.name == "Computer_Screen")
         {
           //transitioning = true;
           hubToMapTransition();
@@ -2994,7 +3007,7 @@ function iconScalingTween(obj, scaleUp) {
   if (scaleUp) {
     finalScale = new THREE.Vector3(maxSpriteSize, maxSpriteSize, maxSpriteSize);
   } else {
-    console.log("rescale!");
+    //console.log("rescale!");
     finalScale = new THREE.Vector3(minSpriteSize, minSpriteSize, minSpriteSize);
   }
 
@@ -3431,7 +3444,9 @@ function animate() {
     //renderTransition();
   }
 
-  console.log(renderer.info.render.calls);
+  computerScreenTexture.needsUpdate = true;
+
+  //console.log(renderer.info.render.calls);
 
   //console.log("Current Scene: " + currentSceneNumber);
   //console.log("HUB TRANSITION: " + hubTransitioning);
