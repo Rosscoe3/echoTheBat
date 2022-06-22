@@ -3431,7 +3431,7 @@ function animate() {
     //renderTransition();
   }
 
-  //console.log(controls.)
+  console.log(renderer.info.render.calls);
 
   //console.log("Current Scene: " + currentSceneNumber);
   //console.log("HUB TRANSITION: " + hubTransitioning);
