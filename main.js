@@ -13,15 +13,15 @@ import { mapLinear } from "https://cdn.jsdelivr.net/npm/three@0.139.0/src/math/M
 //** LOAD MANAGER */
 const manager = new THREE.LoadingManager();
 manager.onStart = function (url, itemsLoaded, itemsTotal) {
-  console.log(
-    "Started loading file: " +
-      url +
-      ".\nLoaded " +
-      itemsLoaded +
-      " of " +
-      itemsTotal +
-      " files."
-  );
+  // console.log(
+  //   "Started loading file: " +
+  //     url +
+  //     ".\nLoaded " +
+  //     itemsLoaded +
+  //     " of " +
+  //     itemsTotal +
+  //     " files."
+  // );
 };
 manager.onLoad = function () {
   console.log("Loading complete!");
@@ -32,13 +32,13 @@ manager.onLoad = function () {
 };
 manager.onProgress = function (url, itemsLoaded, itemsTotal) {
   console.log(
-    "Loading file: " +
-      url +
-      ".\nLoaded " +
-      itemsLoaded +
-      " of " +
-      itemsTotal +
-      " files."
+    // "Loading file: " +
+    //   url +
+    //   ".\nLoaded " +
+    //   itemsLoaded +
+    //   " of " +
+    //   itemsTotal +
+    //   " files."
   );
 
   //var progress = (itemsTotal / itemsLoaded) * 100;
@@ -403,7 +403,7 @@ var sprite_deathValley,
   sprite_paintedDesert,
   sprite_peoria,
   sprite_petrifiedForest,
-  sprite_pinalCounty,
+  sprite_superstitionMnts,
   sprite_saguaroNatPark,
   sprite_sanSimon,
   sprite_scaddanWash,
@@ -432,6 +432,8 @@ let phoenixModel = new THREE.Group();
 let grasshopperModel = new THREE.Group();
 
 let hubworldModel = new THREE.Group();
+let garminModel = new THREE.Group();
+let garminHover = false;
 let computerScreen;
 
 //Load Arizona Map Model
@@ -494,6 +496,15 @@ let computerScreenVideo = document.getElementById("video");
 let computerScreenTexture = new THREE.VideoTexture(computerScreenVideo);
 var computerScreenMaterial = new THREE.MeshBasicMaterial({
     map: computerScreenTexture, 
+    side: THREE.FrontSide, 
+    toneMapped: false,
+    transparent: true,
+});
+
+let walkieTalkieVideo = document.getElementById("callVideo");
+let walkieTalkieVideoTexture = new THREE.VideoTexture(walkieTalkieVideo);
+var walkieTalkieVideoMaterial = new THREE.MeshBasicMaterial({
+    map: walkieTalkieVideoTexture, 
     side: THREE.FrontSide, 
     toneMapped: false,
     transparent: true,
@@ -662,7 +673,7 @@ function init() {
   sprite_paintedDesert = new THREE.Sprite(paintedDesertMaterial);
   sprite_peoria = new THREE.Sprite(peoriaMaterial);
   sprite_petrifiedForest = new THREE.Sprite(petrifiedForestMaterial);
-  sprite_pinalCounty = new THREE.Sprite(pinalCountyMaterial);
+  sprite_superstitionMnts = new THREE.Sprite(pinalCountyMaterial);
   sprite_saguaroNatPark = new THREE.Sprite(saguaroNatParkMaterial);
   sprite_sanSimon = new THREE.Sprite(sanSimonRestAreaMaterial);
   sprite_scaddanWash = new THREE.Sprite(scaddanWashMaterial);
@@ -692,7 +703,7 @@ function init() {
     sprite_paintedDesert,
     sprite_peoria,
     sprite_petrifiedForest,
-    sprite_pinalCounty,
+    sprite_superstitionMnts,
     sprite_saguaroNatPark,
     sprite_sanSimon,
     sprite_scaddanWash,
@@ -770,12 +781,12 @@ function init() {
   sprite_paintedDesert.position.set(4.3, sprite_paintedDesert.position.y, -3.8);
   sprite_peoria.position.set(-1, sprite_peoria.position.y, 0.79);
   sprite_petrifiedForest.position.set(4.95, sprite_petrifiedForest.position.y, -2.45);
-  sprite_pinalCounty.position.set(0.94, sprite_petrifiedForest.position.y, 4.26);
+  sprite_superstitionMnts.position.set(1.45, sprite_superstitionMnts.position.y, 1.88);
   sprite_saguaroNatPark.position.set(1.26, sprite_petrifiedForest.position.y, 5.2);
   sprite_sanSimon.position.set(6.3, sprite_petrifiedForest.position.y, 5.56);
   sprite_scaddanWash.position.set(-5.5, sprite_petrifiedForest.position.y, 1.01);
   sprite_tanqueVerde.position.set(2.53, sprite_petrifiedForest.position.y, 5.34);
-  sprite_wymola.position.set(0.71, sprite_petrifiedForest.position.y, 4.04);
+  sprite_wymola.position.set(0.8, sprite_petrifiedForest.position.y, 4.2);
 
   glowSprite.position.set(sprite_rooseveltLake.position.x, uiMinheight, sprite_rooseveltLake.position.z);
   //lessonSceneRaycast.add(glowSprite);
@@ -1072,20 +1083,20 @@ function init() {
   sprite_petrifiedForest_Label.material.opacity = 0.0;
   mapScene.add(sprite_petrifiedForest_Label);
 
-  var sprite_pinalCounty_Label = makeTextSprite("Pinal County", {
+  var sprite_superstitionMnts_Label = makeTextSprite("Superstition Mts.", {
     fontsize: 40,
     fontface: "roboto-condensed",
     borderColor: { r: 0, g: 0, b: 255, a: 0.0 },
   });
-  sprite_pinalCounty_Label.scale.set(0.5, 0.25, 0.5);
-  sprite_pinalCounty_Label.position.set(
-    sprite_pinalCounty.position.x + 0.075,
+  sprite_superstitionMnts_Label.scale.set(0.5, 0.25, 0.5);
+  sprite_superstitionMnts_Label.position.set(
+    sprite_superstitionMnts.position.x + 0.025,
     uiMinheight + 0.01,
-    sprite_pinalCounty.position.z + 0.075
+    sprite_superstitionMnts.position.z + 0.075
   );
-  sprite_pinalCounty_Label.userData.hover = false;
-  sprite_pinalCounty_Label.material.opacity = 0.0;
-  mapScene.add(sprite_pinalCounty_Label);
+  sprite_superstitionMnts_Label.userData.hover = false;
+  sprite_superstitionMnts_Label.material.opacity = 0.0;
+  mapScene.add(sprite_superstitionMnts_Label);
 
   var sprite_saguaroNatPark_Label = makeTextSprite("Saguaro Nat Park", {
     fontsize: 40,
@@ -1182,7 +1193,7 @@ function init() {
     sprite_paintedDesert_Label,
     sprite_peoria_Label,
     sprite_petrifiedForest_Label,
-    sprite_pinalCounty_Label,
+    sprite_superstitionMnts_Label,
     sprite_saguaroNatPark_Label,
     sprite_sanSimon_Label,
     sprite_scaddanWash_Label,
@@ -1203,31 +1214,31 @@ function init() {
       z: 0,
     }
   };
-  gui.add(guiWorld.xPos, "x", -10, 10).onChange(() => {
-    hubworldModel.position.set(
+  gui.add(guiWorld.xPos, "x", -5, 5).onChange(() => {
+    garminModel.position.set(
       guiWorld.xPos.x,
-      hubworldModel.position.y,
-      hubworldModel.position.z
+      garminModel.position.y,
+      garminModel.position.z
     );
-    console.log(hubworldModel.position);
+    console.log(garminModel.position);
   });
 
-  gui.add(guiWorld.xPos, "y", -10, 10).onChange(() => {
-    hubworldModel.position.set(
-      hubworldModel.position.x,
+  gui.add(guiWorld.xPos, "y", -5, 5).onChange(() => {
+    garminModel.position.set(
+      garminModel.position.x,
       guiWorld.xPos.y,
-      hubworldModel.position.z
+      garminModel.position.z
     );
-    console.log(hubworldModel.position);
+    console.log(garminModel.position);
   });
 
-  gui.add(guiWorld.xPos, "z", -10, 10).onChange(() => {
-    hubworldModel.position.set(
-      hubworldModel.position.x,
-      hubworldModel.position.y,
+  gui.add(guiWorld.xPos, "z", -5, 5).onChange(() => {
+    garminModel.position.set(
+      garminModel.position.x,
+      garminModel.position.y,
       guiWorld.xPos.z
     );
-    console.log(hubworldModel.position);
+    console.log(garminModel.position);
   });
 
   //** TOWER ICON INSTANTIATIONS */
@@ -1631,7 +1642,8 @@ function initHubScene()
   //hubScene.add( cube );
   
   cube.userData.name = "CUBE";
-  cube.position.set(-5.5, 0, 0);
+  cube.position.set(-1.8, -0.06, -0.28);
+  cube.scale.set(.1, .1, .1);
 
   const rgbeLoader = new RGBELoader();
   rgbeLoader.load('/resources/images/hdr/GrandCanyonBackdrop.hdr', function(texture){
@@ -1675,10 +1687,43 @@ function initHubScene()
   });
   hubworldModel.position.set(-1.37, -0.5, -0.5);
 
+  loader.load("/resources/models/Walke-Talkie-Garmin.glb", function (gltf) 
+  {
+    var model = gltf.scene;
+    model.traverse((o) => 
+    {
+      if (o.isMesh)
+      { 
+        var colorMap = o.material.map;
+        var newMaterial = new THREE.MeshBasicMaterial({transparent: true});
+        o.material = newMaterial;
+        o.material.map = colorMap;
+
+        console.log("O:" + o.name);
+
+        if(o.name == "Screen")
+        {
+          o.material = walkieTalkieVideoMaterial;
+          o.material.map.flipY = false;
+        }
+      }
+    });
+    
+    garminModel.add(gltf.scene);
+    hubworldModel.add(garminModel);
+    //console.log(phoenixModel);
+    hubScene.add(garminModel);
+    //console.log("outline: " + outlineBug.children[0].children[0].name);
+  });
+
+  garminModel.scale.set(0.035, 0.035, 0.035);
+  garminModel.position.set(-1.9, -0.28, -0.3);
+
   //** CAMERA INITIALIZATION */
   hubCamera.rotation.y = Math.PI / 2;
 
   computerScreenVideo.play();
+  walkieTalkieVideo.play();
 }
 
 function makeTextSprite(message, parameters) {
@@ -1791,7 +1836,7 @@ function locationSpriteSetup() {
   sprite_paintedDesert.userData.locName = "Painted Desert";
   sprite_peoria.userData.locName = "Peoria";
   sprite_petrifiedForest.userData.locName = "Petrified Forest";
-  sprite_pinalCounty.userData.locName = "Pinal County";
+  sprite_superstitionMnts.userData.locName = "Superstition Mts.";
   sprite_saguaroNatPark.userData.locName = "Saguaro Nat Park";
   sprite_sanSimon.userData.locName = "San Simon Rest Area";
   sprite_scaddanWash.userData.locName = "Scaddan Wash";
@@ -1940,7 +1985,7 @@ function locationSpriteSetup() {
   sprite_paintedDesert.userData.popupTitle = "Painted Desert";
   sprite_paintedDesert.userData.popupText = "A dam on the Salt River formed Apache Lake.";
   sprite_paintedDesert.userData.satelliteImage =
-    "/resources/images/landsat/salt-river.jpg";
+    "/resources/images/landsat/painted-desert.jpg";
   sprite_paintedDesert.userData.img = "/resources/images/location/paintedDesert.jpg";
   sprite_paintedDesert.userData.index = 16;
 
@@ -1960,13 +2005,13 @@ function locationSpriteSetup() {
   sprite_petrifiedForest.userData.img = "/resources/images/location/petrifiedForest.jpg";
   sprite_petrifiedForest.userData.index = 18;
 
-  sprite_pinalCounty.userData.popup = true;
-  sprite_pinalCounty.userData.popupTitle = "Pinal County";
-  sprite_pinalCounty.userData.popupText = "A dam on the Salt River formed Apache Lake.";
-  sprite_pinalCounty.userData.satelliteImage =
-    "/resources/images/landsat/salt-river.jpg";
-  sprite_pinalCounty.userData.img = "/resources/images/location/pinalCounty.jpg";
-  sprite_pinalCounty.userData.index = 19;
+  sprite_superstitionMnts.userData.popup = true;
+  sprite_superstitionMnts.userData.popupTitle = "Superstition Mountains";
+  sprite_superstitionMnts.userData.popupText = "A dam on the Salt River formed Apache Lake.";
+  sprite_superstitionMnts.userData.satelliteImage =
+    "/resources/images/landsat/superstition-mnts.jpg";
+  sprite_superstitionMnts.userData.img = "/resources/images/location/pinalCounty.jpg";
+  sprite_superstitionMnts.userData.index = 19;
 
   sprite_saguaroNatPark.userData.popup = true;
   sprite_saguaroNatPark.userData.popupTitle = "Saguaro Nat Park";
@@ -1980,7 +2025,7 @@ function locationSpriteSetup() {
   sprite_sanSimon.userData.popupTitle = "San Simon Rest Area";
   sprite_sanSimon.userData.popupText = "A dam on the Salt River formed Apache Lake.";
   sprite_sanSimon.userData.satelliteImage =
-    "/resources/images/landsat/salt-river.jpg";
+    "/resources/images/landsat/sanSimon-restArea.jpg";
   sprite_sanSimon.userData.img = "/resources/images/location/sanSimonRestArea.jpg";
   sprite_sanSimon.userData.index = 21;
 
@@ -2004,7 +2049,7 @@ function locationSpriteSetup() {
   sprite_wymola.userData.popupTitle = "Wymola";
   sprite_wymola.userData.popupText = "A dam on the Salt River formed Apache Lake.";
   sprite_wymola.userData.satelliteImage =
-    "/resources/images/landsat/salt-river.jpg";
+    "/resources/images/landsat/wymola.jpg";
   sprite_wymola.userData.img = "/resources/images/location/wymola.jpg";
   sprite_wymola.userData.index = 24;
 }
@@ -2396,14 +2441,49 @@ function hoverObject() {
       intersectObject.material.opacity = 0.5;
       intersectObject.material.side = THREE.FrontSide;
       console.log("On Object");
+      document.body.style.cursor = 'pointer' 
     }
     else if (intersects.length > 0 && intersects[0].object.name == "Computer_Screen")
     {
       intersectObject = intersects[0].object;
       intersected = true;
       intersectObject.material.opacity = 0.75;
-      //intersectObject.children[0].material.opacity = 0.5;
-      intersectObject.material.side = THREE.FrontSide;
+      document.body.style.cursor = 'pointer' 
+    }
+    else if (intersects.length > 0 && intersects[0].object.name == "Landsat")
+    {
+      intersectObject = intersects[0].object;
+      intersected = true;
+      intersectObject.material.opacity = 0.5;
+      document.body.style.cursor = 'pointer' 
+    }
+    else if (intersects.length > 0 && intersects[0].object.name == "TestGlass")
+    {
+      intersectObject = intersects[0].object;
+      intersected = true;
+      intersectObject.material.opacity = 0.5;
+      document.body.style.cursor = 'pointer' 
+    }
+    else if (intersects.length > 0 && intersects[0].object.name == "Desk_+_Chair")
+    {
+      if(!garminHover)
+      {
+        new TWEEN.Tween(garminModel.position).to({
+          x: -1.9,
+          y: -0.1, 
+          z: -0.3
+        }, 3000)
+          .easing(TWEEN.Easing.Quadratic.InOut)
+          .start();
+
+
+        garminHover = true;
+      }
+      
+      intersectObject = intersects[0].object;
+      intersected = true;
+      //intersectObject.material.opacity = 0.5;
+      document.body.style.cursor = 'pointer' 
     }
     else
     {
@@ -2417,13 +2497,14 @@ function hoverObject() {
         intersectObject.material.opacity = 1;
         //iconScalingTween(intersectObject, false);
         intersectObject = null;
+        document.body.style.cursor = 'default'
       }
     }
 
     //**Used to change the cursor**//
     if (intersects && intersects.length > 0) 
     { 
-      document.body.style.cursor = 'grab' 
+      //document.body.style.cursor = 'pointer' 
     } 
     else 
     { 
@@ -2657,8 +2738,24 @@ function clickEvent() {
         if(intersects[0].object.name == "Computer_Monitor" || intersects[0].object.name == "Computer_Screen")
         {
           //transitioning = true;
-          hubToMapTransition();
+          //hubToMapTransition();
           console.log(intersects[0].object.userData.name);
+
+          new TWEEN.Tween(hubCamera.position).to({x: -1.65}, 3000)
+          .easing(TWEEN.Easing.Quadratic.InOut)
+          .start(console.log("HELP!"))
+          .onComplete(hubToMapTransition);
+
+        }
+        else if(intersects[0].object.name == "Landsat")
+        {
+          console.log("landsat click");
+          clickOpenURL(intersects, "https://landsat.gsfc.nasa.gov/outreach/camp-landsat/");
+        }
+        else if(intersects[0].object.name == "TestGlass")
+        {
+          console.log("landsat click");
+          clickOpenURL(intersects, "https://landsat.gsfc.nasa.gov/");
         }
       }
 
@@ -2840,19 +2937,23 @@ function doubleClickEvent() {
   //updateLinePath();
 }
 
-function clickOpenURL(intersects) {
+function clickOpenURL(intersects, url) {
   //*****CHECK FOR LOCATION UI
-  if (
-    intersects.length > 0 &&
-    intersects[0].object.userData.name == "locationUI"
-  ) {
+  
+  
+  if (intersects.length > 0) 
+  {
+    console.log("CLICK OPEN");
     //If it has a URL open in another window
-    if (intersects[0].object.userData.url) {
-      //window.open(intersects[0].object.userData.url,'_blank');
+    if (url) 
+    {
+      window.open(url,'_blank');
       console.log(
-        "Opening: " + intersects[0].object.userData.url + " in a new tab"
+        "Opening: " + url + " in a new tab"
       );
-    } else {
+    } 
+    else 
+    {
       console.log("UI does not have a link");
     }
 
@@ -3445,6 +3546,7 @@ function animate() {
   }
 
   computerScreenTexture.needsUpdate = true;
+  walkieTalkieVideoTexture.needsUpdate = true;
 
   //console.log(renderer.info.render.calls);
 
@@ -3492,6 +3594,7 @@ function TransitionDone() {
         backButton.classList.toggle("active");
       }
 
+      hubCamera.position.x = 0;
       controls.enabled = true;
       renderer.render(currentScene, currentCamera);
     } 
@@ -3593,6 +3696,10 @@ function hubToMapTransition()
   console.log("HUB TO MAP!");
   
   hubTransitioning = true;
+  
+  // new TWEEN.Tween(hubCamera.position).to({x: -1.65},2000)
+  //   .easing(TWEEN.Easing.Quadratic.InOut)
+  //   .start(console.log("HELP!"));
 
   transitionParams.transition = 0;
   new TWEEN.Tween(transitionParams).to({ transition: 1 }, 2000)
@@ -4378,7 +4485,7 @@ helpButton.addEventListener("click", (e) => {
   {
     if (!transitioning && !isTweening) 
     {
-      if(currentSceneNumber != 2)
+      if(currentSceneNumber == 1)
       {
         console.log("HELP BUTTON");
         //tutorialSequence();
