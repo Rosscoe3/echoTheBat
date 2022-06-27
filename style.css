@@ -376,6 +376,121 @@ body {
   50% { border-color: rgb(0, 0, 0) }
 }
 
+/* Start Of Interactive */
+.startYoutubeVideo{
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(1);
+  opacity: 100%;
+  width: 70%;
+  z-index: 200;
+  text-align: top;
+  box-sizing: border-box;
+  
+  text-size-adjust: inherit;
+  overflow-wrap: break-word;
+  font-family: roboto-condensed, sans-serif;
+
+  transition: all 500ms ease-in-out;
+}
+.startYoutubeVideo .iframe-container iframe{
+  transform: translate(2.5%, 0%);
+}
+.startYoutubeVideo.disabled{
+  opacity: 0%;
+  pointer-events: none;
+  transition: all 500ms ease-in-out;
+}
+.startYoutubeVideo .startButton{
+  border: solid white 0.5vh;
+  position: relative;
+  transform: translate(-100%, 0%) scale(1);
+  opacity: 100%;
+  width: fit-content;
+  height: fit-content;
+  z-index: 2;
+  text-align: top;
+  padding: 20px;
+  box-sizing: border-box;
+  border-radius: 1rem;
+  cursor: default;
+  
+  /* font-size: 2vw; */
+  
+  text-size-adjust: inherit;
+  overflow-wrap: break-word;
+  font-family: roboto-condensed, sans-serif;
+  font-size: 100%;
+  color: white;
+
+  transition: all 500ms ease-in-out;
+}
+
+.startYoutubeVideo .startButton:hover{
+  opacity: 50%;
+  cursor: pointer;
+  transition: all 500ms ease-in-out;
+}
+
+.startYoutubeVideo .startButton.disabled{
+  opacity: 0%;
+  pointer-events: none;
+  pointer-events: none;
+  transition: all 500ms ease-in-out;
+}
+
+.subtitles {
+  position: absolute;
+  bottom: 5%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(0);
+  background:rgb(0, 0, 0, 0.75);
+  opacity: 0%;
+  /* width: 40vw;
+  height: 30vh; */
+  width: fit-content;
+  height: fit-content;
+  z-index: 1;
+  text-align: top;
+  padding: 10px;
+  box-sizing: border-box;
+  border-radius: 10px;
+  display: block;
+  
+  /* font-size: 2vw; */
+  
+  text-size-adjust: inherit;
+  overflow-wrap: break-word;
+  font-family: roboto-condensed, sans-serif;
+
+  transition: all 500ms ease-in-out;
+}
+.subtitles.active {
+  display: block;
+  transition: all 1000ms ease-in-out;
+  transform: translate(-50%, -50%) scale(1);
+  /* transform: translate(-50%, -50%) scale(1); */
+  opacity: 80%;
+}
+/* USED FOR TYPEWRITER EFFECT */
+.subtitles .typewriter h1 {
+  color: white;
+  overflow: hidden; /* Ensures the content is not revealed until the animation */
+  border-right: .1em solid white; /* The typwriter cursor */
+  padding: 0.25em;
+  white-space: nowrap; /* Keeps the content on a single line */
+  margin: 0 auto; /* Gives that scrolling effect as the typing happens */
+  letter-spacing: .01em; /* Adjust as needed */
+  font-size: 1.5vw;
+}
+.subtitles.active .typewriter h1 {
+  animation: 
+    typing 3.5s steps(30, end),
+    blink-caret .5s step-end infinite;
+}
+
+
 .youtubeLink {
   position: absolute;
   top: 47.5%;

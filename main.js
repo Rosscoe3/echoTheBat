@@ -156,6 +156,7 @@ var minSpriteSize = 0.15;
 var elem;
 var gameStarted = false;
 var tutorial = false;
+var mouseIsDragging = false;
 var tutorialIndex = 0;
 var videoPlaying = false;
 var currentLessonSceneIndex = 0;
@@ -163,6 +164,11 @@ var currentLessonIndex = 0;
 
 var lessonSequences;
 var lesson1Sequence, lesson2Sequence, lesson3Sequence, lesson4Sequence;
+var startingSubtitles;
+var startingSequenceNumb = 0;
+var startingSequence = true;
+var introHubSequence = true;
+var timeoutID1, timeoutID2;
 
 //** SOUNDS AND MUSIC */
 const listener = new THREE.AudioListener();
@@ -432,6 +438,7 @@ let phoenixModel = new THREE.Group();
 let grasshopperModel = new THREE.Group();
 
 let hubworldModel = new THREE.Group();
+let hubworldRaycast = new THREE.Group();
 let garminModel = new THREE.Group();
 let garminHover = false;
 let computerScreen;
@@ -443,6 +450,8 @@ let grandCanyonModel = new THREE.Group();
 let walkieTalkie = new THREE.Group();
 
 /** HTML ELEMENTS */
+let continueButton = document.getElementById("continueButton");
+let startYoutubeContainer = document.getElementById("startYoutubeVideo");
 let startButton = document.getElementById("startBtn");
 const labelContainerElem = document.querySelector("#labels");
 const locationNameElem = document.createElement("div");
@@ -492,6 +501,9 @@ let droppableElements = document.querySelectorAll(".droppable");
 let transitionCover = document.getElementById("screenTransition");
 let startScreenCover = document.getElementById("startScreenBlock");
 
+let subtitles = document.getElementById("subtitles");
+let subtitleLines = document.getElementById("subtitleLine");
+
 let computerScreenVideo = document.getElementById("video");
 let computerScreenTexture = new THREE.VideoTexture(computerScreenVideo);
 var computerScreenMaterial = new THREE.MeshBasicMaterial({
@@ -517,6 +529,7 @@ var echoPingLocation;
 init();
 initLessonScene();
 initHubScene();
+introSubtitles();
 
 //** USED FOR LOADING YOUTUBE VIDEO AND API */
 function loadVideo() {
@@ -603,7 +616,7 @@ var loadingScreen = {
 
 function init() {
   //** LOADING SCREEN STUFF */
-  startButton.classList.toggle("active");
+  //startButton.classList.toggle("active");
   startButton.classList.toggle("disabled");
   audioButton.classList.toggle("disabled");
   mapButton.classList.toggle("disabled");
@@ -1304,6 +1317,11 @@ function tutorialSequence()
 {
   console.log("TUTORIAL: " + tutorialIndex);
   tutorial = true;
+
+  if(tutorial != 5)
+  {
+    tutorialIndex++;
+  }
   
   if(tutorialIndex == 0)
   {
@@ -1312,8 +1330,8 @@ function tutorialSequence()
     tutorialHighlight.style.left = "50%";
     highlightText.innerHTML = "Click and drag to move around the map";
     mouseIcon.classList.toggle("init");
-
-    tutorialIndex++;
+  
+    //tutorialIndex++;
   }
   else if(tutorialIndex == 1)
   {
@@ -1326,15 +1344,15 @@ function tutorialSequence()
 
     tutClickImage.classList.toggle("active");
     tutClickImage.style = "background-image: url('/resources/images/location/horseshoeBend.jpg');";
-
-    tutorialIndex++;
+    
+    //tutorialIndex++;
   }
   else if(tutorialIndex == 2)
   {
     glowSprite.position.set(towerIcon.position.x, uiMinheight - 0.01, towerIcon.position.z);
     highlightText.innerHTML = "Clicking towers will give you hints to Echo's location";
     tutClickImage.style = "background-image: url('/resources/images/towericon.png');";
-    tutorialIndex++;
+    //tutorialIndex++;
   }
   else if(tutorialIndex == 3)
   {
@@ -1348,7 +1366,7 @@ function tutorialSequence()
     mouseIcon.classList.toggle("mapClick");
     
     tutClickImage.classList.toggle("active");
-    tutorialIndex++;
+    //tutorialIndex++;
   }
   else if(tutorialIndex == 4)
   {
@@ -1361,6 +1379,8 @@ function tutorialSequence()
     mouseIcon.classList.toggle("mapClick");
     mouseIcon.classList.toggle("active");
   }
+
+  console.log("TUTORIAL: " + tutorialIndex);
 }
 
 function tutorialReset()
@@ -1369,7 +1389,11 @@ function tutorialReset()
   tutorialHighlight.style.left = "50%";
   tutorialHighlight.style.opacity = "50%";
   highlightText.innerHTML = "Click and drag to move around the map";
-  tutorialIndex++;
+  
+  // if(tutorialIndex > 0)
+  // {
+  //   tutorialIndex++;
+  // }
 
   glowSprite.position.set(sprite_rooseveltLake.position.x, uiMinheight - 0.01, sprite_rooseveltLake.position.z);
 
@@ -1377,6 +1401,10 @@ function tutorialReset()
   tutorial = true;
 
   mouseIcon.classList.toggle("active");
+  if(!mouseIcon.classList.contains("init"))
+  {
+    mouseIcon.classList.toggle("init");
+  }
   tutorialHighlight.classList.toggle("active");
   highlightText.classList.toggle("active");
 }
@@ -1543,7 +1571,7 @@ function initLessonScene() {
   grasshopperModel.position.set(0.7127, -0.719, 3.543);
 
   //Bug Model
-  loader.load("/resources/models/Bugs-1.glb", function (gltf) 
+  loader.load("/resources/models/Bug.glb", function (gltf) 
   {
     var model = gltf.scene;
     model.traverse((o) => 
@@ -1666,6 +1694,7 @@ function initHubScene()
 
         console.log("O:" + o.name);
 
+
         if(o.name == "Computer_Monitor")
         {
           console.log(o.children[0]);
@@ -1710,9 +1739,10 @@ function initHubScene()
     });
     
     garminModel.add(gltf.scene);
-    hubworldModel.add(garminModel);
+    //hubworldModel.add(garminModel);
     //console.log(phoenixModel);
     hubScene.add(garminModel);
+    console.log(hubScene);
     //console.log("outline: " + outlineBug.children[0].children[0].name);
   });
 
@@ -1724,6 +1754,15 @@ function initHubScene()
 
   computerScreenVideo.play();
   walkieTalkieVideo.play();
+}
+
+function introSubtitles()
+{
+  startingSubtitles = 
+  ["*PSHHH*... Bravo to tower ...*PSHHH*",
+   "*PSHHH*... We need your help locating <i>ECHO</i>! ...*PSHHH*",
+    "*PSHHH*... We've just gotten word he's been spotted, sending you the ping now ...*PSHHH*",
+     "*PSHHH*... Click on your <i>computer</i>, and let's get started! ...*PSHHH*"];
 }
 
 function makeTextSprite(message, parameters) {
@@ -2432,7 +2471,9 @@ function hoverObject() {
   if (currentSceneNumber == 0)
   {
     raycaster.setFromCamera(mouse, hubCamera);
-    intersects = raycaster.intersectObjects(hubworldModel.children[0].children);
+    
+    //intersects = raycaster.intersectObjects(hubworldModel.children[0].children);
+    intersects = raycaster.intersectObjects(hubScene.children, true);
 
     if (intersects.length > 0 && intersects[0].object.userData.name == "CUBE")
     {
@@ -2466,6 +2507,7 @@ function hoverObject() {
     }
     else if (intersects.length > 0 && intersects[0].object.name == "Desk_+_Chair")
     {
+      //** FIRST TIME YOU HOVER OVER THE DESK */
       if(!garminHover)
       {
         new TWEEN.Tween(garminModel.position).to({
@@ -2473,9 +2515,12 @@ function hoverObject() {
           y: -0.1, 
           z: -0.3
         }, 3000)
-          .easing(TWEEN.Easing.Quadratic.InOut)
-          .start();
+        .easing(TWEEN.Easing.Quadratic.InOut)
+        .start();
 
+        console.log("SUBTITLES ACTIVE");
+        subtitleLines.innerHTML = startingSubtitles[0];
+        subtitleChange();
 
         garminHover = true;
       }
@@ -2485,6 +2530,15 @@ function hoverObject() {
       //intersectObject.material.opacity = 0.5;
       document.body.style.cursor = 'pointer' 
     }
+    //** WALKIE TALKIE - GARMIN HOVER */
+    else if (intersects.length > 0 && intersects[0].object.name == "Screen")
+    {
+      intersectObject = intersects[0].object;
+      intersected = true;
+      intersectObject.material.opacity = 0.1;
+      document.body.style.cursor = 'pointer';
+      console.log("WALKIE TALKIE");
+    }
     else
     {
       if (intersected) 
@@ -2492,7 +2546,7 @@ function hoverObject() {
         console.log("Off Object");
         
         intersectObject.userData.scaling = false;
-      
+        
         intersected = false;
         intersectObject.material.opacity = 1;
         //iconScalingTween(intersectObject, false);
@@ -2647,6 +2701,46 @@ function hoverObject() {
   //console.log(intersects[0].object.userData.name);
 }
 
+//** UPDATE THE SUBTITLES FOR DIALOGUE */
+function subtitleChange()
+{
+  //** IF ITS NOT ACTIVE, ACTIVATE IT */
+  if(!subtitles.classList.contains("active"))
+  {
+    console.log("ACTIVATED");
+    subtitles.classList.toggle("active");
+  }
+  
+  if(startingSequenceNumb < startingSubtitles.length - 1 && startingSequence)
+  {
+    //** FIRST WAIT FOR TIME OUT */
+    timeoutID1 = setTimeout(function() 
+    {
+      startingSequenceNumb++;
+      
+      //**Disable It */
+      if(subtitles.classList.contains("active"))
+      {
+        console.log("DISABLE IT")
+        subtitles.classList.toggle("active");
+      }
+      
+      //** RUNS AFTER INITIAL ONE */
+      timeoutID2 = setTimeout(function() {
+        subtitleLines.innerHTML = startingSubtitles[startingSequenceNumb];
+        console.log("RERUN");
+        subtitleChange();
+      }, 500);
+    }, 10000);
+  }
+  else
+  {
+    console.log("SUBTITLE SEQUENCE IS OVER");
+    startingSequence = false;
+  }
+
+}
+
 //Opens the 'popup' class in html and dispalys the content based on the object it clicked
 function togglePopup() {
   if (!togglePopupOpen) {
@@ -2724,10 +2818,10 @@ function clickEvent() {
   if(!tutorial)
   {
     //** HUBWORLD  */ 
-    if(currentSceneNumber == 0)
+    if(currentSceneNumber == 0 && gameStarted)
     {
       raycaster.setFromCamera(mouse, hubCamera);
-      intersects = raycaster.intersectObjects(hubworldModel.children[0].children);
+      intersects = raycaster.intersectObjects(hubScene.children, true);
 
       console.log("hubworld click");
 
@@ -2735,28 +2829,71 @@ function clickEvent() {
       {
         intersectObject = intersects[0].object;
         
-        if(intersects[0].object.name == "Computer_Monitor" || intersects[0].object.name == "Computer_Screen")
+        //** COMPUTER SCREEN */
+        if(intersects[0].object.name == "Computer_Monitor" || intersects[0].object.name == "Computer_Screen" && !startingSequence)
         {
           //transitioning = true;
           //hubToMapTransition();
+
+          //** USED FOR THE INTRO SUBTITLE SEQUENCE */
+          if(subtitles.classList.contains("active"))
+          {
+            subtitles.classList.toggle("active");
+          }
+
           console.log(intersects[0].object.userData.name);
 
-          new TWEEN.Tween(hubCamera.position).to({x: -1.65}, 3000)
+          new TWEEN.Tween(hubCamera.position).to({x: -1.35}, 3000)
           .easing(TWEEN.Easing.Quadratic.InOut)
           .start(console.log("HELP!"))
           .onComplete(hubToMapTransition);
-
         }
+        //** LANDSAT */
         else if(intersects[0].object.name == "Landsat")
         {
           console.log("landsat click");
           clickOpenURL(intersects, "https://landsat.gsfc.nasa.gov/outreach/camp-landsat/");
         }
+        //** MICROSCOPE */
         else if(intersects[0].object.name == "TestGlass")
         {
           console.log("landsat click");
           clickOpenURL(intersects, "https://landsat.gsfc.nasa.gov/");
         }
+        //** WALKIE TALKIE */
+        else if(intersects[0].object.name == "Screen")
+        {
+          //startingSequence = false;
+
+          if(subtitles.classList.contains("active"))
+          {
+            clearTimeout(timeoutID1);
+            clearTimeout(timeoutID2);
+            
+            subtitles.classList.toggle("active");
+            console.log("cleared Timeout: " + startingSequenceNumb);
+            
+            setTimeout(function() 
+            {
+              if(startingSequenceNumb < startingSubtitles.length)
+              {
+                if(startingSequenceNumb == 0)
+                {
+                  console.log("ZERO");
+                  startingSequenceNumb = 2;
+                }
+                else
+                {
+                  startingSequenceNumb++;
+                }
+                subtitleLines.innerHTML = startingSubtitles[startingSequenceNumb-1];
+              }
+              subtitleChange();
+            }, 500);
+          }
+          console.log("Walkie Talkie Click: " + startingSequenceNumb + ", " + startingSubtitles.length);
+        }
+        
       }
 
     }
@@ -2878,20 +3015,18 @@ function clickEvent() {
   }
   else
   {
-    console.log("tutorial click");
-
     //** IF ITS THE TUTORIAL */
-    if(tutorialIndex == 0)
+    if(!mouseIsDragging)
     {
-      tutorialSequence();
-    }
-    else if(tutorialIndex == 1)
-    {
-      tutorialSequence();
-    }
-    if(tutorialIndex == 3)
-    {
-      //tutorialSequence();
+      if(tutorialIndex == 1)
+      {
+        console.log("tutorial click: " + tutorialIndex);
+        tutorialSequence();
+      }
+      else if(tutorialIndex == 3)
+      {
+        //tutorialSequence();
+      }
     }
   }
 }
@@ -3594,7 +3729,16 @@ function TransitionDone() {
         backButton.classList.toggle("active");
       }
 
+      //** TUTORIAL FOR THE FIRST TIME YOU PLAY */
+      if(introHubSequence)
+      {
+        introHubSequence = false;
+        // tutorialSequence();
+        tutorialReset();
+      }
+
       hubCamera.position.x = 0;
+      garminModel.position.set(-1.9, -0.28, -0.3);
       controls.enabled = true;
       renderer.render(currentScene, currentCamera);
     } 
@@ -3726,8 +3870,8 @@ function youAreHereUpdate() {
   var posX = mapLinear(camX, -7.32, 6.8, 15, 85);
   var posZ = mapLinear(camZ, -8.52, 8.31, 7, 88);
 
-  youAreHereIcon.style.top = posZ + "%";
-  youAreHereIcon.style.left = posX + "%";
+  //youAreHereIcon.style.top = posZ + "%";
+  //youAreHereIcon.style.left = posX + "%";
 
   console.log("You are here update X: " + posX + ", Y: " + posZ);
 }
@@ -4193,6 +4337,19 @@ audioButton.addEventListener("click", function (ev) {
   //   music.play();
   // }
 });
+//** CONTINUE BUTTON, FOR START WITH YOUTUBE VIDEO */
+continueButton.addEventListener("click", function (ev) {
+  ev.stopPropagation();
+
+  if(!continueButton.classList.contains("disabled"))
+  {
+    continueButton.classList.toggle("disabled");
+    startYoutubeContainer.classList.toggle("disabled");
+    startButton.classList.toggle("active");
+  }
+
+  music.play();
+});
 
 //** START BUTTON EVENT LISTENER */
 startButton.addEventListener("click", function (ev) {
@@ -4275,6 +4432,7 @@ tutClickImage.addEventListener('click', function(ev){
     //   tutorialSequence();
     // }
     
+    console.log("Tutorial Image Click");
     tutorialSequence();
   }
 });
@@ -4310,7 +4468,7 @@ mapButton.addEventListener('click', function(ev) {
 
     if(tutorial)
     {
-      if(tutorialIndex == 4)
+      if(tutorialIndex == 3)
       {
         tutorialSequence();
       }
@@ -4684,15 +4842,33 @@ lessonDoneBtn.addEventListener("click", function (ev) {
 //**EVENT TO CHANGE MOUSE CURSOR TO 'GRABBING'**//
 controls.addEventListener( 'start', function ( event ) {
 
-	console.log("IS DRAGGING");
-  document.body.style.cursor = 'grabbing';
-
+	if(currentSceneNumber == 1)
+  {
+    mouseIsDragging = true;
+    console.log("IS DRAGGING: " + mouseIsDragging);
+    document.body.style.cursor = 'grabbing';
+  }
 } );
 controls.addEventListener( 'end', function ( event ) {
+  if(currentSceneNumber == 1)
+  {
+    console.log("END DRAGGING");
+    document.body.style.cursor = 'grab';
 
-	console.log("END DRAGGING");
-  document.body.style.cursor = 'grab';
+    setTimeout(function() {
+      mouseIsDragging = false;
+      console.log("END DRAGGING " + mouseIsDragging);
+    }, 1000);
 
+    if(tutorial)
+    {
+      if(tutorialIndex == 0)
+      {
+        console.log("tutorial END DRAG 0");
+        tutorialSequence();
+      }
+    }
+  }
 } );
 
 animate();
