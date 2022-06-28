@@ -405,7 +405,8 @@ body {
 .startYoutubeVideo .startButton{
   border: solid white 0.5vh;
   position: relative;
-  transform: translate(-100%, 0%) scale(1);
+  left: 40%;
+  transform: scale(1);
   opacity: 100%;
   width: fit-content;
   height: fit-content;
@@ -1040,29 +1041,26 @@ bottom-image:hover > .hover {
 }
 .highlightText{
   position: absolute;
-
   pointer-events: none;
   
-  top:75%;
+  bottom: 5%;
   left:50%;
 
   opacity: 0%;
 
   width: fit-content;
-  height: fit-content;
-
   transform: translate(-50%, -50%) scale(1);
 
-  text-align: center;
+  text-align: top;
   text-size-adjust: inherit;
   overflow-wrap: break-word;
   font-family: roboto-condensed, sans-serif;
-  font-size: 5vh;
+  font-size: 1.5vw;
 
-  padding: 20px;
+  padding: 10px;
   box-sizing: border-box;
   border-radius: 10px;
-  background-color: rgba(0, 0, 0, 0.25);
+  background-color: rgba(0, 0, 0, 0.5);
 
   color: white;
 
@@ -1071,6 +1069,29 @@ bottom-image:hover > .hover {
 .highlightText.active{
   opacity: 100%;
   transition: all 500ms ease-in-out;
+}
+
+.highlightText .typewriter h1 {
+  position: absolute;
+  bottom: 5%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(1);
+  z-index: 10;
+  opacity: 100%;
+
+  color: white;
+  overflow: hidden; /* Ensures the content is not revealed until the animation */
+  border-right: .1em solid white; /* The typwriter cursor */
+  padding: 0.25em;
+  white-space: nowrap; /* Keeps the content on a single line */
+  margin: 0 auto; /* Gives that scrolling effect as the typing happens */
+  letter-spacing: .01em; /* Adjust as needed */
+  font-size: 1.5vw;
+}
+.highlightText.active .typewriter h1 {
+  animation: 
+    typing 3.5s steps(30, end),
+    blink-caret .5s step-end infinite;
 }
 
 .mouseIcon{
