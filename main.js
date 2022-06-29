@@ -7,8 +7,22 @@ import { MapControls } from "https://cdn.skypack.dev/three@0.127.0/examples/jsm/
 import { GLTFLoader } from "https://cdn.skypack.dev/three@0.127.0/examples/jsm/loaders/GLTFLoader.js";
 import { RGBELoader } from 'https://cdn.jsdelivr.net/npm/three@0.127/examples/jsm/loaders/RGBELoader.js';
 import { DragControls } from "./DragControls";
+import { EffectComposer } from 'https://cdn.skypack.dev/three@0.127.0/examples/jsm/postprocessing/EffectComposer.js';
+import { RenderPass } from 'https://cdn.skypack.dev/three@0.127.0/examples/jsm/postprocessing/RenderPass.js';
+import { UnrealBloomPass } from 'https://cdn.skypack.dev/three@0.127.0/examples/jsm/postprocessing/UnrealBloomPass.js';
+import { FilmPass } from 'https://cdn.skypack.dev/three@0.127.0/examples/jsm/postprocessing/FilmPass.js';
+import { ShaderPass } from 'https://cdn.skypack.dev/three@0.127.0/examples/jsm/postprocessing/ShaderPass.js';
+import { VignetteShader } from 'https://cdn.skypack.dev/three@0.127.0/examples/jsm/shaders/VignetteShader.js';
+import { PixelShader } from 'https://cdn.skypack.dev/three@0.127.0/examples/jsm/shaders/PixelShader.js'; 
+import { FXAAShader } from 'https://cdn.skypack.dev/three@0.127.0/examples/jsm/shaders/FXAAShader.js'; 
+
 import * as dat from "dat.gui";
 import { mapLinear } from "https://cdn.jsdelivr.net/npm/three@0.139.0/src/math/MathUtils.js";
+import Stats from 'https://cdn.skypack.dev/stats.js';
+
+const stats = new Stats();
+stats.showPanel(0); // 0: fps, 1: ms, 2: mb, 3+: custom
+document.body.appendChild(stats.dom);
 
 //** LOAD MANAGER */
 const manager = new THREE.LoadingManager();
@@ -68,34 +82,72 @@ const mainCamera = new THREE.PerspectiveCamera(
   75,
   window.innerWidth / window.innerHeight,
   0.1,
-  1000
+  5
 );
 const lessonCamera = new THREE.PerspectiveCamera(
   75,
   window.innerWidth / window.innerHeight,
   0.1,
-  1000
+  250
 );
 const hubCamera = new THREE.PerspectiveCamera(
   50,
   window.innerWidth / window.innerHeight,
   0.1,
-  1000
+  35
 );
 
 let renderer = new THREE.WebGLRenderer({ 
   canvas, 
-  antialias: true,
+  antialias: false,
   alpha: false, 
   powerPreference: "high-performance" });
 
- 
-  // alpha: false, 
-  // antialias: true,
-  // alphaBuffer: false,
-  // depth: false,
-  // powerPreference: "high-performance"
-  
+
+//** RENDER PASSES */
+const filmPass = new FilmPass(
+  0.5,   // noise intensity
+  0.1,  // scanline intensity
+  648,    // scanline count
+  true,  // grayscale
+);
+filmPass.renderToScreen = true;
+  //** VINGETTE */
+const shaderVignette = VignetteShader;
+const effectVignette = new ShaderPass(shaderVignette);
+effectVignette.uniforms[ 'offset' ].value = 1;
+effectVignette.uniforms[ 'darkness' ].value = 1;
+  //** PIXEL SHADER */
+const shaderPixel = PixelShader;
+const effectPixel = new ShaderPass(shaderPixel);
+effectPixel.uniforms[ 'resolution' ].value = new THREE.Vector2( window.innerWidth, window.innerHeight );
+effectPixel.uniforms[ 'resolution' ].value.multiplyScalar( window.devicePixelRatio );
+effectPixel.uniforms[ 'pixelSize' ].value = 3;
+
+const shaderFXAA = FXAAShader;
+const effectFXAA = new ShaderPass(shaderFXAA);
+const pixelRatio = renderer.getPixelRatio();
+effectFXAA.material.uniforms[ 'resolution' ].value.x = 1 / ( container.offsetWidth * pixelRatio );
+effectFXAA.material.uniforms[ 'resolution' ].value.y = 1 / ( container.offsetHeight * pixelRatio );
+
+let lessonComposer = new EffectComposer(renderer);
+lessonComposer.setSize(window.innerWidth, window.innerHeight);
+let mapComposer = new EffectComposer(renderer)
+mapComposer.setSize(window.innerWidth, window.innerHeight);
+let hubComposer = new EffectComposer(renderer)
+hubComposer.setSize(window.innerWidth, window.innerHeight);
+
+lessonComposer.addPass(new RenderPass(lessonScene, lessonCamera));
+lessonComposer.addPass(new UnrealBloomPass({x: 1024, y: 1024}, 1.0, 0.0, 0.75));
+lessonComposer.addPass(filmPass);
+lessonComposer.addPass(effectVignette);
+lessonComposer.addPass(effectPixel);
+
+mapComposer.addPass(new RenderPass(mapScene, mainCamera));
+//mapComposer.addPass(effectFXAA);
+
+hubComposer.addPass(new RenderPass(hubScene, hubCamera));
+//ubComposer.addPass(effectFXAA);
 
 const maxAnisotropy = renderer.capabilities.getMaxAnisotropy();
 let labelRenderer;
@@ -162,6 +214,7 @@ var outOfBounds = false;
 var videoPlaying = false;
 var currentLessonSceneIndex = 0;
 var currentLessonIndex = 0;
+const delta = 0.01;
 
 var lessonSequences;
 var lesson1Sequence, lesson2Sequence, lesson3Sequence, lesson4Sequence;
@@ -652,15 +705,15 @@ function init() {
   dirLight.color.setHSL(0.1, 1, 0.95);
   dirLight.position.set(-1, 1.75, 1);
   dirLight.position.multiplyScalar(30);
-  dirLight.castShadow = true;
-  dirLight.shadow.mapSize.width = 2048;
-  dirLight.shadow.mapSize.height = 2048;
-  dirLight.shadow.camera.left = -shadowOffset;
-  dirLight.shadow.camera.right = shadowOffset;
-  dirLight.shadow.camera.top = shadowOffset;
-  dirLight.shadow.camera.bottom = -shadowOffset;
-  dirLight.shadow.camera.far = 3500;
-  dirLight.shadow.bias = -0.0001;
+  // dirLight.castShadow = true;
+  // dirLight.shadow.mapSize.width = 2048;
+  // dirLight.shadow.mapSize.height = 2048;
+  // dirLight.shadow.camera.left = -shadowOffset;
+  // dirLight.shadow.camera.right = shadowOffset;
+  // dirLight.shadow.camera.top = shadowOffset;
+  // dirLight.shadow.camera.bottom = -shadowOffset;
+  // dirLight.shadow.camera.far = 3500;
+  // dirLight.shadow.bias = -0.0001;
   mapScene.add(dirLight);
   //mapScene.add(ambientLight);
 
@@ -1229,17 +1282,13 @@ function init() {
     }
   };
   gui.add(guiWorld.xPos, "x", 0, 2).onChange(() => {
-    renderer.toneMappingExposure = guiWorld.xPos.x;
-    console.log(garminModel.position);
+    effectVignette.uniforms[ 'darkness' ].value = guiWorld.xPos.x;
+    console.log(effectVignette.uniforms[ 'darkness' ].value);
   });
 
-  gui.add(guiWorld.xPos, "y", -5, 5).onChange(() => {
-    garminModel.position.set(
-      garminModel.position.x,
-      guiWorld.xPos.y,
-      garminModel.position.z
-    );
-    console.log(garminModel.position);
+  gui.add(guiWorld.xPos, "y", 0, 2).onChange(() => {
+    effectVignette.uniforms[ 'offset' ].value = guiWorld.xPos.y;
+    console.log(effectVignette.uniforms[ 'offset' ].value);
   });
 
   gui.add(guiWorld.xPos, "z", -5, 5).onChange(() => {
@@ -1461,8 +1510,8 @@ function initLessonScene() {
   pointLight2.position.set(0, 0, 0);
   pointLight3.position.set(-12, 0, -10);
   pointLight4.position.set(2, -1.1, -0.6);
-  lessonScene.add(pointLight);
-  lessonScene.add(pointLight2);
+  //lessonScene.add(pointLight);
+  //lessonScene.add(pointLight2);
   lessonScene.add(pointLight3);
   lessonScene.add(pointLight4);
   
@@ -1651,11 +1700,12 @@ function initLessonScene() {
         //outlineBug.geometry = o;
         var colorMap = o.material.map;
         bugTexture_green = colorMap;
-        var newMaterial = new THREE.MeshToonMaterial({transparent: true});
-        //var newMaterial = new THREE.MeshBasicMaterial({transparent: true});
+        //var newMaterial = new THREE.MeshToonMaterial({transparent: true});
+        var newMaterial = new THREE.MeshBasicMaterial({transparent: true});
         o.material = newMaterial;
         o.material.map = bugTexture_blue;
         o.material.map.flipY = false;
+
         o.material.map.needsUpdate = true;
         o.material.side = THREE.DoubleSide;
         //console.log("O:" + o.name);
@@ -1720,15 +1770,15 @@ function initLessonScene() {
   dirLightLesson.color.setHSL(0.1, 1, 0.95);
   dirLightLesson.position.set(-1, 1.75, 1);
   dirLightLesson.position.multiplyScalar(30);
-  dirLightLesson.castShadow = true;
-  dirLightLesson.shadow.mapSize.width = 2048;
-  dirLightLesson.shadow.mapSize.height = 2048;
-  dirLightLesson.shadow.camera.left = -shadowOffset;
-  dirLightLesson.shadow.camera.right = shadowOffset;
-  dirLightLesson.shadow.camera.top = shadowOffset;
-  dirLightLesson.shadow.camera.bottom = -shadowOffset;
-  dirLightLesson.shadow.camera.far = 3500;
-  dirLightLesson.shadow.bias = -0.0001;
+  // dirLightLesson.castShadow = true;
+  // dirLightLesson.shadow.mapSize.width = 2048;
+  // dirLightLesson.shadow.mapSize.height = 2048;
+  // dirLightLesson.shadow.camera.left = -shadowOffset;
+  // dirLightLesson.shadow.camera.right = shadowOffset;
+  // dirLightLesson.shadow.camera.top = shadowOffset;
+  // dirLightLesson.shadow.camera.bottom = -shadowOffset;
+  // dirLightLesson.shadow.camera.far = 3500;
+  // dirLightLesson.shadow.bias = -0.0001;
   //lessonScene.add( dirLightLesson );
 }
 
@@ -2303,7 +2353,8 @@ function updateLessonScene()
   if(currentLessonSceneIndex == 1)
   {
     console.log("UPDATE SCENE");
-    lessonScene.remove(phoenixModel);
+    phoenixModel.visible = false;
+    //lessonScene.remove(phoenixModel);
     lessonScene.add(grandCanyonModel);
     //lessonCamera.setFocalLength(10);
     lessonScene.fog.color.set("#FFFFFF");
@@ -2511,8 +2562,8 @@ function makeCameraControls() {
   controls.zoomSpeed = 0.5;
   controls.zoom0 = 1;
   controls.minDistance = 1.5;
+  //controls.maxDistance = 15;
   controls.maxDistance = 2.5;
-  //controls.maxDistance = 2.5;
 
   controls.target.set(mainCamera.position.x, 0, mainCamera.position.z);
 
@@ -3736,9 +3787,10 @@ function animate() {
     return;
   }
 
+  stats.begin();
+
   requestAnimationFrame(animate);
   hoverObject();
-  //htmlTrack3d();
   lessonCameraMove();
   hubCameraMove();
 
@@ -3751,15 +3803,44 @@ function animate() {
 
   renderer.setPixelRatio(window.devicePixelRatio);
   renderer.setSize(window.innerWidth, window.innerHeight);
-
+  
   if (!transitioning) {
-    renderer.render(currentScene, currentCamera);
+    if(currentSceneNumber == 0)
+    {
+      hubComposer.setPixelRatio(window.devicePixelRatio);
+      hubComposer.render(delta);
+      console.log("RENDER 0");
+    }
+    else if(currentSceneNumber == 1)
+    {
+      mapComposer.setPixelRatio(window.devicePixelRatio);
+      mapComposer.render(delta);
+      //composer.render(lessonScene, lessonCamera);
+      console.log("RENDER 1");
+    }
+    else if(currentSceneNumber == 2)
+    {
+      lessonComposer.setPixelRatio(window.devicePixelRatio);
+      lessonComposer.render(delta);
+      //composer.render(lessonScene, lessonCamera);
+      console.log("RENDER 2");
+    }
+    else
+    {
+      renderer.render(currentScene, currentCamera);
+    }
+    
   } else {
     //renderTransition();
   }
 
   computerScreenTexture.needsUpdate = true;
   walkieTalkieVideoTexture.needsUpdate = true;
+
+  // console.log("Scene polycount:", renderer.info.render.triangles);
+  // console.log("Active Drawcalls:", renderer.info.render.calls);
+  // console.log("Textures in Memory", renderer.info.memory.textures);
+  // console.log("Geometries in Memory", renderer.info.memory.geometries);
 
   //console.log(renderer.info.render.calls);
 
@@ -3788,6 +3869,7 @@ function animate() {
     }
 
   //console.log("Cam Position: x:" + mainCamera.position.x + " z:" + mainCamera.position.z);
+  stats.end();
 }
 
 function TransitionStart() {
@@ -4706,6 +4788,19 @@ window.addEventListener("resize", () => {
 
   renderer.setSize(sizes.width, sizes.height);
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+
+  if(currentSceneNumber == 0)
+  {
+    hubComposer.setSize(window.innerWidth, window.innerHeight);
+  }
+  else if(currentSceneNumber == 1)
+  {
+    mapComposer.setSize(window.innerWidth, window.innerHeight);
+  }
+  else if(currentSceneNumber == 2)
+  {
+    lessonComposer.setSize(window.innerWidth, window.innerHeight);
+  }
 });
 //** USED TO CONTROL HAMBURGER CLICK */
 document.addEventListener("click", (e) => {
