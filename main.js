@@ -109,7 +109,7 @@ const filmPass = new FilmPass(
   0.5,   // noise intensity
   0.1,  // scanline intensity
   648,    // scanline count
-  true,  // grayscale
+  false,  // grayscale
 );
 filmPass.renderToScreen = true;
   //** VINGETTE */
@@ -488,8 +488,12 @@ const cubeMaterial = new THREE.MeshBasicMaterial( { color: 0x00ff00, transparent
 const cube = new THREE.Mesh( cubeGeometry, cubeMaterial );
 
 let outlineBug = new THREE.Group();
+let Echo = new THREE.Group();
+let mixer;
+
 let phoenixModel = new THREE.Group();
 let grasshopperModel = new THREE.Group();
+let blackMesaModel = new THREE.Group();
 
 let hubworldModel = new THREE.Group();
 let hubworldRaycast = new THREE.Group();
@@ -812,6 +816,7 @@ function init() {
     sprite_phoenix,
     sprite_horseshoeBend,
     sprite_cathedralRock,
+    sprite_deathValley,
     sprite_tuscon
   ];
 
@@ -829,7 +834,7 @@ function init() {
     //console.log("CURRENT INDEX: " + i);
   }
 
-  sprite_deathValley.position.set(-4.75, sprite_deathValley.position.y, 4);
+  sprite_deathValley.position.set(-4.68, sprite_deathValley.position.y, -0.65);
   sprite_grandCanyon.position.set(-0.2, sprite_grandCanyon.position.y, -5.66);
   sprite_coloradoRiver.position.set(-1.56, sprite_coloradoRiver.position.y, -6.2697);
   sprite_phoenix.position.set(-0.65, sprite_phoenix.position.y, 1.7);
@@ -1281,23 +1286,31 @@ function init() {
       z: 0,
     }
   };
-  gui.add(guiWorld.xPos, "x", 0, 2).onChange(() => {
-    effectVignette.uniforms[ 'darkness' ].value = guiWorld.xPos.x;
-    console.log(effectVignette.uniforms[ 'darkness' ].value);
+  gui.add(guiWorld.xPos, "x", -5, 5).onChange(() => {
+    Echo.position.set(
+      guiWorld.xPos.x,
+      Echo.position.y,
+      Echo.position.z
+    );
+    console.log(Echo.position);
   });
 
-  gui.add(guiWorld.xPos, "y", 0, 2).onChange(() => {
-    effectVignette.uniforms[ 'offset' ].value = guiWorld.xPos.y;
-    console.log(effectVignette.uniforms[ 'offset' ].value);
+  gui.add(guiWorld.xPos, "y", -5, 5).onChange(() => {
+    Echo.position.set(
+      Echo.position.x,
+      guiWorld.xPos.y,
+      Echo.position.z
+    );
+    console.log(Echo.rotation);
   });
 
   gui.add(guiWorld.xPos, "z", -5, 5).onChange(() => {
-    garminModel.position.set(
-      garminModel.position.x,
-      garminModel.position.y,
+    Echo.position.set(
+      Echo.position.x,
+      Echo.position.y,
       guiWorld.xPos.z
     );
-    console.log(garminModel.position);
+    console.log(Echo.position);
   });
 
   //** TOWER ICON INSTANTIATIONS */
@@ -1683,9 +1696,32 @@ function initLessonScene() {
     });
     grasshopperModel.add(gltf.scene);
   });
-
   grasshopperModel.rotation.set(0, 3.107, 0);
   grasshopperModel.position.set(0.7127, -0.719, 3.543);
+
+  //BlackMesa Model
+  loader.load("/resources/models/blackMesa.glb", function (gltf) 
+  {
+    var model = gltf.scene;
+    model.traverse((o) => 
+    {
+      if (o.isMesh)
+      { 
+        o.userData.name = "Black Mesa";
+        var colorMap = o.material.map;
+        var newMaterial = new THREE.MeshBasicMaterial({});
+        o.material = newMaterial;
+        o.material.map = colorMap;
+
+        //console.log("O:" + o.name);
+      }
+    });
+    blackMesaModel.add(gltf.scene);
+  });
+
+  blackMesaModel.scale.set(0.5, 0.5, 0.5);
+  blackMesaModel.rotation.set(0, 38.6, 0);
+  blackMesaModel.position.set(-50, -4.68, 0.73);
 
   //Bug Model
   loader.load("/resources/models/Bug.glb", function (gltf) 
@@ -1751,6 +1787,70 @@ function initLessonScene() {
     .repeat(Infinity);
   bugRotTween.easing(TWEEN.Easing.Quadratic.InOut);
   bugRotTween.start();
+
+  loader.load("/resources/models/echo-7.glb", function (gltf) 
+  {
+    gltf.animations; // Array<THREE.AnimationClip>
+    gltf.scene; // THREE.Group
+    gltf.scenes; // Array<THREE.Group>
+    gltf.cameras; // Array<THREE.Camera>
+    gltf.asset; // Object
+    
+    
+    var model = gltf.scene;
+    model.traverse((o) => 
+    {
+      //**EDIT ITS IMPORTED MATERIAL**//
+      //lessonScene.add(model);
+    
+    if (o.isMesh)
+    { 
+      o.userData.name = "Echo";
+      //outlineBug.geometry = o;
+      var colorMap = o.material.map;
+      //var newMaterial = new THREE.MeshToonMaterial({transparent: true});
+      var newMaterial = new THREE.MeshBasicMaterial({transparent: true});
+      o.material = newMaterial;
+      o.material.map = colorMap;
+      console.log("O:" + o.name);
+      
+      if(o.name == "wings001")
+      {
+      }
+    }
+    });
+
+    let clips = gltf.animations;
+    mixer = new THREE.AnimationMixer(model);
+    const animationAction = mixer.clipAction(clips[5]);
+    animationAction.play();
+      
+    console.log(model.children[0]);
+    console.log(clips);
+
+    clips.forEach( function ( clip ) {
+      
+      console.log(clip.name);
+      
+      if(clip.name == "Wrapped_Idle")
+      {
+        // console.log("!*WRAPPED*!");
+        // const action = mixer.clipAction(clip);
+        // action.setLoop(THREE.LoopRepeat);
+        // action.play();
+
+        //mixer.clipAction( clip ).play();
+      }
+      
+    } );
+    Echo.add(model.children[0]);
+    Echo.userData.name = "bug";
+    lessonScene.add(Echo);
+});
+
+  Echo.scale.set(0.1, 0.1, 0.1);
+  Echo.position.set(-1.11, -1.01, -0.251);
+
   
   var hdr1;
   const rgbeLoader = new RGBELoader();
@@ -2422,11 +2522,37 @@ function updateLessonScene()
 
     console.log("GRASSHOPPER!!!");
   }
-  //**CAVE SCENE**//
+  //** BLACK MESA */
   else if(currentLessonSceneIndex == 3)
   {
-    lessonScene.remove(grasshopperModel);
+    grasshopperModel.visible = false;
+    //lessonScene.remove(grasshopperModel);
+    lessonScene.add(blackMesaModel);
+
+    lessonScene.fog.near = 0.015;
+    lessonScene.fog.far = 150;
+    lessonScene.fog.color.set("#ffffff");
+
+    outlineBug.position.set(-2.88, -2.6359, 0);
+    outlineBug.rotation.set(0, -2.45, 0);
+    outlineBug.scale.set(0.75, 0.75, 0.75);
+    outlineBug.children[0].children[0].material.map = bugTexture_green;
+    outlineBug.children[0].children[0].material.map.flipY = false;
+    outlineBug.children[0].children[0].material.map.needsUpdate = true;
+
+    //lessonScene.background = new THREE.Color(0x000000);
+    lessonScene.add(pointLight);
+    lessonScene.add(pointLight2);
+    lessonScene.add(pointLight3);
+    lessonScene.add(pointLight4);
+  }
+  //**CAVE SCENE**//
+  else if(currentLessonSceneIndex == 4)
+  {
+    blackMesaModel.visible = false;
+    //lessonScene.remove(grasshopperModel);
     lessonScene.add(cave);
+    filmPass.grayscale = true;
 
     outlineBug.position.set(-2.88, -2.6359, 0);
     outlineBug.rotation.set(0, -2.45, 0);
@@ -2437,13 +2563,14 @@ function updateLessonScene()
 
     //lessonScene.background = new THREE.Color(0x000000);
     lessonScene.fog.near = 0.015;
-    lessonScene.fog.far = 50;
+    lessonScene.fog.far = 115;
     lessonScene.fog.color.set("#66000f");
     lessonScene.add(pointLight);
     lessonScene.add(pointLight2);
     lessonScene.add(pointLight3);
     lessonScene.add(pointLight4);
   }
+
   //**PHOENIX SCENE**//
   else if (currentLessonSceneIndex == 0)
   {
@@ -2493,21 +2620,28 @@ function lessonComplete()
   {
     sceneTransitionSprites[currentLessonSceneIndex].userData.ping = true;
     sceneTransitionSprites[currentLessonSceneIndex].userData.popup = false;
-    document.getElementById("towerMessage").innerHTML = "May or may not be the grand canyon";
+    document.getElementById("towerMessage").innerHTML = "May or may not be Phoenix";
     echoPingLocation = makeEchoPing(towerIcons[currentLessonSceneIndex].position.x, towerIcons[currentLessonSceneIndex].position.z);
   }
   else if(currentLessonSceneIndex == 2)
   {
     sceneTransitionSprites[currentLessonSceneIndex].userData.ping = true;
     sceneTransitionSprites[currentLessonSceneIndex].userData.popup = false;
-    document.getElementById("towerMessage").innerHTML = "May or may not be Phoenix";
+    document.getElementById("towerMessage").innerHTML = "May or may not be the Grand Canyon";
     echoPingLocation = makeEchoPing(towerIcons[currentLessonSceneIndex].position.x, towerIcons[currentLessonSceneIndex].position.z);
   }
   else if(currentLessonSceneIndex == 3)
   {
     sceneTransitionSprites[currentLessonSceneIndex].userData.ping = true;
     sceneTransitionSprites[currentLessonSceneIndex].userData.popup = false;
-    document.getElementById("towerMessage").innerHTML = "May or may not be Tempe";
+    document.getElementById("towerMessage").innerHTML = "May or may not be Cathedral Rock";
+    echoPingLocation = makeEchoPing(towerIcons[currentLessonSceneIndex].position.x, towerIcons[currentLessonSceneIndex].position.z);
+  }
+  else if(currentLessonSceneIndex == 4)
+  {
+    sceneTransitionSprites[currentLessonSceneIndex].userData.ping = true;
+    sceneTransitionSprites[currentLessonSceneIndex].userData.popup = false;
+    document.getElementById("towerMessage").innerHTML = "May or may not be Tuscon";
     echoPingLocation = makeEchoPing(towerIcons[currentLessonSceneIndex].position.x, towerIcons[currentLessonSceneIndex].position.z);
   }
 }
@@ -3779,6 +3913,7 @@ function hubCameraMove() {
   );
 }
 //** ANIMATION LOOP, ADD THINGS THAT MOVE HERE */
+
 function animate() {
   if (gameStarted == false) {
     requestAnimationFrame(animate);
@@ -3793,6 +3928,9 @@ function animate() {
   hoverObject();
   lessonCameraMove();
   hubCameraMove();
+  
+  var delta = clock.getDelta();
+  mixer.update( delta );
 
   //console.log("TRANSITIONING: " + transitioning);
   //console.log("Current Lesson SCENE Index: " + currentLessonSceneIndex);
@@ -3809,21 +3947,21 @@ function animate() {
     {
       hubComposer.setPixelRatio(window.devicePixelRatio);
       hubComposer.render(delta);
-      console.log("RENDER 0");
+      //console.log("RENDER 0");
     }
     else if(currentSceneNumber == 1)
     {
       mapComposer.setPixelRatio(window.devicePixelRatio);
       mapComposer.render(delta);
       //composer.render(lessonScene, lessonCamera);
-      console.log("RENDER 1");
+      //console.log("RENDER 1");
     }
     else if(currentSceneNumber == 2)
     {
       lessonComposer.setPixelRatio(window.devicePixelRatio);
       lessonComposer.render(delta);
       //composer.render(lessonScene, lessonCamera);
-      console.log("RENDER 2");
+      //console.log("RENDER 2");
     }
     else
     {
@@ -3843,6 +3981,8 @@ function animate() {
   // console.log("Geometries in Memory", renderer.info.memory.geometries);
 
   //console.log(renderer.info.render.calls);
+
+  //console.log("Current Lesson Index: " + currentLessonSceneIndex);
 
   //console.log("Current Scene: " + currentSceneNumber);
   //console.log("HUB TRANSITION: " + hubTransitioning);
