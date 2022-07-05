@@ -116,7 +116,7 @@ filmPass.renderToScreen = true;
 const shaderVignette = VignetteShader;
 const effectVignette = new ShaderPass(shaderVignette);
 effectVignette.uniforms[ 'offset' ].value = 1;
-effectVignette.uniforms[ 'darkness' ].value = 1;
+effectVignette.uniforms[ 'darkness' ].value = .90;
   //** PIXEL SHADER */
 const shaderPixel = PixelShader;
 const effectPixel = new ShaderPass(shaderPixel);
@@ -144,10 +144,11 @@ lessonComposer.addPass(effectVignette);
 lessonComposer.addPass(effectPixel);
 
 mapComposer.addPass(new RenderPass(mapScene, mainCamera));
+mapComposer.addPass(effectVignette);
 //mapComposer.addPass(effectFXAA);
 
 hubComposer.addPass(new RenderPass(hubScene, hubCamera));
-//ubComposer.addPass(effectFXAA);
+//hubComposer.addPass(effectFXAA);
 
 const maxAnisotropy = renderer.capabilities.getMaxAnisotropy();
 let labelRenderer;
@@ -178,7 +179,7 @@ const sceneC = new FXScene(hubScene, hubCamera);
 //const sceneC = new FXScene(loadingScreen.scene, loadingScreen.camera);
 
 //transition = new Transition( mapScene, lessonScene );
-const clock = new THREE.Clock();
+var clock;
 
 //** MISC GLOBAL VARIABLES */
 let line;
@@ -489,7 +490,10 @@ const cube = new THREE.Mesh( cubeGeometry, cubeMaterial );
 
 let outlineBug = new THREE.Group();
 let Echo = new THREE.Group();
-let mixer;
+let lessonIntersectGroup = new THREE.Group();
+var mixer;
+var echoBox, echoActions;
+var echoClicked = false;
 
 let phoenixModel = new THREE.Group();
 let grasshopperModel = new THREE.Group();
@@ -1286,25 +1290,31 @@ function init() {
       z: 0,
     }
   };
-  gui.add(guiWorld.xPos, "x", -5, 5).onChange(() => {
-    Echo.position.set(
-      guiWorld.xPos.x,
-      Echo.position.y,
-      Echo.position.z
-    );
-    console.log(Echo.position);
+  gui.add(guiWorld.xPos, "x", -1, 5).onChange(() => {
+    // Echo.position.set(
+    //   guiWorld.xPos.x,
+    //   Echo.position.y,
+    //   Echo.position.z
+    // );
+
+    
+    renderer.gammaFactor = guiWorld.xPos.x;
+    console.log("offset: " + effectVignette.uniforms[ 'offset' ].value);
+    //console.log(Echo.position);
   });
 
-  gui.add(guiWorld.xPos, "y", -5, 5).onChange(() => {
-    Echo.position.set(
-      Echo.position.x,
-      guiWorld.xPos.y,
-      Echo.position.z
-    );
-    console.log(Echo.rotation);
+  gui.add(guiWorld.xPos, "y", -1, 5).onChange(() => {
+    // Echo.position.set(
+    //   Echo.position.x,
+    //   guiWorld.xPos.y,
+    //   Echo.position.z
+    // );
+
+    effectVignette.uniforms[ 'darkness' ].value = guiWorld.xPos.y;
+    console.log("darkness: " + effectVignette.uniforms[ 'darkness' ].value);
   });
 
-  gui.add(guiWorld.xPos, "z", -5, 5).onChange(() => {
+  gui.add(guiWorld.xPos, "z", -10, 10).onChange(() => {
     Echo.position.set(
       Echo.position.x,
       Echo.position.y,
@@ -1370,6 +1380,8 @@ function init() {
 
   echoPingLocation = makeEchoPing(towerIcon.position.x, towerIcon.position.z);
   mapScene.add(lessonSceneRaycast);
+
+  clock = new THREE.Clock();
 }
 
 function tutorialSequence()
@@ -1669,9 +1681,7 @@ function initLessonScene() {
     phoenixModel.castShadow = true;
 
     phoenixModel.add(gltf.scene);
-    //console.log(phoenixModel);
     lessonScene.add(phoenixModel);
-    //console.log("outline: " + outlineBug.children[0].children[0].name);
   });
 
   phoenixModel.rotation.set(0, -4.18, 0);
@@ -1733,7 +1743,6 @@ function initLessonScene() {
       if (o.isMesh)
       { 
         o.userData.name = "bug";
-        //outlineBug.geometry = o;
         var colorMap = o.material.map;
         bugTexture_green = colorMap;
         //var newMaterial = new THREE.MeshToonMaterial({transparent: true});
@@ -1772,6 +1781,77 @@ function initLessonScene() {
   outlineBug.rotation.set(-0.25, -0.06, -0.25);
   outlineBug.position.set(-1.68, -1.79, -0.31);
   outlineBug.scale.set(.5, .5, .5);
+  lessonIntersectGroup.add(outlineBug);
+  console.log(outlineBug);
+
+  loader.load("/resources/models/echo-7.glb", function (gltf) 
+  {
+    gltf.animations; // Array<THREE.AnimationClip>
+    gltf.scene; // THREE.Group
+    gltf.scenes; // Array<THREE.Group>
+    gltf.cameras; // Array<THREE.Camera>
+    gltf.asset; // Object
+    
+    var model = gltf.scene;
+    
+    model.traverse((o) => 
+    {
+      //**EDIT ITS IMPORTED MATERIAL**//
+      //lessonScene.add(model);
+    
+    if (o.isMesh)
+    { 
+      o.name = "Echo";
+      //outlineBug.geometry = o;
+      var colorMap = o.material.map;
+      echoBox = new THREE.Box3().setFromObject(o);
+      //var newMaterial = new THREE.MeshToonMaterial({transparent: true});
+      var newMaterial = new THREE.MeshBasicMaterial({transparent: true});
+      o.material = newMaterial;
+      o.material.map = colorMap;
+      o.material.skinning = true;
+      o.material.morphTargets = true;
+      console.log("O:" + o.name);
+      o.scale.set(5, 5, 5);
+    }
+    });
+
+    mixer = new THREE.AnimationMixer(model);
+    console.log(model);
+    echoActions = gltf.animations;
+    
+    playEchoAnimation(5);
+    
+    // const clip = THREE.AnimationClip.findByName(echoActions, 'Wrapped_Idle');
+    // console.log(clip);
+    // const action = mixer.clipAction(clip);
+    // action.play();
+
+    echoActions.forEach( function ( clip ) {
+      
+      console.log(clip);
+      
+      if(clip.name == "Wrapped_Idle")
+      {
+
+      }
+      
+    } );
+
+    Echo.name = "Echo";
+    Echo.add(model);
+    Echo.add(echoBox);
+    console.log(Echo);
+    //lessonScene.add(Echo.children[0]);
+    lessonScene.add(Echo);
+
+  });
+  Echo.scale.set(0.1, 0.1, 0.1);
+  Echo.position.set(-1.11, -1.5, -0.251);
+  lessonIntersectGroup.add(Echo);
+
+  console.log(lessonIntersectGroup);
+  console.log(outlineBug);
 
   //** INITIAL BUG TWEEN */
   bugFlyTween = new TWEEN.Tween(outlineBug.position)
@@ -1788,70 +1868,6 @@ function initLessonScene() {
   bugRotTween.easing(TWEEN.Easing.Quadratic.InOut);
   bugRotTween.start();
 
-  loader.load("/resources/models/echo-7.glb", function (gltf) 
-  {
-    gltf.animations; // Array<THREE.AnimationClip>
-    gltf.scene; // THREE.Group
-    gltf.scenes; // Array<THREE.Group>
-    gltf.cameras; // Array<THREE.Camera>
-    gltf.asset; // Object
-    
-    
-    var model = gltf.scene;
-    model.traverse((o) => 
-    {
-      //**EDIT ITS IMPORTED MATERIAL**//
-      //lessonScene.add(model);
-    
-    if (o.isMesh)
-    { 
-      o.userData.name = "Echo";
-      //outlineBug.geometry = o;
-      var colorMap = o.material.map;
-      //var newMaterial = new THREE.MeshToonMaterial({transparent: true});
-      var newMaterial = new THREE.MeshBasicMaterial({transparent: true});
-      o.material = newMaterial;
-      o.material.map = colorMap;
-      console.log("O:" + o.name);
-      
-      if(o.name == "wings001")
-      {
-      }
-    }
-    });
-
-    let clips = gltf.animations;
-    mixer = new THREE.AnimationMixer(model);
-    const animationAction = mixer.clipAction(clips[5]);
-    animationAction.play();
-      
-    console.log(model.children[0]);
-    console.log(clips);
-
-    clips.forEach( function ( clip ) {
-      
-      console.log(clip.name);
-      
-      if(clip.name == "Wrapped_Idle")
-      {
-        // console.log("!*WRAPPED*!");
-        // const action = mixer.clipAction(clip);
-        // action.setLoop(THREE.LoopRepeat);
-        // action.play();
-
-        //mixer.clipAction( clip ).play();
-      }
-      
-    } );
-    Echo.add(model.children[0]);
-    Echo.userData.name = "bug";
-    lessonScene.add(Echo);
-});
-
-  Echo.scale.set(0.1, 0.1, 0.1);
-  Echo.position.set(-1.11, -1.01, -0.251);
-
-  
   var hdr1;
   const rgbeLoader = new RGBELoader();
   rgbeLoader.load('/resources/images/hdr/GrandCanyonBackdrop.hdr', function(texture){
@@ -2916,43 +2932,63 @@ function hoverObject() {
   else if (currentSceneNumber == 2) 
   {
     raycaster.setFromCamera(mouse, lessonCamera);
-    intersects = raycaster.intersectObjects(outlineBug.children[0].children);
-    //console.log(intersects);
-    if (intersects.length > 0 && intersects[0].object.userData.name == "bug") 
+    intersects = raycaster.intersectObjects(lessonScene.children, true);
+    //outlineBug.children[0].children[0]
+    //console.log(lessonScene);
+    
+    if (intersects.length > 0)
     {
-      if (intersects[0].object != intersectObject) 
+      //console.log(intersects[0]);
+      if (intersects.length > 0 && intersects[0].object.userData.name == "bug") 
+      {
+        if (intersects[0].object != intersectObject) 
+        {
+          intersectObject = intersects[0].object;
+          intersected = true;
+          intersectObject.material.opacity = 0.5;
+          intersectObject.material.side = THREE.FrontSide;
+  
+          document.body.style.cursor = 'grab'
+  
+          //iconScalingTween(intersects[0].object, true);
+  
+          console.log("On Object");
+        } 
+        else 
+        {
+          //console.log('same object');
+        }
+      }
+      else if (intersects.length > 0 && intersects[0].object.name == "Echo" && !echoClicked) 
       {
         intersectObject = intersects[0].object;
         intersected = true;
-        intersectObject.material.opacity = 0.5;
+        intersectObject.material.opacity = 0.75;
         intersectObject.material.side = THREE.FrontSide;
-
-        document.body.style.cursor = 'grab'
-
+  
+        document.body.style.cursor = 'pointer'
+  
         //iconScalingTween(intersects[0].object, true);
-
+  
         console.log("On Object");
-      } 
+      }  
       else 
       {
-        //console.log('same object');
+        if (intersected) 
+        {
+          console.log("Off Object");
+          intersectObject.userData.scaling = false;
+          intersected = false;
+          intersectObject.material.opacity = 1;
+          //iconScalingTween(intersectObject, false);
+          intersectObject = null;
+          //document.body.style.cursor = 'default'
+        }
+  
+        document.body.style.cursor = 'default'
       }
-    } 
-    else 
-    {
-      if (intersected) 
-      {
-        console.log("Off Object");
-        intersectObject.userData.scaling = false;
-        intersected = false;
-        intersectObject.material.opacity = 1;
-        //iconScalingTween(intersectObject, false);
-        intersectObject = null;
-        //document.body.style.cursor = 'default'
-      }
-
-      document.body.style.cursor = 'default'
     }
+
   }
 
   //console.log(intersects[0].object.userData.name);
@@ -3213,14 +3249,13 @@ function clickEvent() {
       raycaster.setFromCamera(mouse, lessonCamera);
       
       //SEARCH ONLY IN THE BUG MODEL TO GET RAYCAST
-      intersects = raycaster.intersectObjects(outlineBug.children[0].children);
-      
+      intersects = raycaster.intersectObjects(lessonScene.children, true);
+      //outlineBug.children[0].children
       if (intersects[0])
       {
         intersectObject = intersects[0].object;
-        console.log(intersectObject);
-
         console.log(intersects[0]);
+        console.log(lessonScene.children);
     
         //** CLICK BUG FUNCTIONALITY */
         if (intersectObject.userData.name == "bug") 
@@ -3232,6 +3267,17 @@ function clickEvent() {
           toggleLessonPopup();
           bugFlyTween.stop();
           bugRotTween.stop();
+        }
+        //** CLICK ON ECHO */ 
+        else if (intersectObject.name == "Echo") 
+        {
+          console.log("ECHO CLICK");
+          //playEchoAnimation(Math.floor(Math.random() * 7));
+          
+          if(!echoClicked)
+          {
+            playEchoAnimation(2, true);
+          }
         } 
         else if (intersectObject.name == "left_Button" || intersectObject.name == "right_Button") 
         {
@@ -3319,6 +3365,75 @@ function tweenBug(lessonSceneNumber)
     bugTween.onUpdate(() => {
     });
     bugTween.start();
+}
+
+function playEchoAnimation(index, tween)
+{
+  console.log(echoActions);
+  mixer.stopAllAction();
+  var action = mixer.clipAction(echoActions[index]);
+
+  if(index == 3)
+  {
+    index = 5;
+  }
+
+  
+  if(tween)
+  {
+    echoClicked = true;
+    if(currentLessonSceneIndex = 0)
+    {
+    }
+    // setTimeout(function()
+    // {
+    //   playEchoAnimation(2);
+    //   var echoTween = new TWEEN.Tween(Echo.position)
+    //     .to(
+    //       {
+    //         x: lessonCamera.position.x,
+    //         y: lessonCamera.position.y + 2,
+    //         z: lessonCamera.position.z,
+    //       },
+    //       5000)
+    //       echoTween.easing(TWEEN.Easing.Quadratic.Out);
+    //       echoTween.onUpdate(() => {
+    //     });
+    //     echoTween.start();
+    // },2800);
+
+    var echoTween = new TWEEN.Tween(Echo.position)
+        .to(
+          {
+            x: -5,
+            y: 3,
+            z: -20,
+          },
+          7500)
+          echoTween.easing(TWEEN.Easing.Sinusoidal.In);
+          echoTween.onUpdate(() => {
+        });
+        echoTween.start();
+
+    var echoRotTween = new TWEEN.Tween(Echo.rotation)
+    .to(
+      {
+        x: lessonCamera.rotation.x,
+        y: lessonCamera.rotation.y + Math.PI/8,
+        z: lessonCamera.rotation.z,
+      },
+      3000)
+      echoRotTween.easing(TWEEN.Easing.Cubic.InOut);
+      echoRotTween.onUpdate(() => {
+    });
+    echoRotTween.start();
+    
+  }
+
+  //var action = echoActions[index];
+  action.weight = 1;
+  action.fadeIn(0.5);
+  action.play();
 }
 
 function doubleClickEvent() {
@@ -3929,8 +4044,11 @@ function animate() {
   lessonCameraMove();
   hubCameraMove();
   
-  var delta = clock.getDelta();
-  mixer.update( delta );
+  if(mixer)
+  {
+    mixer.update(clock.getDelta());
+    //console.log(mixer);
+  }
 
   //console.log("TRANSITIONING: " + transitioning);
   //console.log("Current Lesson SCENE Index: " + currentLessonSceneIndex);
@@ -4623,6 +4741,7 @@ function resetLesson1()
   }
 }
 
+
 //** LESSON 1 ACTIVITY */
 
 //xButton.addEventListener('click', togglePopup, false);
@@ -4682,6 +4801,8 @@ startButton.addEventListener("click", function (ev) {
     bugIcon3.classList.toggle("disabled");
     bugIcon4.classList.toggle("disabled");
     startScreenCover.classList.toggle("disabled");
+
+    //lessonIntersectGroup.add(outlineBug.children[0].children[0]);
     
     //tutorialHighlight.classList.toggle("active");
     //highlightText.classList.toggle("active");
