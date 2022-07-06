@@ -43,6 +43,7 @@ manager.onLoad = function () {
   startButton.classList.toggle("disabled");
   document.querySelector(".progress__fill").style.width = 100 + "%";
   document.querySelector(".progress").classList.toggle("disabled");
+
 };
 manager.onProgress = function (url, itemsLoaded, itemsTotal) {
   console.log(
@@ -219,8 +220,9 @@ const delta = 0.01;
 
 var lessonSequences;
 var lesson1Sequence, lesson2Sequence, lesson3Sequence, lesson4Sequence;
-var startingSubtitles, tutorialSubtitles;
+var startingSubtitles, tutorialSubtitles, lessonSubtitles;
 var startingSequenceNumb = 0;
+var lessonSubtitleSequenceNumber = 0;
 var startingSequence = true;
 var introHubSequence = true;
 var timeoutID1, timeoutID2;
@@ -490,10 +492,10 @@ const cube = new THREE.Mesh( cubeGeometry, cubeMaterial );
 
 let outlineBug = new THREE.Group();
 let Echo = new THREE.Group();
-let lessonIntersectGroup = new THREE.Group();
 var mixer;
 var echoBox, echoActions;
 var echoClicked = false;
+var echoLocTween, echoRotTween, echoScaleTween;
 
 let phoenixModel = new THREE.Group();
 let grasshopperModel = new THREE.Group();
@@ -874,14 +876,14 @@ function init() {
 
   //** LABEL INSTANTIATION */
 
-  var sprite_deathValley_Label = makeTextSprite("  Death Valley", {
+  var sprite_deathValley_Label = makeTextSprite("Black Mesa", {
     fontsize: 40,
     fontface: "roboto-condensed",
     borderColor: { r: 0, g: 0, b: 255, a: 0.0 },
   });
   sprite_deathValley_Label.scale.set(0.4, 0.2, 0.4);
   sprite_deathValley_Label.position.set(
-    sprite_deathValley.position.x + 0.0375,
+    sprite_deathValley.position.x + 0.065,
     uiMinheight + 0.01,
     sprite_deathValley.position.z + 0.07
   );
@@ -1290,37 +1292,34 @@ function init() {
       z: 0,
     }
   };
-  gui.add(guiWorld.xPos, "x", -1, 5).onChange(() => {
-    // Echo.position.set(
-    //   guiWorld.xPos.x,
-    //   Echo.position.y,
-    //   Echo.position.z
-    // );
-
-    
-    renderer.gammaFactor = guiWorld.xPos.x;
-    console.log("offset: " + effectVignette.uniforms[ 'offset' ].value);
+  gui.add(guiWorld.xPos, "x", -10, 10).onChange(() => {
+    outlineBug.position.set(
+      guiWorld.xPos.x,
+      outlineBug.position.y,
+      outlineBug.position.z
+    );
+    //renderer.gammaFactor = guiWorld.xPos.x;
+    console.log(outlineBug.position);
     //console.log(Echo.position);
   });
 
-  gui.add(guiWorld.xPos, "y", -1, 5).onChange(() => {
-    // Echo.position.set(
-    //   Echo.position.x,
-    //   guiWorld.xPos.y,
-    //   Echo.position.z
-    // );
-
-    effectVignette.uniforms[ 'darkness' ].value = guiWorld.xPos.y;
-    console.log("darkness: " + effectVignette.uniforms[ 'darkness' ].value);
+  gui.add(guiWorld.xPos, "y", -10, 10).onChange(() => {
+    outlineBug.position.set(
+      outlineBug.position.x,
+      guiWorld.xPos.y,
+      outlineBug.position.z
+    );
+    //effectVignette.uniforms[ 'darkness' ].value = guiWorld.xPos.y;
+    console.log(outlineBug.position);
   });
 
   gui.add(guiWorld.xPos, "z", -10, 10).onChange(() => {
-    Echo.position.set(
-      Echo.position.x,
-      Echo.position.y,
+    outlineBug.position.set(
+      outlineBug.position.x,
+      outlineBug.position.y,
       guiWorld.xPos.z
     );
-    console.log(Echo.position);
+    console.log(outlineBug.position);
   });
 
   //** TOWER ICON INSTANTIATIONS */
@@ -1566,7 +1565,6 @@ function initLessonScene() {
     cave.scale.set(0.5, 0.5, 0.5);
     cave.add(gltf.scene);
     cave.castShadow = true;
-    //lessonScene.add(cave);
 
     var model = gltf.scene;
     model.traverse((o) => 
@@ -1586,7 +1584,7 @@ function initLessonScene() {
         var newMaterial = new THREE.MeshBasicMaterial({});
           o.material = newMaterial;
           o.material.map = colorMap;
-          console.log("O:" + o.name);
+          //console.log("O:" + o.name);
       }
     });
   });
@@ -1648,7 +1646,6 @@ function initLessonScene() {
     });
     
     grandCanyonModel.add(gltf.scene);
-    //lessonScene.add(grandCanyonModel);
     grandCanyonModel.castShadow = true;
 
     //console.log("grand Canyon" + grandCanyonModel.children[0].children[0].children[0].material);  
@@ -1779,10 +1776,9 @@ function initLessonScene() {
     lessonScene.add(outlineBug);
   });
   outlineBug.rotation.set(-0.25, -0.06, -0.25);
-  outlineBug.position.set(-1.68, -1.79, -0.31);
+  outlineBug.position.set(-2.41, -1.01, 1.48);
   outlineBug.scale.set(.5, .5, .5);
-  lessonIntersectGroup.add(outlineBug);
-  console.log(outlineBug);
+  //console.log(outlineBug);
 
   loader.load("/resources/models/echo-7.glb", function (gltf) 
   {
@@ -1811,13 +1807,13 @@ function initLessonScene() {
       o.material.map = colorMap;
       o.material.skinning = true;
       o.material.morphTargets = true;
-      console.log("O:" + o.name);
+      //console.log("O:" + o.name);
       o.scale.set(5, 5, 5);
     }
     });
 
     mixer = new THREE.AnimationMixer(model);
-    console.log(model);
+    //console.log(model);
     echoActions = gltf.animations;
     
     playEchoAnimation(5);
@@ -1829,7 +1825,7 @@ function initLessonScene() {
 
     echoActions.forEach( function ( clip ) {
       
-      console.log(clip);
+      //console.log(clip);
       
       if(clip.name == "Wrapped_Idle")
       {
@@ -1841,32 +1837,30 @@ function initLessonScene() {
     Echo.name = "Echo";
     Echo.add(model);
     Echo.add(echoBox);
-    console.log(Echo);
+    //console.log(Echo);
     //lessonScene.add(Echo.children[0]);
     lessonScene.add(Echo);
 
   });
   Echo.scale.set(0.1, 0.1, 0.1);
   Echo.position.set(-1.11, -1.5, -0.251);
-  lessonIntersectGroup.add(Echo);
 
-  console.log(lessonIntersectGroup);
-  console.log(outlineBug);
+  //console.log(outlineBug);
 
   //** INITIAL BUG TWEEN */
-  bugFlyTween = new TWEEN.Tween(outlineBug.position)
-    .to({ y: -0.85, z: -1.5}, 3000)
-    .yoyo(true)
-    .repeat(Infinity);
-  bugFlyTween.easing(TWEEN.Easing.Quadratic.InOut);
-  bugFlyTween.start();
+  // bugFlyTween = new TWEEN.Tween(outlineBug.position)
+  //   .to({ y: -0.85, z: -1.5}, 3000)
+  //   .yoyo(true)
+  //   .repeat(Infinity);
+  // bugFlyTween.easing(TWEEN.Easing.Quadratic.InOut);
+  // bugFlyTween.start();
 
-  bugRotTween = new TWEEN.Tween(outlineBug.rotation)
-    .to({x: 0.25, y: 3, z: 0.25}, 2750)
-    .yoyo(true)
-    .repeat(Infinity);
-  bugRotTween.easing(TWEEN.Easing.Quadratic.InOut);
-  bugRotTween.start();
+  // bugRotTween = new TWEEN.Tween(outlineBug.rotation)
+  //   .to({x: 0.25, y: 3, z: 0.25}, 2750)
+  //   .yoyo(true)
+  //   .repeat(Infinity);
+  // bugRotTween.easing(TWEEN.Easing.Quadratic.InOut);
+  // bugRotTween.start();
 
   var hdr1;
   const rgbeLoader = new RGBELoader();
@@ -1926,7 +1920,7 @@ function initHubScene()
         o.material = newMaterial;
         o.material.map = colorMap;
 
-        console.log("O:" + o.name);
+        //console.log("O:" + o.name);
 
 
         if(o.name == "Computer_Monitor")
@@ -1962,7 +1956,7 @@ function initHubScene()
         o.material = newMaterial;
         o.material.map = colorMap;
 
-        console.log("O:" + o.name);
+        //console.log("O:" + o.name);
 
         if(o.name == "Screen")
         {
@@ -1976,7 +1970,7 @@ function initHubScene()
     //hubworldModel.add(garminModel);
     //console.log(phoenixModel);
     hubScene.add(garminModel);
-    console.log(hubScene);
+    //console.log(hubScene);
     //console.log("outline: " + outlineBug.children[0].children[0].name);
   });
 
@@ -2001,6 +1995,7 @@ function initSubtitles()
    "Look for Echo by clicking each map icon",
   "Clicking towers will give you hints to Echo's location",
   "Use the map to get your bearings" ];
+  lessonSubtitles = ["*PSHHH*...You found Echo! Hope you can get a good view through this trail cam...*PSHHH*", "*PSHHH*...There he goes again... Lets do some research and find out where he's headed next!...*PSHHH*"];
 }
 
 function makeTextSprite(message, parameters) {
@@ -2465,65 +2460,88 @@ function updateLinePath() {
 //** Updates the Lesson Scenes objects after lesson is complete*/
 function updateLessonScene()
 {
-  //**HORSESHOEBEND SCENE**//
+  echoClicked = false;
+
+  if(echoLocTween)
+  {
+    echoLocTween.stop();
+  }
+  if(echoRotTween)
+  {
+    echoRotTween.stop();
+  }
+  if(echoScaleTween)
+  {
+    echoScaleTween.stop();
+  }
+
+  //**HORSESHOE BEND SCENE**//
   if(currentLessonSceneIndex == 1)
   {
+    Echo.position.set(0.621, -1.14, -0.05);
+    Echo.rotation.set(0, 0, 0);
+    Echo.scale.set(0.03, 0.03, 0.03);
+    playEchoAnimation(1);
+
     console.log("UPDATE SCENE");
-    phoenixModel.visible = false;
-    //lessonScene.remove(phoenixModel);
+    lessonScene.remove(phoenixModel);
     lessonScene.add(grandCanyonModel);
     //lessonCamera.setFocalLength(10);
     lessonScene.fog.color.set("#FFFFFF");
     lessonScene.fog.far = 25;
     
-    outlineBug.rotation.set(-.5, -5.48, -0.25);
-    outlineBug.position.set(0.5, -1.2, 0.5);
+    outlineBug.rotation.set(0, -5, 0);
+    outlineBug.position.set(0.39, -1.2, 0.79);
     outlineBug.scale.set(.125, .125, .125);
     outlineBug.children[0].children[0].material.map = bugTexture_yellow;
     outlineBug.children[0].children[0].material.map.flipY = false;
     outlineBug.children[0].children[0].material.map.needsUpdate = true;
 
-    bugFlyTween = new TWEEN.Tween(outlineBug.position)
-    .to({ y: -1.1, z: -0.5}, 4000)
-    .yoyo(true)
-    .repeat(Infinity);
-    bugFlyTween.easing(TWEEN.Easing.Quadratic.InOut);
-    bugFlyTween.start();
+    // bugFlyTween = new TWEEN.Tween(outlineBug.position)
+    // .to({ y: -1.1, z: -0.5}, 4000)
+    // .yoyo(true)
+    // .repeat(Infinity);
+    // bugFlyTween.easing(TWEEN.Easing.Quadratic.InOut);
+    // bugFlyTween.start();
 
-    bugRotTween = new TWEEN.Tween(outlineBug.rotation)
-    .to({x: 0.5, y: -4, z: 0.25}, 3750)
-    .yoyo(true)
-    .repeat(Infinity);
-    bugRotTween.easing(TWEEN.Easing.Quadratic.InOut);
-    bugRotTween.start();
+    // bugRotTween = new TWEEN.Tween(outlineBug.rotation)
+    // .to({x: 0.5, y: -4, z: 0.25}, 3750)
+    // .yoyo(true)
+    // .repeat(Infinity);
+    // bugRotTween.easing(TWEEN.Easing.Quadratic.InOut);
+    // bugRotTween.start();
 
   }
   //** GRASSHOPPER */
   else if(currentLessonSceneIndex == 2)
   {
+    Echo.position.set(0.465, -1.075, -0.05);
+    Echo.rotation.set(0, 0, 0);
+    Echo.scale.set(0.03, 0.03, 0.03);
+    playEchoAnimation(5);
     lessonScene.remove(grandCanyonModel);
     lessonScene.add(grasshopperModel);
 
-    outlineBug.position.set(0.5, -1.15, 0.25);
+    outlineBug.position.set(0.51, -1.11, 0.797);
     outlineBug.rotation.set(-0.5, -2.45, -0.25);
     outlineBug.scale.set(0.075, 0.075, 0.075);
     outlineBug.children[0].children[0].material.map = bugTexture_red;
     outlineBug.children[0].children[0].material.map.flipY = false;
     outlineBug.children[0].children[0].material.map.needsUpdate = true;
 
-    bugFlyTween = new TWEEN.Tween(outlineBug.position)
-    .to({ y: -1.05, z: -0.25}, 4000)
-    .yoyo(true)
-    .repeat(Infinity);
-    bugFlyTween.easing(TWEEN.Easing.Quadratic.InOut);
-    bugFlyTween.start();
+    // bugFlyTween = new TWEEN.Tween(outlineBug.position)
+    // .to({ y: -1.05, z: -0.25}, 4000)
+    // .yoyo(true)
+    // .repeat(Infinity);
+    // bugFlyTween.easing(TWEEN.Easing.Quadratic.InOut);
+    // bugFlyTween.start();
 
-    bugRotTween = new TWEEN.Tween(outlineBug.rotation)
-    .to({x: 0.5, y: 1, z: 0.25}, 3750)
-    .yoyo(true)
-    .repeat(Infinity);
-    bugRotTween.easing(TWEEN.Easing.Quadratic.InOut);
-    bugRotTween.start();
+    // bugRotTween = new TWEEN.Tween(outlineBug.rotation)
+    // .to({x: 0.5, y: 1, z: 0.25}, 3750)
+    // .yoyo(true)
+    // .repeat(Infinity);
+    // bugRotTween.easing(TWEEN.Easing.Quadratic.InOut);
+    // bugRotTween.start();
 
     //lessonScene.background = hdr1;
     //lessonScene.enviroment = hdr1;
@@ -2541,15 +2559,20 @@ function updateLessonScene()
   //** BLACK MESA */
   else if(currentLessonSceneIndex == 3)
   {
-    grasshopperModel.visible = false;
-    //lessonScene.remove(grasshopperModel);
+    Echo.position.set(0.29, -1.11, -0.05);
+    Echo.rotation.set(0, 0, 0);
+    Echo.scale.set(0.03, 0.03, -0.03);
+    playEchoAnimation(5);
+
+    lessonScene.remove(grasshopperModel);
     lessonScene.add(blackMesaModel);
+    //lessonScene.remove(outlineBug);
 
     lessonScene.fog.near = 0.015;
     lessonScene.fog.far = 150;
     lessonScene.fog.color.set("#ffffff");
 
-    outlineBug.position.set(-2.88, -2.6359, 0);
+    outlineBug.position.set(-3.85, -1.89, -8.21);
     outlineBug.rotation.set(0, -2.45, 0);
     outlineBug.scale.set(0.75, 0.75, 0.75);
     outlineBug.children[0].children[0].material.map = bugTexture_green;
@@ -2565,13 +2588,17 @@ function updateLessonScene()
   //**CAVE SCENE**//
   else if(currentLessonSceneIndex == 4)
   {
-    blackMesaModel.visible = false;
-    //lessonScene.remove(grasshopperModel);
+    Echo.position.set(-0.251, -0.72, -0.073);
+    Echo.rotation.set(-3, 0, 0);
+    Echo.scale.set(0.05, 0.05, 0.05);
+    playEchoAnimation(5);
+    
+    lessonScene.remove(blackMesaModel);
     lessonScene.add(cave);
     filmPass.grayscale = true;
 
     outlineBug.position.set(-2.88, -2.6359, 0);
-    outlineBug.rotation.set(0, -2.45, 0);
+    outlineBug.rotation.set(0, 0, 0);
     outlineBug.scale.set(0.75, 0.75, 0.75);
     outlineBug.children[0].children[0].material.map = bugTexture_green;
     outlineBug.children[0].children[0].material.map.flipY = false;
@@ -2961,14 +2988,12 @@ function hoverObject() {
       }
       else if (intersects.length > 0 && intersects[0].object.name == "Echo" && !echoClicked) 
       {
+        //playEchoAnimation(2, true);
         intersectObject = intersects[0].object;
         intersected = true;
-        intersectObject.material.opacity = 0.75;
+        //intersectObject.material.opacity = 0.75;
         intersectObject.material.side = THREE.FrontSide;
-  
         document.body.style.cursor = 'pointer'
-  
-        //iconScalingTween(intersects[0].object, true);
   
         console.log("On Object");
       }  
@@ -2998,11 +3023,6 @@ function hoverObject() {
 function subtitleChange()
 {
   //** IF ITS NOT ACTIVE, ACTIVATE IT */
-  if(!subtitles.classList.contains("active"))
-  {
-    console.log("ACTIVATED");
-    subtitles.classList.toggle("active");
-  }
   
   if(startingSequenceNumb < startingSubtitles.length - 1 && startingSequence)
   {
@@ -3031,7 +3051,29 @@ function subtitleChange()
     console.log("SUBTITLE SEQUENCE IS OVER");
     startingSequence = false;
   }
+  
+  if(currentSceneNumber == 2)
+  {
+    if(currentLessonSceneIndex == 0)
+    {
+      subtitleLines.innerHTML = lessonSubtitles[lessonSubtitleSequenceNumber];
+      
+      setTimeout(function() 
+      {
+        if(subtitles.classList.contains("active"))
+        {
+          subtitles.classList.toggle("active");
+        }
+        lessonSubtitleSequenceNumber++;
 
+      }, 10000);
+    }
+  }
+  if(!subtitles.classList.contains("active"))
+  {
+    console.log("ACTIVATED");
+    subtitles.classList.toggle("active");
+  }
 }
 
 //Opens the 'popup' class in html and dispalys the content based on the object it clicked
@@ -3096,6 +3138,11 @@ function toggleLessonPopup() {
     console.log("LESSON POPUP ON");
     //startLesson();
 
+    if(subtitles.classList.contains("active"))
+    {
+      subtitles.classList.toggle("active");
+    }
+
   } else {
     document.getElementById("lessonContainer").classList.toggle("active");
     controls.enabled = true;
@@ -3123,7 +3170,7 @@ function clickEvent() {
         intersectObject = intersects[0].object;
         
         //** COMPUTER SCREEN */
-        if(intersects[0].object.name == "Computer_Monitor" || intersects[0].object.name == "Computer_Screen" && !startingSequence)
+        if(intersects[0].object.name == "Computer_Screen" && !startingSequence)
         {
           //transitioning = true;
           //hubToMapTransition();
@@ -3264,7 +3311,7 @@ function clickEvent() {
           console.log("BUG: " + bugAmount);
           //lessonScene.remove(intersects[0].object);
           tweenBug();
-          toggleLessonPopup();
+          //toggleLessonPopup();
           bugFlyTween.stop();
           bugRotTween.stop();
         }
@@ -3277,6 +3324,7 @@ function clickEvent() {
           if(!echoClicked)
           {
             playEchoAnimation(2, true);
+            subtitleChange();
           }
         } 
         else if (intersectObject.name == "left_Button" || intersectObject.name == "right_Button") 
@@ -3382,57 +3430,234 @@ function playEchoAnimation(index, tween)
   if(tween)
   {
     echoClicked = true;
-    if(currentLessonSceneIndex = 0)
+    //** PHOENIX */
+    if(currentLessonSceneIndex == 0)
     {
-    }
-    // setTimeout(function()
-    // {
-    //   playEchoAnimation(2);
-    //   var echoTween = new TWEEN.Tween(Echo.position)
-    //     .to(
-    //       {
-    //         x: lessonCamera.position.x,
-    //         y: lessonCamera.position.y + 2,
-    //         z: lessonCamera.position.z,
-    //       },
-    //       5000)
-    //       echoTween.easing(TWEEN.Easing.Quadratic.Out);
-    //       echoTween.onUpdate(() => {
-    //     });
-    //     echoTween.start();
-    // },2800);
 
-    var echoTween = new TWEEN.Tween(Echo.position)
+      var flyUpTween = new TWEEN.Tween(Echo.position)
+      .to(
+        {
+          x: Echo.position.x,
+          y: Echo.position.y + 1,
+          z: Echo.position.z,
+        },
+        1000)
+        flyUpTween.easing(TWEEN.Easing.Quadratic.Out);
+        flyUpTween.onUpdate(() => {
+      });
+      flyUpTween.start();
+
+      setTimeout(function()
+      {
+        echoLocTween = new TWEEN.Tween(Echo.position)
+          .to(
+            {
+              x: -30,
+              y: 0,
+              z: Echo.position.z,
+            },
+            7500)
+            echoLocTween.easing(TWEEN.Easing.Sinusoidal.In);
+            echoLocTween.onComplete(toggleLessonPopup);
+          echoLocTween.start();
+  
+        echoRotTween = new TWEEN.Tween(Echo.rotation)
         .to(
           {
-            x: -5,
-            y: 3,
-            z: -20,
+            x: lessonCamera.rotation.x,
+            y: lessonCamera.rotation.y + Math.PI/2,
+            z: lessonCamera.rotation.z,
           },
-          7500)
-          echoTween.easing(TWEEN.Easing.Sinusoidal.In);
-          echoTween.onUpdate(() => {
+          2500)
+          echoRotTween.easing(TWEEN.Easing.Cubic.InOut);
+          echoRotTween.onUpdate(() => {
         });
-        echoTween.start();
+        echoRotTween.start();
 
-    var echoRotTween = new TWEEN.Tween(Echo.rotation)
-    .to(
+        echoScaleTween = new TWEEN.Tween(Echo.scale)
+        .to(
+          {
+            x: 0,
+            y: 0,
+            z: 0,
+          },
+          10000)
+          echoScaleTween.easing(TWEEN.Easing.Cubic.InOut);
+        echoScaleTween.start();
+      },1000);
+    }
+    //** HORSESHOE BEND */
+    else if(currentLessonSceneIndex == 1)
+    {
+      var flyUpTween = new TWEEN.Tween(Echo.position)
+      .to(
+        {
+          x: Echo.position.x,
+          y: -0.9,
+          z: Echo.position.z,
+        },
+        1000)
+        flyUpTween.easing(TWEEN.Easing.Quadratic.Out);
+        flyUpTween.onUpdate(() => {
+      });
+      flyUpTween.start();
+
+      setTimeout(function()
       {
-        x: lessonCamera.rotation.x,
-        y: lessonCamera.rotation.y + Math.PI/8,
-        z: lessonCamera.rotation.z,
-      },
-      3000)
-      echoRotTween.easing(TWEEN.Easing.Cubic.InOut);
-      echoRotTween.onUpdate(() => {
-    });
-    echoRotTween.start();
-    
+        echoLocTween = new TWEEN.Tween(Echo.position)
+        .to(
+          {
+            x: -30,
+            y: -2,
+            z: -5,
+          },
+          10000)
+          echoLocTween.easing(TWEEN.Easing.Sinusoidal.In);
+          echoLocTween.onComplete(toggleLessonPopup);
+        echoLocTween.start();
+
+        echoRotTween = new TWEEN.Tween(Echo.rotation)
+        .to(
+          {
+            x: lessonCamera.rotation.x,
+            y: lessonCamera.rotation.y + Math.PI/2,
+            z: lessonCamera.rotation.z,
+          },
+          2500)
+          echoRotTween.easing(TWEEN.Easing.Cubic.InOut);
+          echoRotTween.onUpdate(() => {
+        });
+        echoRotTween.start();
+
+        echoScaleTween = new TWEEN.Tween(Echo.scale)
+        .to(
+          {
+            x: 0,
+            y: 0,
+            z: 0,
+          },
+          15000)
+          echoScaleTween.easing(TWEEN.Easing.Cubic.InOut);
+        echoScaleTween.start();
+      },1500);
+    }
+    //** GRASSHOPPER */
+    else if(currentLessonSceneIndex == 2)
+    {
+      var flyUpTween = new TWEEN.Tween(Echo.position)
+      .to(
+        {
+          x: Echo.position.x,
+          y: -0.85,
+          z: Echo.position.z,
+        },
+        1000)
+        flyUpTween.easing(TWEEN.Easing.Quadratic.Out);
+        flyUpTween.onUpdate(() => {
+      });
+      flyUpTween.start();
+
+      setTimeout(function()
+      {
+        echoLocTween = new TWEEN.Tween(Echo.position)
+        .to(
+          {
+            x: -10,
+            y: 0,
+            z: -4,
+          },
+          10000)
+          echoLocTween.easing(TWEEN.Easing.Sinusoidal.In);
+          echoLocTween.onComplete(toggleLessonPopup);
+        echoLocTween.start();
+
+        echoRotTween = new TWEEN.Tween(Echo.rotation)
+        .to(
+          {
+            x: lessonCamera.rotation.x,
+            y: lessonCamera.rotation.y + Math.PI/4,
+            z: lessonCamera.rotation.z,
+          },
+          2500)
+          echoRotTween.easing(TWEEN.Easing.Cubic.InOut);
+          echoRotTween.onUpdate(() => {
+        });
+        echoRotTween.start();
+
+        echoScaleTween = new TWEEN.Tween(Echo.scale)
+        .to(
+          {
+            x: 0,
+            y: 0,
+            z: 0,
+          },
+          15000)
+          echoScaleTween.easing(TWEEN.Easing.Cubic.InOut);
+        echoScaleTween.start();
+      },1500);
+    }
+    //** BLACK MESA */
+    else if(currentLessonSceneIndex == 3)
+    {
+      var flyUpTween = new TWEEN.Tween(Echo.position)
+      .to(
+        {
+          x: Echo.position.x,
+          y: -0.68,
+          z: Echo.position.z,
+        },
+        1000)
+        flyUpTween.easing(TWEEN.Easing.Quadratic.Out);
+        flyUpTween.onUpdate(() => {
+      });
+      flyUpTween.start();
+
+      setTimeout(function()
+      {
+        echoLocTween = new TWEEN.Tween(Echo.position)
+        .to(
+          {
+            x: -10,
+            y: -0.25,
+            z: -4,
+          },
+          10000)
+          echoLocTween.easing(TWEEN.Easing.Sinusoidal.In);
+          echoLocTween.onComplete(toggleLessonPopup);
+        echoLocTween.start();
+
+        echoRotTween = new TWEEN.Tween(Echo.rotation)
+        .to(
+          {
+            x: lessonCamera.rotation.x,
+            y: lessonCamera.rotation.y + Math.PI/4,
+            z: lessonCamera.rotation.z,
+          },
+          2500)
+          echoRotTween.easing(TWEEN.Easing.Cubic.InOut);
+          echoRotTween.onUpdate(() => {
+        });
+        echoRotTween.start();
+
+        echoScaleTween = new TWEEN.Tween(Echo.scale)
+        .to(
+          {
+            x: 0,
+            y: 0,
+            z: 0,
+          },
+          15000)
+          echoScaleTween.easing(TWEEN.Easing.Cubic.InOut);
+          echoScaleTween.onComplete(toggleLessonPopup);
+        echoScaleTween.start();
+      },1500);
+    }
+        
   }
 
   //var action = echoActions[index];
   action.weight = 1;
-  action.fadeIn(0.5);
+  action.fadeIn(1);
   action.play();
 }
 
@@ -4206,6 +4431,7 @@ function TransitionDone() {
       currentSceneNumber = 2;
       console.log("TRANSITIONED TO LESSON SCENE");
       startLesson();
+      subtitleChange();
 
       if(!mapButton.classList.contains("disabled"))
       {
@@ -4801,8 +5027,6 @@ startButton.addEventListener("click", function (ev) {
     bugIcon3.classList.toggle("disabled");
     bugIcon4.classList.toggle("disabled");
     startScreenCover.classList.toggle("disabled");
-
-    //lessonIntersectGroup.add(outlineBug.children[0].children[0]);
     
     //tutorialHighlight.classList.toggle("active");
     //highlightText.classList.toggle("active");
