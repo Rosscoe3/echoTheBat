@@ -5,6 +5,7 @@ import * as TWEEN from "https://cdn.skypack.dev/@tweenjs/tween.js";
 //import * as TWEEN from '@tweenjs/tween.js'
 import { MapControls } from "https://cdn.skypack.dev/three@0.127.0/examples/jsm/controls/OrbitControls.js";
 import { GLTFLoader } from "https://cdn.skypack.dev/three@0.127.0/examples/jsm/loaders/GLTFLoader.js";
+import { DRACOLoader } from "https://cdn.skypack.dev/three@0.127.0/examples/jsm/loaders/DRACOLoader.js";
 import { RGBELoader } from 'https://cdn.jsdelivr.net/npm/three@0.127/examples/jsm/loaders/RGBELoader.js';
 import { DragControls } from "./DragControls";
 import { EffectComposer } from 'https://cdn.skypack.dev/three@0.127.0/examples/jsm/postprocessing/EffectComposer.js';
@@ -15,7 +16,6 @@ import { ShaderPass } from 'https://cdn.skypack.dev/three@0.127.0/examples/jsm/p
 import { VignetteShader } from 'https://cdn.skypack.dev/three@0.127.0/examples/jsm/shaders/VignetteShader.js';
 import { PixelShader } from 'https://cdn.skypack.dev/three@0.127.0/examples/jsm/shaders/PixelShader.js'; 
 import { FXAAShader } from 'https://cdn.skypack.dev/three@0.127.0/examples/jsm/shaders/FXAAShader.js'; 
-
 import * as dat from "dat.gui";
 import { mapLinear } from "https://cdn.jsdelivr.net/npm/three@0.139.0/src/math/MathUtils.js";
 import Stats from 'https://cdn.skypack.dev/stats.js';
@@ -72,6 +72,11 @@ manager.onError = function (url) {
 
 //** CONTROLS AND SCENE SETUP */
 const loader = new GLTFLoader(manager);
+//dracoLoader.setDecoderPath( 'js/libs/draco/gltf/' );
+const dracoLoader = new DRACOLoader();
+dracoLoader.setDecoderConfig({ type: 'js' });
+dracoLoader.setDecoderPath( 'https://www.gstatic.com/draco/v1/decoders/' );
+loader.setDRACOLoader( dracoLoader );
 const canvas = document.querySelector("#c");
 const lessonSceneRaycast = new THREE.Scene();
 
@@ -100,13 +105,13 @@ const hubCamera = new THREE.PerspectiveCamera(
 
 let renderer = new THREE.WebGLRenderer({ 
   canvas, 
-  antialias: false,
+  antialias: true,
   alpha: false, 
   powerPreference: "high-performance" });
 
 
 //** RENDER PASSES */
-const filmPass = new FilmPass(
+var filmPass = new FilmPass(
   0.5,   // noise intensity
   0.1,  // scanline intensity
   648,    // scanline count
@@ -130,6 +135,7 @@ const effectFXAA = new ShaderPass(shaderFXAA);
 const pixelRatio = renderer.getPixelRatio();
 effectFXAA.material.uniforms[ 'resolution' ].value.x = 1 / ( container.offsetWidth * pixelRatio );
 effectFXAA.material.uniforms[ 'resolution' ].value.y = 1 / ( container.offsetHeight * pixelRatio );
+
 
 let lessonComposer = new EffectComposer(renderer);
 lessonComposer.setSize(window.innerWidth, window.innerHeight);
@@ -225,7 +231,7 @@ var startingSequenceNumb = 0;
 var lessonSubtitleSequenceNumber = 0;
 var startingSequence = true;
 var introHubSequence = true;
-var timeoutID1, timeoutID2;
+var timeoutID1, timeoutID2, lessonTimeout1;
 
 //** SOUNDS AND MUSIC */
 const listener = new THREE.AudioListener();
@@ -1293,33 +1299,33 @@ function init() {
     }
   };
   gui.add(guiWorld.xPos, "x", -10, 10).onChange(() => {
-    outlineBug.position.set(
+    Echo.position.set(
       guiWorld.xPos.x,
-      outlineBug.position.y,
-      outlineBug.position.z
+      Echo.position.y,
+      Echo.position.z
     );
     //renderer.gammaFactor = guiWorld.xPos.x;
-    console.log(outlineBug.position);
+    console.log(Echo.position);
     //console.log(Echo.position);
   });
 
   gui.add(guiWorld.xPos, "y", -10, 10).onChange(() => {
-    outlineBug.position.set(
-      outlineBug.position.x,
+    Echo.position.set(
+      Echo.position.x,
       guiWorld.xPos.y,
-      outlineBug.position.z
+      Echo.position.z
     );
     //effectVignette.uniforms[ 'darkness' ].value = guiWorld.xPos.y;
-    console.log(outlineBug.position);
+    console.log(Echo.position);
   });
 
   gui.add(guiWorld.xPos, "z", -10, 10).onChange(() => {
-    outlineBug.position.set(
-      outlineBug.position.x,
-      outlineBug.position.y,
+    Echo.position.set(
+      Echo.position.x,
+      Echo.position.y,
       guiWorld.xPos.z
     );
-    console.log(outlineBug.position);
+    console.log(Echo.position);
   });
 
   //** TOWER ICON INSTANTIATIONS */
@@ -1330,7 +1336,7 @@ function init() {
   focusCube.visible = true;
   //mapScene.add(focusCube);
   //Loads arizona Map
-  loader.load("/resources/models/arizona-map.glb", function (gltf) {
+  loader.load("/resources/models/ArizonaMap.glb", function (gltf) {
     //landsat = gltf.scene;
     arizona.userData.name = "Arizona";
     arizona.scale.setY(1);
@@ -1590,7 +1596,7 @@ function initLessonScene() {
   });
 
   //Loads Grand Canyon model
-  loader.load("/resources/models/Grand-Canyon-Sketchfab-edit.glb", function (gltf) {
+  loader.load("/resources/models/Grand-Canyon-Sketchfab.glb", function (gltf) {
     //landsat = gltf.scene;
     grandCanyonModel.userData.name = "GrandCanyon";
     // grandCanyonModel.scale.set(0.3, 0.3, 0.3);
@@ -1685,7 +1691,7 @@ function initLessonScene() {
   phoenixModel.position.set(2.05, -2, 2.748);
 
   //Phoenix Model
-  loader.load("/resources/models/grasshopper-point.glb", function (gltf) 
+  loader.load("/resources/models/grasshopper-point-1.glb", function (gltf) 
   {
     var model = gltf.scene;
     model.traverse((o) => 
@@ -1995,7 +2001,12 @@ function initSubtitles()
    "Look for Echo by clicking each map icon",
   "Clicking towers will give you hints to Echo's location",
   "Use the map to get your bearings" ];
-  lessonSubtitles = ["*PSHHH*...You found Echo! Hope you can get a good view through this trail cam...*PSHHH*", "*PSHHH*...There he goes again... Lets do some research and find out where he's headed next!...*PSHHH*"];
+  lessonSubtitles = ["*PSHHH*...You found Echo! Hope you can get a good view through this trail cam...*PSHHH*", 
+  "*PSHHH*...There he goes... Lets do some research and find out where he's headed next!...*PSHHH*", 
+  "*PSHHH*...You found Echo! Wow, what a beautiful view...*PSHHH*", "*PSHHH*...And he's off! Pulling up your device now...*PSHHH*", 
+  "*PSHHH*...You found him again!...*PSHHH*", "*PSHHH*... Hope he's close. Your device should give us more info...*PSHHH*",
+  "*PSHHH*...There he is!...*PSHHH*", "*PSHHH*... He can't have much farther to go!...*PSHHH*",
+  "*PSHHH*... Look like Echo's all safe and sound! WE DID IT!!...*PSHHH*"];
 }
 
 function makeTextSprite(message, parameters) {
@@ -2358,18 +2369,18 @@ function lessonSequenceSetup()
      "done"];
   
   lesson2Sequence = ["https://www.youtube.com/embed/yrs9IkbkfQE?enablejsapi=1&rel=0",
-  "This is some text that would go here",
-  "https://www.youtube.com/embed/DGE-N8_LQBo",
+  "",
+   "https://www.youtube.com/embed/DGE-N8_LQBo?enablejsapi=1&rel=0",
     "done"];
 
   lesson3Sequence = ["https://www.youtube.com/embed/yrs9IkbkfQE?enablejsapi=1&rel=0",
-  "This is some text that would go here",
-    "https://www.youtube.com/embed/DGE-N8_LQBo",
+  "",
+   "https://www.youtube.com/embed/DGE-N8_LQBo?enablejsapi=1&rel=0",
     "done"];
    
   lesson4Sequence = ["https://www.youtube.com/embed/yrs9IkbkfQE?enablejsapi=1&rel=0",
-  "This is some text that would go here",
-  "https://www.youtube.com/embed/DGE-N8_LQBo",
+  "",
+   "https://www.youtube.com/embed/DGE-N8_LQBo?enablejsapi=1&rel=0",
     "done"];
   
   lessonSequences = [lesson1Sequence, lesson2Sequence, lesson3Sequence, lesson4Sequence];
@@ -2478,6 +2489,15 @@ function updateLessonScene()
   //**HORSESHOE BEND SCENE**//
   if(currentLessonSceneIndex == 1)
   {
+    lessonComposer.removePass(filmPass);
+    filmPass = new FilmPass(
+      0.5,   // noise intensity
+      0.1,  // scanline intensity
+      648,    // scanline count
+      false,  // grayscale
+    );
+    lessonComposer.addPass(filmPass); 
+    
     Echo.position.set(0.621, -1.14, -0.05);
     Echo.rotation.set(0, 0, 0);
     Echo.scale.set(0.03, 0.03, 0.03);
@@ -2515,6 +2535,15 @@ function updateLessonScene()
   //** GRASSHOPPER */
   else if(currentLessonSceneIndex == 2)
   {
+    lessonComposer.removePass(filmPass);
+    filmPass = new FilmPass(
+      0.5,   // noise intensity
+      0.1,  // scanline intensity
+      648,    // scanline count
+      false,  // grayscale
+    );
+    lessonComposer.addPass(filmPass); 
+    
     Echo.position.set(0.465, -1.075, -0.05);
     Echo.rotation.set(0, 0, 0);
     Echo.scale.set(0.03, 0.03, 0.03);
@@ -2559,6 +2588,15 @@ function updateLessonScene()
   //** BLACK MESA */
   else if(currentLessonSceneIndex == 3)
   {
+    lessonComposer.removePass(filmPass);
+    filmPass = new FilmPass(
+      0.5,   // noise intensity
+      0.1,  // scanline intensity
+      648,    // scanline count
+      false,  // grayscale
+    );
+    lessonComposer.addPass(filmPass); 
+    
     Echo.position.set(0.29, -1.11, -0.05);
     Echo.rotation.set(0, 0, 0);
     Echo.scale.set(0.03, 0.03, -0.03);
@@ -2588,9 +2626,18 @@ function updateLessonScene()
   //**CAVE SCENE**//
   else if(currentLessonSceneIndex == 4)
   {
-    Echo.position.set(-0.251, -0.72, -0.073);
+    lessonComposer.removePass(filmPass);
+    filmPass = new FilmPass(
+      0.5,   // noise intensity
+      0.1,  // scanline intensity
+      648,    // scanline count
+      false,  // grayscale
+    );
+    lessonComposer.addPass(filmPass); 
+    
+    Echo.position.set(-1.153, -0.50, 0.147);
     Echo.rotation.set(-3, 0, 0);
-    Echo.scale.set(0.05, 0.05, 0.05);
+    Echo.scale.set(0.1, 0.1, 0.1);
     playEchoAnimation(5);
     
     lessonScene.remove(blackMesaModel);
@@ -2613,10 +2660,17 @@ function updateLessonScene()
     lessonScene.add(pointLight3);
     lessonScene.add(pointLight4);
   }
-
   //**PHOENIX SCENE**//
   else if (currentLessonSceneIndex == 0)
   {
+    lessonComposer.removePass(filmPass);
+    filmPass = new FilmPass(
+      0.5,   // noise intensity
+      0.1,  // scanline intensity
+      648,    // scanline count
+      false,  // grayscale
+    );
+    lessonComposer.addPass(filmPass); 
     // console.log("UPDATE SCENE");
     // lessonScene.remove(grandCanyonModel);
     // lessonScene.add(phoenixModel);
@@ -2991,7 +3045,7 @@ function hoverObject() {
         //playEchoAnimation(2, true);
         intersectObject = intersects[0].object;
         intersected = true;
-        //intersectObject.material.opacity = 0.75;
+        intersectObject.material.opacity = 0.9;
         intersectObject.material.side = THREE.FrontSide;
         document.body.style.cursor = 'pointer'
   
@@ -3023,7 +3077,11 @@ function hoverObject() {
 function subtitleChange()
 {
   //** IF ITS NOT ACTIVE, ACTIVATE IT */
-  
+  if(!subtitles.classList.contains("active"))
+  {
+    console.log("ACTIVATED");
+    subtitles.classList.toggle("active");
+  }
   if(startingSequenceNumb < startingSubtitles.length - 1 && startingSequence)
   {
     //** FIRST WAIT FOR TIME OUT */
@@ -3054,25 +3112,36 @@ function subtitleChange()
   
   if(currentSceneNumber == 2)
   {
-    if(currentLessonSceneIndex == 0)
+    //** CLEAR TIMEOUT */
+    if(lessonTimeout1)
     {
-      subtitleLines.innerHTML = lessonSubtitles[lessonSubtitleSequenceNumber];
-      
-      setTimeout(function() 
-      {
-        if(subtitles.classList.contains("active"))
-        {
-          subtitles.classList.toggle("active");
-        }
-        lessonSubtitleSequenceNumber++;
-
-      }, 10000);
+      clearTimeout(lessonTimeout1);
     }
-  }
-  if(!subtitles.classList.contains("active"))
-  {
-    console.log("ACTIVATED");
-    subtitles.classList.toggle("active");
+
+    subtitleLines.innerHTML = lessonSubtitles[lessonSubtitleSequenceNumber];
+    console.log("lessonSubtitle: " + lessonSubtitleSequenceNumber);
+    lessonSubtitleSequenceNumber++;
+
+    if(subtitles.classList.contains("active"))
+    {
+      subtitles.classList.toggle("active");
+      setTimeout(function(){
+        subtitles.classList.toggle("active");
+      }, 500);
+    }
+
+    lessonTimeout1 = setTimeout(function() 
+    {
+      if(subtitles.classList.contains("active"))
+      {
+        subtitles.classList.toggle("active");
+      }
+      
+    }, 10000);
+    // if(currentLessonSceneIndex == 0)
+    // {
+
+    // }
   }
 }
 
@@ -3305,7 +3374,7 @@ function clickEvent() {
         console.log(lessonScene.children);
     
         //** CLICK BUG FUNCTIONALITY */
-        if (intersectObject.userData.name == "bug") 
+        if (intersectObject.userData.name == "bug" && currentLessonSceneIndex != 4) 
         {
           bugAmount++;
           console.log("BUG: " + bugAmount);
@@ -3323,8 +3392,15 @@ function clickEvent() {
           
           if(!echoClicked)
           {
-            playEchoAnimation(2, true);
-            subtitleChange();
+            if(currentLessonSceneIndex == 4)
+            {
+              console.log("LOG");
+            }
+            else
+            {
+              playEchoAnimation(2, true);
+              subtitleChange();
+            }
           }
         } 
         else if (intersectObject.name == "left_Button" || intersectObject.name == "right_Button") 
@@ -3648,7 +3724,6 @@ function playEchoAnimation(index, tween)
           },
           15000)
           echoScaleTween.easing(TWEEN.Easing.Cubic.InOut);
-          echoScaleTween.onComplete(toggleLessonPopup);
         echoScaleTween.start();
       },1500);
     }
@@ -5012,7 +5087,6 @@ continueButton.addEventListener("click", function (ev) {
 
   music.play();
 });
-
 //** START BUTTON EVENT LISTENER */
 startButton.addEventListener("click", function (ev) {
   ev.stopPropagation();
