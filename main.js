@@ -1691,7 +1691,7 @@ function initLessonScene() {
   phoenixModel.position.set(2.05, -2, 2.748);
 
   //Phoenix Model
-  loader.load("/resources/models/grasshopper-point-1.glb", function (gltf) 
+  loader.load("/resources/models/grasshopper-point.glb", function (gltf) 
   {
     var model = gltf.scene;
     model.traverse((o) => 
