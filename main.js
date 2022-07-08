@@ -208,6 +208,8 @@ var intersectObject;
 var intersected = false;
 var audioPlaying = true;
 var bugAmount = 0;
+var bugsFound = [];
+var bugLocations = [0, 1, -1, 2];
 var bugFlyTween;
 var bugRotTween;
 const pingWrldPosTemp = new THREE.Vector3();
@@ -221,6 +223,7 @@ var tutorialIndex = 0;
 var outOfBounds = false;
 var videoPlaying = false;
 var currentLessonSceneIndex = 0;
+var lessonsCompleted = 0;
 var currentLessonIndex = 0;
 const delta = 0.01;
 
@@ -651,7 +654,7 @@ function loadVideo() {
 
   function onPlayerReady(event) {
     //event.target.playVideo();
-    console.log("PLAYER READY");
+    //console.log("PLAYER READY");
   }
 
   function onPlayerStateChange(event) {
@@ -660,7 +663,7 @@ function loadVideo() {
   }
 }
 if (document.readyState !== "loading") {
-  console.info(`document.readyState ==>`, document.readyState);
+  //console.info(`document.readyState ==>`, document.readyState);
   loadVideo();
 } else {
   document.addEventListener("DOMContentLoaded", function () {
@@ -1299,33 +1302,33 @@ function init() {
     }
   };
   gui.add(guiWorld.xPos, "x", -10, 10).onChange(() => {
-    Echo.position.set(
+    outlineBug.position.set(
       guiWorld.xPos.x,
-      Echo.position.y,
-      Echo.position.z
+      outlineBug.position.y,
+      outlineBug.position.z
     );
     //renderer.gammaFactor = guiWorld.xPos.x;
-    console.log(Echo.position);
+    console.log(outlineBug.position);
     //console.log(Echo.position);
   });
 
   gui.add(guiWorld.xPos, "y", -10, 10).onChange(() => {
-    Echo.position.set(
-      Echo.position.x,
+    outlineBug.position.set(
+      outlineBug.position.x,
       guiWorld.xPos.y,
-      Echo.position.z
+      outlineBug.position.z
     );
     //effectVignette.uniforms[ 'darkness' ].value = guiWorld.xPos.y;
-    console.log(Echo.position);
+    console.log(outlineBug.position);
   });
 
   gui.add(guiWorld.xPos, "z", -10, 10).onChange(() => {
-    Echo.position.set(
-      Echo.position.x,
-      Echo.position.y,
+    outlineBug.position.set(
+      outlineBug.position.x,
+      outlineBug.position.y,
       guiWorld.xPos.z
     );
-    console.log(Echo.position);
+    console.log(outlineBug.position);
   });
 
   //** TOWER ICON INSTANTIATIONS */
@@ -1340,7 +1343,7 @@ function init() {
     //landsat = gltf.scene;
     arizona.userData.name = "Arizona";
     arizona.scale.setY(1);
-    arizona.castShadow = true;
+    //arizona.castShadow = true;
     arizona.rotation.y = Math.PI / -2.15;
     //arizona.material.normal = .01;
 
@@ -1570,7 +1573,7 @@ function initLessonScene() {
     cave.userData.name = "Cave";
     cave.scale.set(0.5, 0.5, 0.5);
     cave.add(gltf.scene);
-    cave.castShadow = true;
+    //cave.castShadow = true;
 
     var model = gltf.scene;
     model.traverse((o) => 
@@ -1652,7 +1655,7 @@ function initLessonScene() {
     });
     
     grandCanyonModel.add(gltf.scene);
-    grandCanyonModel.castShadow = true;
+    //grandCanyonModel.castShadow = true;
 
     //console.log("grand Canyon" + grandCanyonModel.children[0].children[0].children[0].material);  
 
@@ -1771,9 +1774,8 @@ function initLessonScene() {
     });
     
     //outlineBug.geometry = gltf.scene;
-
     //outlineBug = gltf.scene;
-    outlineBug.castShadow = true;
+    //outlineBug.castShadow = true;
     outlineBug.add(gltf.scene);
 
     outlineBug.userData.name = "bug";
@@ -1931,7 +1933,7 @@ function initHubScene()
 
         if(o.name == "Computer_Monitor")
         {
-          console.log(o.children[0]);
+          //console.log(o.children[0]);
           computerScreen = o;
           var newMaterial = new THREE.MeshBasicMaterial({color: 0x444ff});
         }
@@ -2076,7 +2078,7 @@ function makeTextSprite(message, parameters) {
 
   var spriteMaterial = new THREE.SpriteMaterial({
     map: texture,
-    useScreenCoordinates: false,
+    //useScreenCoordinates: false,
   });
   var sprite = new THREE.Sprite(spriteMaterial);
   sprite.scale.set(0.5 * fontsize, 0.25 * fontsize, 0.75 * fontsize);
@@ -2641,15 +2643,56 @@ function updateLessonScene()
     playEchoAnimation(5);
     
     lessonScene.remove(blackMesaModel);
+    lessonScene.remove(outlineBug);
     lessonScene.add(cave);
     filmPass.grayscale = true;
 
-    outlineBug.position.set(-2.88, -2.6359, 0);
-    outlineBug.rotation.set(0, 0, 0);
-    outlineBug.scale.set(0.75, 0.75, 0.75);
-    outlineBug.children[0].children[0].material.map = bugTexture_green;
-    outlineBug.children[0].children[0].material.map.flipY = false;
-    outlineBug.children[0].children[0].material.map.needsUpdate = true;
+    // outlineBug.position.set(-2.88, -2.6359, 0);
+    // outlineBug.rotation.set(0, 0, 0);
+    // outlineBug.scale.set(0.75, 0.75, 0.75);
+    // outlineBug.children[0].children[0].material.map = bugTexture_green;
+    // outlineBug.children[0].children[0].material.map.flipY = false;
+    // outlineBug.children[0].children[0].material.map.needsUpdate = true;
+
+
+    //** ADDS BUGS DEPENDING ON WHICH ONES YOU HAVE COLLECTED */
+    console.log(bugsFound.length);
+    for(var i = 0; i < bugsFound.length; i++)
+    {
+      var newBug = outlineBug.clone(true);
+
+      //** PHOENIX BUG */
+      if(bugsFound[i] == 0)
+      {
+        newBug.children[0].children[0].material.map = bugTexture_blue;
+        newBug.children[0].children[0].material.map.flipY = false;
+        newBug.children[0].children[0].material.map.needsUpdate = true;
+      }
+      else if(bugsFound[i] == 1)
+      {
+        newBug.children[0].children[0].material.map = bugTexture_yellow;
+        newBug.children[0].children[0].material.map.flipY = false;
+        newBug.children[0].children[0].material.map.needsUpdate = true;
+      }
+      else if(bugsFound[i] == 2)
+      {
+        newBug.children[0].children[0].material.map = bugTexture_red;
+        newBug.children[0].children[0].material.map.flipY = false;
+        newBug.children[0].children[0].material.map.needsUpdate = true;
+      }
+      else if(bugsFound[i] == 3)
+      {
+        newBug.children[0].children[0].material.map = bugTexture_green;
+        newBug.children[0].children[0].material.map.flipY = false;
+        newBug.children[0].children[0].material.map.needsUpdate = true;
+      }
+
+      
+      lessonScene.add(newBug);
+      console.log(newBug);
+      newBug.position.set(-2.88, -2.6359, bugLocations[i]);
+      newBug.rotation.set(newBug.rotation.x, Math.random(Math.PI), newBug.rotation.x);
+    }
 
     //lessonScene.background = new THREE.Color(0x000000);
     lessonScene.fog.near = 0.015;
@@ -2897,7 +2940,7 @@ function hoverObject() {
     {
       if (intersected) 
       {
-        console.log("Off Object");
+        //console.log("Off Object");
         
         intersectObject.userData.scaling = false;
         
@@ -3062,8 +3105,8 @@ function hoverObject() {
           //iconScalingTween(intersectObject, false);
           intersectObject = null;
           //document.body.style.cursor = 'default'
+          document.body.style.cursor = 'default'
         }
-  
         document.body.style.cursor = 'default'
       }
     }
@@ -3079,7 +3122,7 @@ function subtitleChange()
   //** IF ITS NOT ACTIVE, ACTIVATE IT */
   if(!subtitles.classList.contains("active"))
   {
-    console.log("ACTIVATED");
+    //console.log("ACTIVATED");
     subtitles.classList.toggle("active");
   }
   if(startingSequenceNumb < startingSubtitles.length - 1 && startingSequence)
@@ -3374,15 +3417,22 @@ function clickEvent() {
         console.log(lessonScene.children);
     
         //** CLICK BUG FUNCTIONALITY */
-        if (intersectObject.userData.name == "bug" && currentLessonSceneIndex != 4) 
+        if (intersectObject.userData.name == "bug" && currentLessonSceneIndex != 4 && bugAmount < 4) 
         {
           bugAmount++;
           console.log("BUG: " + bugAmount);
           //lessonScene.remove(intersects[0].object);
           tweenBug();
           //toggleLessonPopup();
-          bugFlyTween.stop();
-          bugRotTween.stop();
+          
+          if(bugFlyTween)
+          {
+            bugFlyTween.stop();
+          }
+          if(bugRotTween)
+          {
+            bugRotTween.stop();
+          }
         }
         //** CLICK ON ECHO */ 
         else if (intersectObject.name == "Echo") 
@@ -3458,25 +3508,29 @@ function clickEvent() {
   }
 }
 
-function tweenBug(lessonSceneNumber)
+function tweenBug(bugNumb)
 {
-  if(currentLessonSceneIndex == 0)
+  //** BUG PICKUP INTERACTION */
+
+  if(bugAmount == 1)
   {
     bugIcon.classList.toggle("filled");
   }
-  else if(currentLessonSceneIndex == 1)
+  else if(bugAmount == 2)
   {
     bugIcon2.classList.toggle("filled");
   }
-  else if(currentLessonSceneIndex == 2)
+  else if(bugAmount == 3)
   {
     bugIcon3.classList.toggle("filled");
   }
-  else
+  else if(bugAmount == 4)
   {
     bugIcon4.classList.toggle("filled");
   }
   
+  bugsFound.push(currentLessonSceneIndex);
+  console.log(bugsFound); 
   var bugTween = new TWEEN.Tween(outlineBug.position)
     .to(
       {
@@ -3750,18 +3804,18 @@ function clickOpenURL(intersects, url) {
   
   if (intersects.length > 0) 
   {
-    console.log("CLICK OPEN");
+    //console.log("CLICK OPEN");
     //If it has a URL open in another window
     if (url) 
     {
       window.open(url,'_blank');
-      console.log(
-        "Opening: " + url + " in a new tab"
-      );
+      // console.log(
+      //   "Opening: " + url + " in a new tab"
+      // );
     } 
     else 
     {
-      console.log("UI does not have a link");
+      //console.log("UI does not have a link");
     }
 
     console.log("Clicked: " + intersects[0].object.userData.name);

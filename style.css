@@ -405,7 +405,7 @@ body {
 .startYoutubeVideo .startButton{
   border: solid white 0.5vh;
   position: relative;
-  left: 40%;
+  left: 45%;
   transform: scale(1);
   opacity: 100%;
   width: fit-content;
