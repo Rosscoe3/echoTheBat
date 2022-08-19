@@ -820,6 +820,150 @@ body {
    -webkit-transition: all .1s ease-in-out;
 }
 
+.lesson2Container{
+  position: absolute;
+  pointer-events: auto;
+  opacity: 0%;
+  z-index: 2;
+
+  transform: translate(-50%, -50%) scale(0);
+  top: 52%;
+  left: 48%;
+
+  /* height: 46.75%; */
+  width: 83%;
+  aspect-ratio: 16 / 9;
+
+  background-color: white;
+
+  transition: opacity .1s ease-in-out;
+   -moz-transition: opacity .1s ease-in-out;
+   -webkit-transition: opacity .1s ease-in-out;
+}
+.lesson2Container.active{
+  opacity: 100%;
+  pointer-events: auto;
+  transform: translate(-50%, -50%) scale(1);
+
+  transition: opacity .1s ease-in-out;
+   -moz-transition: opacity .1s ease-in-out;
+   -webkit-transition: opacity .1s ease-in-out;
+}
+
+.lesson2Container .drag2{
+  position: inherit;
+  width: fit-content;
+  height: fit-content;
+  opacity: 100%;
+  
+  color: black;
+  border-style: dashed;
+
+  top: 45%;
+  font-size: 50%;
+  padding: 1%;
+  border-radius: 5%;
+
+  cursor: pointer;
+  transition: all 0.1s;
+}
+
+.lesson2Container .drag2.dropped{
+  opacity: 100%;
+}
+
+.lesson2Container .drag2:hover{
+  opacity: 20%;
+}
+
+.lesson2Container .droppable2{
+  display: block;
+  position: inherit;
+  margin: 15px;
+  z-index: 3000;
+  
+  width: 40%;
+  aspect-ratio: 1 / 1;
+  opacity: 100%;
+
+  display: inline-block;
+
+  left: 28%;
+  top: 13%;
+
+  border-radius: 5%;
+  cursor: move;
+
+  background-image: url("resources/images/lesson2/false-mendocino.jpg");
+  background-repeat: no-repeat;
+  background-size: 100%;
+}
+.lesson2Container .droppable2:hover{
+  opacity: 90%;
+  transition: all 0.1s;
+}
+
+.lesson2Container .droppable2 .drag{
+  height: 100%;
+  width: 100%;
+  margin: 0px;
+}
+.lesson2Container .instructions{
+  width: fit-content;
+
+  position: relative;                      /* 3 */
+   transform: translate(-50%, 0%);
+  
+  /* color: black;
+  border-style: dashed; */
+
+  left: 50%;
+  top: 2.5%;
+
+  text-size-adjust: inherit;
+  overflow-wrap: break-word;
+  font-family: roboto-condensed, sans-serif;
+  font-size: 34%;
+  text-align: center;
+  padding: .5vh;
+  box-sizing: border-box;
+  border-radius: 1vh;
+  
+  transition: all .1s ease-in-out;
+   -moz-transition: all .1s ease-in-out;
+   -webkit-transition: all .1s ease-in-out;
+}
+
+.lesson2Container .droppable2.hovered{
+  opacity: 50%;
+  transition: all 0.1s;
+}
+.lesson2Container .droppable2 .answer{
+  position: absolute;
+  content: "";
+  top: 47.5%;
+  left: 40%;
+  display: inline-block;
+  transform: rotate(45deg) translate(-50%, -50%);
+  height: 20%;
+  width: 10%;
+  border-bottom: 7px solid white;
+  border-right: 7px solid white;
+  opacity: 0%;
+
+  transition: all .5s;
+}
+
+.lesson2Container .droppable2 .answer.active{
+  opacity: 100%;
+  transition: all .5s;
+}
+.lesson2Container .droppable2 .answer.wrong{
+  content: "\d7"; /* This will render the 'X' */
+  opacity: 100%;
+  transition: all .5s;
+}
+
 .youtubeLink .doneBtn{
   position: relative;                      /* 3 */
   opacity: 0%;

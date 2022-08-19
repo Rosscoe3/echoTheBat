@@ -136,7 +136,6 @@ const pixelRatio = renderer.getPixelRatio();
 effectFXAA.material.uniforms[ 'resolution' ].value.x = 1 / ( container.offsetWidth * pixelRatio );
 effectFXAA.material.uniforms[ 'resolution' ].value.y = 1 / ( container.offsetHeight * pixelRatio );
 
-
 let lessonComposer = new EffectComposer(renderer);
 lessonComposer.setSize(window.innerWidth, window.innerHeight);
 let mapComposer = new EffectComposer(renderer)
@@ -159,6 +158,7 @@ hubComposer.addPass(new RenderPass(hubScene, hubCamera));
 
 const maxAnisotropy = renderer.capabilities.getMaxAnisotropy();
 let labelRenderer;
+let allFilled;
 const controls = new MapControls(mainCamera, renderer.domElement);
 const uiMinheight = 0.1;
 var mouse, raycaster;
@@ -199,6 +199,9 @@ let cameraPos = new THREE.Vector3(0, 5, 0);
 let transition, transition2;
 let transitioning = false;
 let hubTransitioning = false;
+let hubworldScreenClick = false;
+let walkieTalkieView = false;
+
 let isTweening = false;
 let cameraMoving = false;
 let currentSceneNumber = 0;
@@ -209,9 +212,11 @@ var intersected = false;
 var audioPlaying = true;
 var bugAmount = 0;
 var bugsFound = [];
+var bugBlue, bugYellow, bugRed, bugGreen;
 var bugLocations = [0, 1, -1, 2];
 var bugFlyTween;
 var bugRotTween;
+var echoAnimFinal = false;
 const pingWrldPosTemp = new THREE.Vector3();
 var maxSpriteSize = 0.2;
 var minSpriteSize = 0.15;
@@ -234,6 +239,7 @@ var startingSequenceNumb = 0;
 var lessonSubtitleSequenceNumber = 0;
 var startingSequence = true;
 var introHubSequence = true;
+var locationFound = false;
 var timeoutID1, timeoutID2, lessonTimeout1;
 
 //** SOUNDS AND MUSIC */
@@ -243,6 +249,18 @@ const audioLoader = new THREE.AudioLoader(manager);
 
 const music = new THREE.Audio(listener);
 const uiHoverOnSound = new THREE.Audio(listener);
+const walkieTalkie1 = new THREE.Audio(listener);
+const walkieTalkie2 = new THREE.Audio(listener);
+const walkieTalkie3 = new THREE.Audio(listener);
+const phoenixSound = new THREE.Audio(listener);
+const grandCanyonSound = new THREE.Audio(listener);
+const grasshopperSound = new THREE.Audio(listener);
+const blackMesaSound = new THREE.Audio(listener);
+const caveSound = new THREE.Audio(listener);
+const hubworldSound = new THREE.Audio(listener);
+
+
+var walkieTalkieSounds;
 const uiHoverOffSound = new THREE.Audio(listener);
 const clickSound = new THREE.Audio(listener);
 const transitionSound = new THREE.Audio(listener);
@@ -266,6 +284,24 @@ audioLoader.load("/resources/sounds/fx/woosh-1.mp3", function (buffer) {
   uiHoverOnSound.setVolume(0.5);
   //uiHoverOnSound.stop();
 });
+//WALKIE TALK SOUNDS
+audioLoader.load("/resources/sounds/fx/walkieTalk-1.mp3", function (buffer) {
+  walkieTalkie1.setBuffer(buffer);
+  walkieTalkie1.setLoop(false);
+  walkieTalkie1.setVolume(0.25);
+});
+audioLoader.load("/resources/sounds/fx/walkieTalk-2.mp3", function (buffer) {
+  walkieTalkie2.setBuffer(buffer);
+  walkieTalkie2.setLoop(false);
+  walkieTalkie2.setVolume(0.25);
+});
+audioLoader.load("/resources/sounds/fx/walkieTalk-3.mp3", function (buffer) {
+  walkieTalkie3.setBuffer(buffer);
+  walkieTalkie3.setLoop(false);
+  walkieTalkie3.setVolume(0.25);
+});
+walkieTalkieSounds = [walkieTalkie1, walkieTalkie2, walkieTalkie3];
+
 //HOVER OFF SOUND
 audioLoader.load("/resources/sounds/fx/woosh-deep.wav", function (buffer) {
   uiHoverOffSound.setBuffer(buffer);
@@ -288,6 +324,62 @@ audioLoader.load(
     transitionSound.setLoop(false);
     transitionSound.setVolume(0.5);
     //transitionSound.stop();
+  }
+);
+
+//** HUBWORLD SOUND */
+audioLoader.load(
+  "/resources/sounds/fx/hubworld.mp3",
+  function (buffer) {
+    hubworldSound.setBuffer(buffer);
+    hubworldSound.setLoop(true);
+    hubworldSound.setVolume(0.05);
+    //transitionSound.stop();
+  }
+);
+//** PHOENIX */
+audioLoader.load(
+  "/resources/sounds/fx/phoenix.mp3",
+  function (buffer) {
+    phoenixSound.setBuffer(buffer);
+    phoenixSound.setLoop(true);
+    phoenixSound.setVolume(0.05);
+  }
+);
+//** GRAND CANYON */
+audioLoader.load(
+  "/resources/sounds/fx/grandCanyon.mp3",
+  function (buffer) {
+    grandCanyonSound.setBuffer(buffer);
+    grandCanyonSound.setLoop(true);
+    grandCanyonSound.setVolume(0.1);
+  }
+);
+//** GRASSHOPPER POINT */
+audioLoader.load(
+  "/resources/sounds/fx/desert.mp3",
+  function (buffer) {
+    grasshopperSound.setBuffer(buffer);
+    grasshopperSound.setLoop(true);
+    grasshopperSound.setVolume(0.05);
+  }
+);
+//** BLACK MESA */
+audioLoader.load(
+  "/resources/sounds/fx/BlackMesa.mp3",
+  function (buffer) {
+    blackMesaSound.setBuffer(buffer);
+    blackMesaSound.setLoop(true);
+    blackMesaSound.setVolume(0.025);
+  }
+);
+//** CAVE SCENE */
+audioLoader.load(
+  "/resources/sounds/fx/cave.mp3",
+  function (buffer) {
+    caveSound.setBuffer(buffer);
+    caveSound.setLoop(true);
+    caveSound.setVolume(0.1);
   }
 );
 
@@ -388,6 +480,18 @@ const tanqueVerdeTexture = new THREE.TextureLoader(manager).load(
 const wymolaTexture = new THREE.TextureLoader(manager).load(
   "/resources/images/location/wymola.jpg"
 );
+const lessonLocation_phoenix_texture = new THREE.TextureLoader(manager).load(
+  "/resources/images/UI/icon-phoenix.jpg"
+);
+const lessonLocation_horseshoe_texture = new THREE.TextureLoader(manager).load(
+  "/resources/images/UI/icon-horseshoeBend.jpg"
+);
+const lessonLocation_cathedralRock_texture = new THREE.TextureLoader(manager).load(
+  "/resources/images/UI/icon-cathedralRock.jpg"
+); 
+const lessonLocation_blackMesa_texture = new THREE.TextureLoader(manager).load(
+  "/resources/images/UI/icon-blackMesa.jpg"
+);
 
 const arizona_road_texture = new THREE.TextureLoader(manager).load(
   "/resources/images/arizona-road.png"
@@ -447,6 +551,12 @@ const scaddanWashMaterial = new THREE.SpriteMaterial({ map: scaddanWashTexture})
 const tanqueVerdeMaterial = new THREE.SpriteMaterial({ map: tanqueVerdeTexture});
 const wymolaMaterial = new THREE.SpriteMaterial({ map: wymolaTexture});
 
+const lessonLocation_phoenix_material = new THREE.SpriteMaterial({ map: lessonLocation_phoenix_texture});
+const lessonLocation_horseshoe_material = new THREE.SpriteMaterial({ map: lessonLocation_horseshoe_texture});
+const lessonLocation_cathedralRock_material = new THREE.SpriteMaterial({ map: lessonLocation_cathedralRock_texture});
+const lessonLocation_blackMesa_material = new THREE.SpriteMaterial({ map: lessonLocation_blackMesa_texture});
+
+
 const towerIcon = new THREE.Sprite(towerIconMaterial);
 const towerIcon2 = new THREE.Sprite(towerIconMaterial);
 const towerIcon3 = new THREE.Sprite(towerIconMaterial);
@@ -480,7 +590,12 @@ var sprite_deathValley,
   sprite_sanSimon,
   sprite_scaddanWash,
   sprite_tanqueVerde,
-  sprite_wymola, 
+  sprite_wymola,
+  lessonLocation_phoenix_sprite,
+  lessonLocation_horseshoe_sprite,
+  lessonLocation_cathedralRock_sprite,
+  lessonLocation_blackMesa_sprite,
+  lessonLocation_tuscon_sprite, 
   glowSprite;
 var uiLocationSprites, labelSprites, uiLocationPositions, sceneTransitionSprites;
 
@@ -540,7 +655,7 @@ let hamburger = document.getElementById("dropdown");
 let roadButton = document.getElementById("roadBtn");
 let mosaicButton = document.getElementById("mosaicBtn");
 let geographyButton = document.getElementById("geographyBtn");
-//let backButton = document.getElementById("backButton");
+let backButton = document.getElementById("backButton");
 let youtubePlayButton = document.getElementById("playPauseBtn");
 let tutorialHighlight = document.getElementById("tutorialHighlight");
 let highlightText = document.getElementById("highlightText");
@@ -565,11 +680,20 @@ let youtubePlayer = document.getElementById("youtubePlayer");
 
 let lesson1ResetBtn = document.getElementById("lesson1Reset");
 let lesson1Container = document.getElementById("lesson1Activity");
+let lesson2Container = document.getElementById("lesson2Activity");
 let lessonDoneBtn = document.getElementById("doneButton");
 let combinationText = document.getElementById("comboText");
+//** LESSON 2 */
+//let lesson2Container = document.getElementById("lesson2Image");
 
 let draggableElements = document.querySelectorAll(".drag");
+let draggable2Elements = document.querySelectorAll(".drag2");
 let droppableElements = document.querySelectorAll(".droppable");
+let droppable2Elements = document.querySelectorAll(".droppable2");
+
+let lesson2ActivityList = [["url('resources/images/lesson2/false-mendocino.jpg')", false], 
+["url('resources/images/lesson2/true-mendocino.jpg')", true]];
+let lesson2ActivityIndex = 0;
 
 let transitionCover = document.getElementById("screenTransition");
 let startScreenCover = document.getElementById("startScreenBlock");
@@ -594,6 +718,7 @@ var walkieTalkieVideoMaterial = new THREE.MeshBasicMaterial({
     toneMapped: false,
     transparent: true,
 });
+var walkieTalkieScreenModel;
 
 
 locationNameElem.textContent = "";
@@ -737,7 +862,6 @@ function init() {
   //mapScene.add(ambientLight);
 
   /** SPRITE INSTANTIATION */
-
   glowSprite = new THREE.Sprite(glowMaterial);
 
   sprite_deathValley = new THREE.Sprite(deathValleyMaterial);
@@ -765,6 +889,11 @@ function init() {
   sprite_scaddanWash = new THREE.Sprite(scaddanWashMaterial);
   sprite_tanqueVerde = new THREE.Sprite(tanqueVerdeMaterial);
   sprite_wymola = new THREE.Sprite(wymolaMaterial);
+
+  lessonLocation_phoenix_sprite = new THREE.Sprite(lessonLocation_phoenix_material);
+  lessonLocation_horseshoe_sprite = new THREE.Sprite(lessonLocation_horseshoe_material);
+  lessonLocation_cathedralRock_sprite = new THREE.Sprite(lessonLocation_cathedralRock_material);
+  lessonLocation_blackMesa_sprite = new THREE.Sprite(lessonLocation_blackMesa_material);
 
   locationSpriteSetup();
   lessonSequenceSetup();
@@ -1301,34 +1430,34 @@ function init() {
       z: 0,
     }
   };
-  gui.add(guiWorld.xPos, "x", -10, 10).onChange(() => {
-    outlineBug.position.set(
+  gui.add(guiWorld.xPos, "x", -4, 4).onChange(() => {
+    hubCamera.position.set(
       guiWorld.xPos.x,
-      outlineBug.position.y,
-      outlineBug.position.z
+      hubCamera.position.y,
+      hubCamera.position.z
     );
     //renderer.gammaFactor = guiWorld.xPos.x;
-    console.log(outlineBug.position);
+    console.log(hubCamera.position);
     //console.log(Echo.position);
   });
 
-  gui.add(guiWorld.xPos, "y", -10, 10).onChange(() => {
-    outlineBug.position.set(
-      outlineBug.position.x,
+  gui.add(guiWorld.xPos, "y", -4, 4).onChange(() => {
+    outlineBug.rotation.set(
+      outlineBug.rotation.x,
       guiWorld.xPos.y,
-      outlineBug.position.z
+      outlineBug.rotation.z
     );
-    //effectVignette.uniforms[ 'darkness' ].value = guiWorld.xPos.y;
-    console.log(outlineBug.position);
+    console.log(outlineBug.rotation);
+    
   });
 
-  gui.add(guiWorld.xPos, "z", -10, 10).onChange(() => {
-    outlineBug.position.set(
-      outlineBug.position.x,
-      outlineBug.position.y,
+  gui.add(guiWorld.xPos, "z", -4, 4).onChange(() => {
+    hubCamera.position.set(
+      hubCamera.position.x,
+      hubCamera.position.y,
       guiWorld.xPos.z
     );
-    console.log(outlineBug.position);
+    console.log(hubCamera.position);
   });
 
   //** TOWER ICON INSTANTIATIONS */
@@ -1337,7 +1466,6 @@ function init() {
   //** 3D Objects Instantiation */
   focusCube.scale.set(0.1, 0.1, 0.1);
   focusCube.visible = true;
-  //mapScene.add(focusCube);
   //Loads arizona Map
   loader.load("/resources/models/ArizonaMap.glb", function (gltf) {
     //landsat = gltf.scene;
@@ -1397,7 +1525,20 @@ function tutorialSequence()
   console.log("TUTORIAL: " + tutorialIndex);
   tutorial = true;
 
-  if(tutorial != 5)
+  if(walkieTalkie1.isPlaying)
+  {
+    walkieTalkie1.stop();
+  }
+  else if(walkieTalkie2.isPlaying)
+  {
+    walkieTalkie2.stop();
+  }
+  else if(walkieTalkie3.isPlaying)
+  {
+    walkieTalkie3.stop();
+  }
+
+  if(tutorialIndex != 5)
   {
     tutorialIndex++;
   }
@@ -1430,7 +1571,8 @@ function tutorialSequence()
     //lessonSceneRaycast.add(glowSprite);
     mouseIcon.classList.toggle("active");
     mouseIcon.classList.toggle("init");
-    
+    walkieTalkieSounds[Math.floor(Math.random() * 3)].play();
+
     if(subtitles.classList.contains("active"))
     {
       subtitles.classList.toggle("active");
@@ -1451,7 +1593,8 @@ function tutorialSequence()
     glowSprite.position.set(towerIcon.position.x, uiMinheight - 0.01, towerIcon.position.z);
     //highlightText.innerHTML = "Clicking towers will give you hints to Echo's location";
     tutClickImage.style = "background-image: url('/resources/images/towericon.png');";
-    
+    walkieTalkieSounds[Math.floor(Math.random() * 3)].play();
+
     if(subtitles.classList.contains("active"))
     {
       subtitles.classList.toggle("active");
@@ -1476,6 +1619,7 @@ function tutorialSequence()
     mouseIcon.classList.toggle("mapClick");
     
     tutClickImage.classList.toggle("active");
+    walkieTalkieSounds[Math.floor(Math.random() * 3)].play();
 
     if(subtitles.classList.contains("active"))
     {
@@ -1506,6 +1650,7 @@ function tutorialSequence()
     }
   }
 
+  clickSound.play();
   console.log("TUTORIAL: " + tutorialIndex);
 }
 
@@ -1516,10 +1661,20 @@ function tutorialReset()
   tutorialHighlight.style.opacity = "50%";
   highlightText.innerHTML = "Click and drag to move around the map";
   
-  // if(tutorialIndex > 0)
-  // {
-  //   tutorialIndex++;
-  // }
+  if(walkieTalkie1.isPlaying)
+  {
+    walkieTalkie1.stop();
+  }
+  else if(walkieTalkie2.isPlaying)
+  {
+    walkieTalkie2.stop();
+  }
+  else if(walkieTalkie3.isPlaying)
+  {
+    walkieTalkie3.stop();
+  }
+  walkieTalkieSounds[Math.floor(Math.random() * 3)].play();
+  clickSound.play();
 
   glowSprite.position.set(sprite_rooseveltLake.position.x, uiMinheight - 0.01, sprite_rooseveltLake.position.z);
 
@@ -1694,7 +1849,7 @@ function initLessonScene() {
   phoenixModel.position.set(2.05, -2, 2.748);
 
   //Phoenix Model
-  loader.load("/resources/models/grasshopper-point.glb", function (gltf) 
+  loader.load("/resources/models/CathedralRock-noBake.glb", function (gltf) 
   {
     var model = gltf.scene;
     model.traverse((o) => 
@@ -1712,8 +1867,11 @@ function initLessonScene() {
     });
     grasshopperModel.add(gltf.scene);
   });
-  grasshopperModel.rotation.set(0, 3.107, 0);
-  grasshopperModel.position.set(0.7127, -0.719, 3.543);
+  grasshopperModel.scale.set(0.1, 0.1, 0.1);
+  //grasshopperModel.rotation.set(0, 3.107, 0);
+  grasshopperModel.rotation.set(0, -0.534, 0);
+  //grasshopperModel.position.set(0.7127, -0.719, 3.543);
+  grasshopperModel.position.set(-133, -18.17, 41.96);
 
   //BlackMesa Model
   loader.load("/resources/models/blackMesa.glb", function (gltf) 
@@ -1821,16 +1979,10 @@ function initLessonScene() {
     });
 
     mixer = new THREE.AnimationMixer(model);
-    //console.log(model);
     echoActions = gltf.animations;
-    
-    playEchoAnimation(5);
-    
-    // const clip = THREE.AnimationClip.findByName(echoActions, 'Wrapped_Idle');
-    // console.log(clip);
-    // const action = mixer.clipAction(clip);
-    // action.play();
+    ///console.log(echoActions);
 
+    playEchoAnimation(5);
     echoActions.forEach( function ( clip ) {
       
       //console.log(clip);
@@ -1952,7 +2104,7 @@ function initHubScene()
   });
   hubworldModel.position.set(-1.37, -0.5, -0.5);
 
-  loader.load("/resources/models/Walke-Talkie-Garmin.glb", function (gltf) 
+  loader.load("/resources/models/Walke-Talkie-Garmin-5.glb", function (gltf) 
   {
     var model = gltf.scene;
     model.traverse((o) => 
@@ -1970,6 +2122,7 @@ function initHubScene()
         {
           o.material = walkieTalkieVideoMaterial;
           o.material.map.flipY = false;
+          walkieTalkieScreenModel = o;
         }
       }
     });
@@ -1987,6 +2140,35 @@ function initHubScene()
 
   //** CAMERA INITIALIZATION */
   hubCamera.rotation.y = Math.PI / 2;
+
+  //** LOCATION SPRITE SETUP */
+  var xMulti = .4;
+  
+  lessonLocation_phoenix_sprite.scale.set(0.3, 0.3, 0.3);
+  lessonLocation_phoenix_sprite.parent = garminModel;
+  lessonLocation_phoenix_sprite.position.set(0.376, 0.98, 0.65);
+  lessonLocation_phoenix_sprite.name = "sprite_phoenix";
+
+  lessonLocation_horseshoe_sprite.scale.set(0.3, 0.3, 0.3);
+  lessonLocation_horseshoe_sprite.parent = garminModel;
+  lessonLocation_horseshoe_sprite.position.set(0.376, 0.98, 0.65 + (xMulti * -1));
+  lessonLocation_horseshoe_sprite.name = "sprite_horseshoe";
+
+  lessonLocation_cathedralRock_sprite.scale.set(0.3, 0.3, 0.3);
+  lessonLocation_cathedralRock_sprite.parent = garminModel;
+  lessonLocation_cathedralRock_sprite.position.set(0.376, 0.98, 0.65 + (xMulti * -2));
+  lessonLocation_cathedralRock_sprite.name = "sprite_cathedralRock";
+
+  lessonLocation_blackMesa_sprite.scale.set(0.3, 0.3, 0.3);
+  lessonLocation_blackMesa_sprite.parent = garminModel;
+  lessonLocation_blackMesa_sprite.position.set(0.376, 0.98, 0.65 + (xMulti * -3));
+  lessonLocation_blackMesa_sprite.name = "sprite_blackMesa";
+
+  // garminModel.add(lessonLocation_phoenix_sprite);
+  // garminModel.add(lessonLocation_horseshoe_sprite);
+  // garminModel.add(lessonLocation_cathedralRock_sprite);
+  // garminModel.add(lessonLocation_blackMesa_sprite);
+  //hubScene.add(lessonLocation_phoenix_sprite);
 
   computerScreenVideo.play();
   walkieTalkieVideo.play();
@@ -2471,7 +2653,7 @@ function updateLinePath() {
 }
 
 //** Updates the Lesson Scenes objects after lesson is complete*/
-function updateLessonScene()
+function updateLessonScene(index)
 {
   echoClicked = false;
 
@@ -2486,6 +2668,103 @@ function updateLessonScene()
   if(echoScaleTween)
   {
     echoScaleTween.stop();
+  }
+
+  //** UPDATE SCENE FROM WALKIE TALKIE FUNCTION */
+  if(index)
+  {
+    if(index == 0)
+    {
+      if(currentLessonSceneIndex == 1)
+      {
+  
+      }
+      else if(currentLessonSceneIndex == 2)
+      {
+  
+      }
+      else if(currentLessonSceneIndex == 3)
+      {
+  
+      }
+      else if(currentLessonSceneIndex == 4)
+      {
+  
+      }
+      else
+      {
+  
+      }
+    }
+    else if(index == 1)
+    {
+      if(currentLessonSceneIndex == 1)
+      {
+  
+      }
+      else if(currentLessonSceneIndex == 2)
+      {
+  
+      }
+      else if(currentLessonSceneIndex == 3)
+      {
+  
+      }
+      else if(currentLessonSceneIndex == 4)
+      {
+  
+      }
+      else
+      {
+  
+      }
+    }
+    else if(index == 2)
+    {
+      if(currentLessonSceneIndex == 1)
+      {
+  
+      }
+      else if(currentLessonSceneIndex == 2)
+      {
+  
+      }
+      else if(currentLessonSceneIndex == 3)
+      {
+  
+      }
+      else if(currentLessonSceneIndex == 4)
+      {
+  
+      }
+      else
+      {
+  
+      }
+    }
+    else if(index == 3)
+    {
+      if(currentLessonSceneIndex == 1)
+      {
+  
+      }
+      else if(currentLessonSceneIndex == 2)
+      {
+  
+      }
+      else if(currentLessonSceneIndex == 3)
+      {
+  
+      }
+      else if(currentLessonSceneIndex == 4)
+      {
+  
+      }
+      else
+      {
+  
+      }
+    }
   }
 
   //**HORSESHOE BEND SCENE**//
@@ -2534,7 +2813,7 @@ function updateLessonScene()
     // bugRotTween.start();
 
   }
-  //** GRASSHOPPER */
+  //** CATHEDRAL ROCK */
   else if(currentLessonSceneIndex == 2)
   {
     lessonComposer.removePass(filmPass);
@@ -2553,8 +2832,8 @@ function updateLessonScene()
     lessonScene.remove(grandCanyonModel);
     lessonScene.add(grasshopperModel);
 
-    outlineBug.position.set(0.51, -1.11, 0.797);
-    outlineBug.rotation.set(-0.5, -2.45, -0.25);
+    outlineBug.position.set(0.23, -1.03, 0.926);
+    outlineBug.rotation.set(-0.63, 4, 0);
     outlineBug.scale.set(0.075, 0.075, 0.075);
     outlineBug.children[0].children[0].material.map = bugTexture_red;
     outlineBug.children[0].children[0].material.map.flipY = false;
@@ -2577,7 +2856,7 @@ function updateLessonScene()
     //lessonScene.background = hdr1;
     //lessonScene.enviroment = hdr1;
     lessonScene.fog.near = 0.015;
-    lessonScene.fog.far = 25;
+    lessonScene.fog.far = 1000;
     lessonScene.fog.color.set("#ffffff");
 
     lessonScene.add(pointLight);
@@ -2659,39 +2938,69 @@ function updateLessonScene()
     console.log(bugsFound.length);
     for(var i = 0; i < bugsFound.length; i++)
     {
-      var newBug = outlineBug.clone(true);
+      //var newBug = outlineBug.clone(true);
 
       //** PHOENIX BUG */
       if(bugsFound[i] == 0)
       {
-        newBug.children[0].children[0].material.map = bugTexture_blue;
-        newBug.children[0].children[0].material.map.flipY = false;
-        newBug.children[0].children[0].material.map.needsUpdate = true;
+        bugBlue = outlineBug.clone(true);
+        var blueBugMaterial = new THREE.MeshBasicMaterial({transparent: true});
+        bugBlue.children[0].children[0].material = blueBugMaterial;
+
+        bugBlue.children[0].children[0].material.map = bugTexture_blue;
+        bugBlue.children[0].children[0].material.map.flipY = false;
+        bugBlue.children[0].children[0].material.map.needsUpdate = true;
+        bugBlue.position.set(-2.88, -2.6359, bugLocations[i]);
+        bugBlue.rotation.set(0, -1, 0);
+        lessonScene.add(bugBlue);
       }
+      //** HORSESHOEBEND BUG */
       else if(bugsFound[i] == 1)
       {
-        newBug.children[0].children[0].material.map = bugTexture_yellow;
-        newBug.children[0].children[0].material.map.flipY = false;
-        newBug.children[0].children[0].material.map.needsUpdate = true;
+        bugYellow = outlineBug.clone(true);
+        var yellowBugMaterial = new THREE.MeshBasicMaterial({transparent: true});
+        bugYellow.children[0].children[0].material = yellowBugMaterial;
+
+        bugYellow.children[0].children[0].material.map = bugTexture_yellow;
+        bugYellow.children[0].children[0].material.map.flipY = false;
+        bugYellow.children[0].children[0].material.map.needsUpdate = true;
+        bugYellow.position.set(-2.88, -2.6359, bugLocations[i]);
+        bugYellow.rotation.set(bugYellow.rotation.x, -1.25, bugYellow.rotation.x);
+        lessonScene.add(bugYellow);
       }
+      //** CATHEDRAL ROCK BUG */
       else if(bugsFound[i] == 2)
       {
-        newBug.children[0].children[0].material.map = bugTexture_red;
-        newBug.children[0].children[0].material.map.flipY = false;
-        newBug.children[0].children[0].material.map.needsUpdate = true;
+        bugRed = outlineBug.clone(true);
+        var redBugMaterial = new THREE.MeshBasicMaterial({transparent: true});
+        bugRed.children[0].children[0].material = redBugMaterial;
+        
+        bugRed.children[0].children[0].material.map = bugTexture_red;
+        bugRed.children[0].children[0].material.map.flipY = false;
+        bugRed.children[0].children[0].material.map.needsUpdate = true;
+        bugRed.position.set(-2.88, -2.6359, bugLocations[i]);
+        bugRed.rotation.set(bugRed.rotation.x, -1.5, bugRed.rotation.x);
+        lessonScene.add(bugRed);
+
+        console.log(bugRed.children[0].children[0].material.map);
       }
+      //** BLACK MESA BUG */
       else if(bugsFound[i] == 3)
       {
-        newBug.children[0].children[0].material.map = bugTexture_green;
-        newBug.children[0].children[0].material.map.flipY = false;
-        newBug.children[0].children[0].material.map.needsUpdate = true;
+        bugGreen = outlineBug.clone(true);
+        var greenBugMaterial = new THREE.MeshBasicMaterial({transparent: true});
+        bugGreen.children[0].children[0].material = greenBugMaterial;
+        
+        bugGreen.children[0].children[0].material.map = bugTexture_green;
+        bugGreen.children[0].children[0].material.map.flipY = false;
+        bugGreen.children[0].children[0].material.map.needsUpdate = true;
+        bugGreen.position.set(-2.88, -2.6359, bugLocations[i]);
+        bugGreen.rotation.set(bugGreen.rotation.x, -1, bugGreen.rotation.x);
+        lessonScene.add(bugGreen);
       }
-
       
-      lessonScene.add(newBug);
-      console.log(newBug);
-      newBug.position.set(-2.88, -2.6359, bugLocations[i]);
-      newBug.rotation.set(newBug.rotation.x, Math.random(Math.PI), newBug.rotation.x);
+      //lessonScene.add(newBug);
+      console.log("BUGS FOUND NUMBER:" + bugsFound[i]);
     }
 
     //lessonScene.background = new THREE.Color(0x000000);
@@ -2762,6 +3071,17 @@ function lessonComplete()
     sceneTransitionSprites[currentLessonSceneIndex].userData.popup = false;
     document.getElementById("towerMessage").innerHTML = "May or may not be Phoenix";
     echoPingLocation = makeEchoPing(towerIcons[currentLessonSceneIndex].position.x, towerIcons[currentLessonSceneIndex].position.z);
+    
+    //** SETUP ALL LOCATION SPRITES */
+    lessonLocation_phoenix_sprite.material.opacity = 1;
+    lessonLocation_horseshoe_sprite.material.opacity = 0.1;
+    lessonLocation_cathedralRock_sprite.material.opacity = 0.1;
+    lessonLocation_blackMesa_sprite.material.opacity = 0.1;
+    
+    garminModel.add(lessonLocation_phoenix_sprite);
+    garminModel.add(lessonLocation_horseshoe_sprite);
+    garminModel.add(lessonLocation_cathedralRock_sprite);
+    garminModel.add(lessonLocation_blackMesa_sprite);
   }
   else if(currentLessonSceneIndex == 2)
   {
@@ -2769,6 +3089,8 @@ function lessonComplete()
     sceneTransitionSprites[currentLessonSceneIndex].userData.popup = false;
     document.getElementById("towerMessage").innerHTML = "May or may not be the Grand Canyon";
     echoPingLocation = makeEchoPing(towerIcons[currentLessonSceneIndex].position.x, towerIcons[currentLessonSceneIndex].position.z);
+    
+    lessonLocation_horseshoe_sprite.material.opacity = 1;
   }
   else if(currentLessonSceneIndex == 3)
   {
@@ -2776,6 +3098,8 @@ function lessonComplete()
     sceneTransitionSprites[currentLessonSceneIndex].userData.popup = false;
     document.getElementById("towerMessage").innerHTML = "May or may not be Cathedral Rock";
     echoPingLocation = makeEchoPing(towerIcons[currentLessonSceneIndex].position.x, towerIcons[currentLessonSceneIndex].position.z);
+    
+    lessonLocation_cathedralRock_sprite.material.opacity = 1;
   }
   else if(currentLessonSceneIndex == 4)
   {
@@ -2783,6 +3107,8 @@ function lessonComplete()
     sceneTransitionSprites[currentLessonSceneIndex].userData.popup = false;
     document.getElementById("towerMessage").innerHTML = "May or may not be Tuscon";
     echoPingLocation = makeEchoPing(towerIcons[currentLessonSceneIndex].position.x, towerIcons[currentLessonSceneIndex].position.z);
+  
+    lessonLocation_blackMesa_sprite.material.opacity = 1;
   }
 }
 
@@ -2879,76 +3205,200 @@ function hoverObject() {
       intersectObject.material.opacity = 0.5;
       intersectObject.material.side = THREE.FrontSide;
       console.log("On Object");
-      document.body.style.cursor = 'pointer' 
+      document.body.style.cursor = 'pointer'; 
     }
     else if (intersects.length > 0 && intersects[0].object.name == "Computer_Screen")
     {
+      if (intersects[0].object != intersectObject) 
+      {
+        uiHoverOnSound.play();
+      }
       intersectObject = intersects[0].object;
       intersected = true;
       intersectObject.material.opacity = 0.75;
-      document.body.style.cursor = 'pointer' 
+      document.body.style.cursor = 'pointer';
+
     }
     else if (intersects.length > 0 && intersects[0].object.name == "Landsat")
     {
+      if (intersects[0].object != intersectObject) 
+      {
+        uiHoverOnSound.play();
+      }
       intersectObject = intersects[0].object;
       intersected = true;
       intersectObject.material.opacity = 0.5;
-      document.body.style.cursor = 'pointer' 
+      document.body.style.cursor = 'pointer';
     }
     else if (intersects.length > 0 && intersects[0].object.name == "TestGlass")
     {
+      if (intersects[0].object != intersectObject) 
+      {
+        uiHoverOnSound.play();
+      }
       intersectObject = intersects[0].object;
       intersected = true;
       intersectObject.material.opacity = 0.5;
-      document.body.style.cursor = 'pointer' 
+      document.body.style.cursor = 'pointer';
     }
     else if (intersects.length > 0 && intersects[0].object.name == "Desk_+_Chair")
     {
       //** FIRST TIME YOU HOVER OVER THE DESK */
       if(!garminHover)
       {
-        new TWEEN.Tween(garminModel.position).to({
-          x: -1.9,
-          y: -0.1, 
-          z: -0.3
-        }, 3000)
-        .easing(TWEEN.Easing.Quadratic.InOut)
-        .start();
-
-        console.log("SUBTITLES ACTIVE");
-        subtitleLines.innerHTML = startingSubtitles[0];
-        subtitleChange();
-
-        garminHover = true;
+        if (startingSequence)
+        {
+          new TWEEN.Tween(garminModel.position).to({
+            x: -1.9,
+            y: -0.1, 
+            z: -0.3
+          }, 3000)
+          .easing(TWEEN.Easing.Quadratic.InOut)
+          .start();
+  
+          console.log("SUBTITLES ACTIVE");
+          subtitleLines.innerHTML = startingSubtitles[0];
+          subtitleChange();
+  
+          garminHover = true;
+        }
+        else
+        {
+          new TWEEN.Tween(garminModel.position).to({
+            x: -1.9,
+            y: -0.1, 
+            z: -0.3
+          }, 3000)
+          .easing(TWEEN.Easing.Quadratic.InOut)
+          .start();
+          garminHover = true;
+        }
       }
       
       intersectObject = intersects[0].object;
       intersected = true;
       //intersectObject.material.opacity = 0.5;
-      document.body.style.cursor = 'pointer' 
+      //document.body.style.cursor = 'pointer';
     }
     //** WALKIE TALKIE - GARMIN HOVER */
     else if (intersects.length > 0 && intersects[0].object.name == "Screen")
     {
+      if (intersects[0].object != intersectObject) 
+      {
+        uiHoverOnSound.play();
+      }
       intersectObject = intersects[0].object;
       intersected = true;
-      intersectObject.material.opacity = 0.1;
+
+      //console.log(intersectObject);
+
+      if(locationFound)
+      {
+        intersectObject.material.opacity = 0;
+        
+        if(currentLessonSceneIndex == 1)
+        {
+          lessonLocation_phoenix_sprite.material.opacity = 1;
+          lessonLocation_horseshoe_sprite.material.opacity = 0.1;
+          lessonLocation_cathedralRock_sprite.material.opacity = 0.1;
+          lessonLocation_blackMesa_sprite.material.opacity = 0.1;
+        }
+        else if(currentLessonSceneIndex == 2)
+        {
+          lessonLocation_phoenix_sprite.material.opacity = 1;
+          lessonLocation_horseshoe_sprite.material.opacity = 1;
+          lessonLocation_cathedralRock_sprite.material.opacity = 0.1;
+          lessonLocation_blackMesa_sprite.material.opacity = 0.1;
+        }
+        else if(currentLessonSceneIndex == 3)
+        {
+          lessonLocation_phoenix_sprite.material.opacity = 1;
+          lessonLocation_horseshoe_sprite.material.opacity = 1;
+          lessonLocation_cathedralRock_sprite.material.opacity = 1;
+          lessonLocation_blackMesa_sprite.material.opacity = 0.1;
+        }
+        else if(currentLessonSceneIndex == 4)
+        {
+          lessonLocation_phoenix_sprite.material.opacity = 1;
+          lessonLocation_horseshoe_sprite.material.opacity = 1;
+          lessonLocation_cathedralRock_sprite.material.opacity = 1;
+          lessonLocation_blackMesa_sprite.material.opacity = 1;
+        }
+      }
+      else
+      {
+        intersectObject.material.opacity = 0.1;
+      }
+
       document.body.style.cursor = 'pointer';
-      console.log("WALKIE TALKIE");
+    }
+    else if (intersects.length > 0 
+      && intersects[0].object.name == "sprite_phoenix" ||
+    intersects[0].object.name == "sprite_horseshoe" || 
+    intersects[0].object.name == "sprite_cathedralRock" || 
+    intersects[0].object.name == "sprite_blackMesa")
+    {
+      if (intersects[0].object != intersectObject) 
+      {
+        uiHoverOnSound.play();
+      }
+      intersectObject = intersects[0].object;
+      intersected = true;
+
+      if(locationFound)
+      {
+        intersectObject.material.opacity = 0.1;
+      }
+      else
+      {
+        intersectObject.material.opacity = 0;
+      }
+
+      document.body.style.cursor = 'pointer';
     }
     else
     {
       if (intersected) 
       {
-        //console.log("Off Object");
+        //console.log(intersectObject);
         
         intersectObject.userData.scaling = false;
-        
         intersected = false;
-        intersectObject.material.opacity = 1;
+
+        if(intersectObject.name == "Screen")
+        {
+          if(locationFound)
+          {
+            intersectObject.material.opacity = 0;
+          }
+          else
+          {
+            intersectObject.material.opacity = 1;
+          }
+        }
+        else if (intersects[0].name == "sprite_phoenix" ||
+        intersects[0].name == "sprite_horseshoe" || 
+        intersects[0].name == "sprite_cathedralRock" || 
+        intersects[0].name == "sprite_blackMesa")
+        {
+          if(locationFound)
+          {
+            intersectObject.material.opacity = 1;
+          }
+          else
+          {
+            intersectObject.material.opacity = 0;
+          }
+        }
+        else
+        {
+          intersectObject.material.opacity = 1;
+        }
+
+
         //iconScalingTween(intersectObject, false);
         intersectObject = null;
-        document.body.style.cursor = 'default'
+        document.body.style.cursor = 'default';
       }
     }
 
@@ -3065,7 +3515,7 @@ function hoverObject() {
       //console.log(intersects[0]);
       if (intersects.length > 0 && intersects[0].object.userData.name == "bug") 
       {
-        if (intersects[0].object != intersectObject) 
+        if (intersects[0].object != intersectObject && currentLessonSceneIndex != 4) 
         {
           intersectObject = intersects[0].object;
           intersected = true;
@@ -3186,6 +3636,20 @@ function subtitleChange()
 
     // }
   }
+
+  if(walkieTalkie1.isPlaying)
+  {
+    walkieTalkie1.stop();
+  }
+  else if(walkieTalkie2.isPlaying)
+  {
+    walkieTalkie2.stop();
+  }
+  else if(walkieTalkie3.isPlaying)
+  {
+    walkieTalkie3.stop();
+  }
+  walkieTalkieSounds[Math.floor(Math.random() * 3)].play();
 }
 
 //Opens the 'popup' class in html and dispalys the content based on the object it clicked
@@ -3274,12 +3738,11 @@ function clickEvent() {
     {
       raycaster.setFromCamera(mouse, hubCamera);
       intersects = raycaster.intersectObjects(hubScene.children, true);
-
-      console.log("hubworld click");
-
+      
       if(intersects[0])
       {
         intersectObject = intersects[0].object;
+        //console.log(intersectObject);
         
         //** COMPUTER SCREEN */
         if(intersects[0].object.name == "Computer_Screen" && !startingSequence)
@@ -3293,29 +3756,61 @@ function clickEvent() {
             subtitles.classList.toggle("active");
           }
 
-          console.log(intersects[0].object.userData.name);
+          //** TWEEN TO MAP SCREEN */
+          if(!hubworldScreenClick && !isTweening)
+          {
+            hubworldScreenClick = true;
+            console.log("Computer Screen Click");
+            new TWEEN.Tween(hubCamera.position).to({x: -1.65, 
+            y: 0, z: -0.027}, 3000)
+            .easing(TWEEN.Easing.Quadratic.InOut)
+            .start()
+            .onComplete(hubToMapTransition);
+            clickSound.play();
+            isTweening = true;
 
-          new TWEEN.Tween(hubCamera.position).to({x: -1.35}, 3000)
-          .easing(TWEEN.Easing.Quadratic.InOut)
-          .start(console.log("HELP!"))
-          .onComplete(hubToMapTransition);
+            new TWEEN.Tween(hubCamera.rotation).to(
+              { 
+              y: Math.PI / 2
+            }, 3000).start();
+          }
+
         }
         //** LANDSAT */
         else if(intersects[0].object.name == "Landsat")
         {
           console.log("landsat click");
           clickOpenURL(intersects, "https://landsat.gsfc.nasa.gov/outreach/camp-landsat/");
+          clickSound.play();
         }
         //** MICROSCOPE */
         else if(intersects[0].object.name == "TestGlass")
         {
           console.log("landsat click");
           clickOpenURL(intersects, "https://landsat.gsfc.nasa.gov/");
+          clickSound.play();
         }
         //** WALKIE TALKIE */
-        else if(intersects[0].object.name == "Screen")
+        else if(intersects[0].object.name == "Screen" && !walkieTalkieView)
         {
           //startingSequence = false;
+
+          //** CAMERA TWEEN */
+          if(locationFound && !isTweening && !startingSequence)
+          {
+            new TWEEN.Tween(hubCamera.position).to({
+              x: -1.75, 
+              y: -0.07,
+              z: -0.3 
+            }, 3000)
+            .easing(TWEEN.Easing.Quadratic.InOut)
+            .start()
+            .onComplete(tweenComplete);
+            clickSound.play();
+            isTweening = true;
+
+            walkieTalkieView = true;
+          }
 
           if(subtitles.classList.contains("active"))
           {
@@ -3343,11 +3838,28 @@ function clickEvent() {
               subtitleChange();
             }, 500);
           }
+          
           console.log("Walkie Talkie Click: " + startingSequenceNumb + ", " + startingSubtitles.length);
+          clickSound.play();
+        }
+        else if (intersects[0].object.name == "sprite_phoenix" || 
+        intersects[0].object.name == "sprite_horseshoe" ||
+        intersects[0].object.name == "sprite_cathedralRock" ||
+        intersects[0].object.name == "sprite_blackMesa")
+        {
+          console.log(intersects[0].object.name);
+      
+          if(locationFound && walkieTalkieView)
+          {
+            if(intersects[0].object.name == "sprite_phoenix")
+            {
+              console.log("Clicked on phoenix");
+            }
+          }
+          
         }
         
       }
-
     }
     //** MAP SCENE */ 
     else if (currentSceneNumber == 1) 
@@ -3390,6 +3902,14 @@ function clickEvent() {
           } else if (intersects[0].object.userData.ping) {
             clickPingLocation(intersects);
             cameraTweenTo(intersects, false, 0.1, true);
+            
+
+            //** USED TO TELL IF ANY LOCATION HAS BEEN REACHED */
+            if(!locationFound)
+            {
+              locationFound = true;
+            }
+
             //intersects[0].object.userData.ping = false;
           } else {
             clickOpenURL(intersects);
@@ -3433,25 +3953,37 @@ function clickEvent() {
           {
             bugRotTween.stop();
           }
+
+          clickSound.play();
         }
         //** CLICK ON ECHO */ 
         else if (intersectObject.name == "Echo") 
         {
-          console.log("ECHO CLICK");
+          console.log("ECHO CLICK: " + currentLessonSceneIndex);
           //playEchoAnimation(Math.floor(Math.random() * 7));
-          
-          if(!echoClicked)
+
+          if(currentLessonSceneIndex == 4)
           {
-            if(currentLessonSceneIndex == 4)
+            //** RANDOM EITHER OR */
+            if(echoAnimFinal)
             {
-              console.log("LOG");
+              playEchoAnimation(5, true);
+              echoAnimFinal = false;
             }
             else
             {
-              playEchoAnimation(2, true);
-              subtitleChange();
+              playEchoAnimation(1, true);
+              echoAnimFinal = true;
             }
+            
+            console.log("LOG");
           }
+          if(!echoClicked)
+          {
+            playEchoAnimation(2, true);
+            subtitleChange();
+          }
+          clickSound.play();
         } 
         else if (intersectObject.name == "left_Button" || intersectObject.name == "right_Button") 
         {
@@ -3547,7 +4079,7 @@ function tweenBug(bugNumb)
 
 function playEchoAnimation(index, tween)
 {
-  console.log(echoActions);
+  //console.log(echoActions);
   mixer.stopAllAction();
   var action = mixer.clipAction(echoActions[index]);
 
@@ -3790,14 +4322,6 @@ function playEchoAnimation(index, tween)
   action.play();
 }
 
-function doubleClickEvent() {
-  raycaster.setFromCamera(mouse, mainCamera);
-  const intersects = raycaster.intersectObjects(mapScene.children);
-  cameraPos = intersects[0].point;
-
-  //updateLinePath();
-}
-
 function clickOpenURL(intersects, url) {
   //*****CHECK FOR LOCATION UI
   
@@ -3859,6 +4383,7 @@ function clickPingLocation(intersects) {
 
 function tweenComplete() {
   isTweening = false;
+  console.log(hubCamera.position);
 }
 
 function removePing() {
@@ -4064,9 +4589,16 @@ function navigateLesson(forward)
           {
             
           }
+          
           if(lesson1Container.classList.contains("active"))
           {
+            console.log("lesson 1 off");
             lesson1Container.classList.toggle("active");
+          }
+          if(lesson2Container.classList.contains("active"))
+          {
+            console.log("lesson 2 off");
+            lesson2Container.classList.toggle("active");
           }
           
           youtubePlayer.src = lessonSequences[currentLessonSceneIndex][currentLessonIndex];
@@ -4093,13 +4625,16 @@ function navigateLesson(forward)
           //document.getElementById("lessonTextContent").innerHTML = lessonSequences[0][currentLessonIndex];
           
           //** SPECIFIC SLIDE VALUES */
-          if(currentLessonIndex == 1)
+          if(currentLessonSceneIndex == 0)
           {
+            console.log("lesson 1 ON");
             lesson1Container.classList.toggle("active");
             //document.getElementById("lessonTextContent").style.fontSize = "100%";
           }
-          else if(currentLessonIndex == 3)
+          else if(currentLessonSceneIndex == 1)
           {
+            console.log("lesson 2 ON");
+            lesson2Container.classList.toggle("active");
           }
         }
       }
@@ -4156,8 +4691,15 @@ function navigateLesson(forward)
           
           if(lesson1Container.classList.contains("active"))
           {
+            console.log("lesson 1 off");
             lesson1Container.classList.toggle("active");
           }
+          if(lesson2Container.classList.contains("active"))
+          {
+            console.log("lesson 2 off");
+            lesson2Container.classList.toggle("active");
+          }
+          
 
           youtubePlayer.src = lessonSequences[currentLessonSceneIndex][currentLessonIndex];
         }
@@ -4183,15 +4725,13 @@ function navigateLesson(forward)
           //document.getElementById("lessonTextContent").innerHTML = lessonSequences[0][currentLessonIndex];
           
           //** SPECIFIC SLIDE VALUES */
-          if(currentLessonIndex == 1)
+          if(currentLessonSceneIndex == 0)
           {
-            console.log("BACK!! CONTAINER");
             lesson1Container.classList.toggle("active");
-            //document.getElementById("lessonTextContent").style.fontSize = "100%";
           }
-          else if(currentLessonIndex == 3)
+          else if(currentLessonSceneIndex == 1)
           {
-            //document.getElementById("lessonTextContent").style.fontSize = "90%";
+            lesson2Container.classList.toggle("active");
           }
         }
       }
@@ -4274,13 +4814,13 @@ function htmlTrack3d() {
 }
 
 function createCityLabels() {
-  const positionHelper = new THREE.Object3D();
+  var positionHelper = new THREE.Object3D();
   positionHelper.position.z = 1;
   const labelParentElem = document.querySelector("#labels");
 
   for (var i = 0; i < uiLocationSprites.length; i++) {
     positionHelper.updateWorldMatrix(true, false);
-    const position = new THREE.Vector3();
+    var position = new THREE.Vector3();
     positionHelper.getWorldPosition(position);
     position = uiLocationSprites[i].position;
 
@@ -4454,8 +4994,7 @@ function animate() {
 
   //console.log(renderer.info.render.calls);
 
-  //console.log("Current Lesson Index: " + currentLessonSceneIndex);
-
+  // console.log("Current Lesson Index: " + currentLessonSceneIndex);
   //console.log("Current Scene: " + currentSceneNumber);
   //console.log("HUB TRANSITION: " + hubTransitioning);
 
@@ -4518,6 +5057,13 @@ function TransitionDone() {
         backButton.classList.toggle("active");
       }
 
+      //** STOP HUBWORLD SOUND */
+      if(hubworldSound.isPlaying)
+      {
+        //hubworldSound.stop();
+        hubworldSound.setVolume(0.025);
+      }
+
       //** TUTORIAL FOR THE FIRST TIME YOU PLAY */
       if(introHubSequence)
       {
@@ -4526,8 +5072,13 @@ function TransitionDone() {
         tutorialReset();
       }
 
-      hubCamera.position.x = 0;
+      //** SET HUB OBJECTS TO OG POSITIONS */
+      hubCamera.position.set(0, 0, 0);
       garminModel.position.set(-1.9, -0.28, -0.3);
+      garminHover = false;
+      walkieTalkieScreenModel.material.opacity = 0;
+      hubworldScreenClick = false;
+      
       controls.enabled = true;
       renderer.render(currentScene, currentCamera);
     } 
@@ -4535,7 +5086,28 @@ function TransitionDone() {
       currentScene = hubScene;
       currentCamera = hubCamera;
       currentSceneNumber = 0;
+      walkieTalkieView = false;
+
       console.log("TRANSITIONED TO HUB SCENE");
+      controls.enabled = false;
+      renderer.render(currentScene, currentCamera);
+
+      if(!mapButton.classList.contains("disabled"))
+      {
+        mapButton.classList.toggle("disabled");
+      }
+      if(backButton.classList.contains("active"))
+      {
+        backButton.classList.toggle("active");
+      }
+    }
+    else if (currentSceneNumber == 2) {
+      currentScene = hubScene;
+      currentCamera = hubCamera;
+      currentSceneNumber = 0;
+      walkieTalkieView = false;
+
+      console.log("LESSON TO HUB SCENE");
       controls.enabled = false;
       renderer.render(currentScene, currentCamera);
 
@@ -4570,6 +5142,39 @@ function TransitionDone() {
       {
         backButton.classList.toggle("active");
       }
+
+      //** STOP HUBWORLD SOUND */
+      if(hubworldSound.isPlaying)
+      {
+        hubworldSound.stop();
+        if(currentLessonSceneIndex == 0)
+        {
+          phoenixSound.play();
+        }
+        else if(currentLessonSceneIndex == 1)
+        {
+          grandCanyonSound.play();
+        }
+        else if(currentLessonSceneIndex == 2)
+        {
+          grasshopperSound.play();
+        }
+        else if(currentLessonSceneIndex == 3)
+        {
+          blackMesaSound.play();
+        }
+        else if(currentLessonSceneIndex == 4)
+        {
+          caveSound.play();
+        }
+      }
+
+      //** ALLOW BACK BUTTON ON LAST SCENE */
+      if(currentLessonSceneIndex == 4)
+      {
+        console.log(currentLessonSceneIndex);
+        backButton.classList.toggle("active");
+      }
   
       //Toggle UI When scene Transitions
       //backButton.classList.toggle("disabled");
@@ -4592,7 +5197,34 @@ function TransitionDone() {
       {
         backButton.classList.toggle("active");
       }
-      
+
+      if(!hubworldSound.isPlaying)
+      {
+        hubworldSound.play();
+      }
+      if(phoenixSound.isPlaying)
+      {
+        phoenixSound.stop();
+      }
+      else if(grandCanyonSound.isPlaying)
+      {
+        grandCanyonSound.stop();
+      }
+      else if(grasshopperSound.isPlaying)
+      {
+        grasshopperSound.stop();
+      }
+      else if(blackMesaSound.isPlaying)
+      {
+        blackMesaSound.stop();
+      }
+      else if(caveSound.isPlaying)
+      {
+        caveSound.stop();
+      }
+
+      console.log(currentLessonSceneIndex);
+
       updateLessonScene();
       cameraTweenTo(undefined, false, 3, false);
   
@@ -4630,6 +5262,7 @@ function hubToMapTransition()
   console.log("HUB TO MAP!");
   
   hubTransitioning = true;
+  isTweening = false;
   
   // new TWEEN.Tween(hubCamera.position).to({x: -1.65},2000)
   //   .easing(TWEEN.Easing.Quadratic.InOut)
@@ -4874,148 +5507,257 @@ function Transition(sceneA, sceneB) {
 //** LESSON 1 ACTIVITY */
 draggableElements.forEach(elem =>{
   elem.addEventListener("dragstart", dragStart);
-  //elem.addEventListener("drag", drag);
-  //elem.addEventListener("dragend", dragEnd);
+});
+
+draggable2Elements.forEach(elem =>{
+  elem.addEventListener("dragstart", dragStart);
 });
 
 droppableElements.forEach(elem =>{
   elem.addEventListener("dragenter", dragEnter);
   elem.addEventListener("dragover", dragOver);
+  elem.addEventListener("dragleave", dragLeave)
+  //elem.addEventListener("dragleave", dragLeave);
+  elem.addEventListener("drop", drop);
+});
+
+droppable2Elements.forEach(elem =>{
+  elem.addEventListener("dragenter", dragEnter);
+  elem.addEventListener("dragover", dragOver);
+  elem.addEventListener("dragleave", dragLeave)
   //elem.addEventListener("dragleave", dragLeave);
   elem.addEventListener("drop", drop);
 });
 
 function dragStart(event)
 {
+  console.log(event.target);
+  
   if(event.target.dataset.dropped == "false")
   {
     event.dataTransfer.setData('text/plain', event.target.id);
     console.log("dragging...");
   }
+  //** LESSON 2 */
+  if(currentLessonSceneIndex == 1)
+  {
+    event.dataTransfer.setData('text/plain', event.target.id);
+  }
   else
   {
     console.log("Can't drag a dropped...");
-  }
-  
+  } 
 }
 function dragEnter(event)
 {
   if(event.target.dataset.dropped == "false")
   {
-    console.log("drag enter...");
+    //console.log("drag enter...");
   }
-  else
-  {
-
-  }
-  //event.target.classList.add("droppable-hover");
 }
 function dragOver(event)
 {
   event.preventDefault();
-  if(event.target.dataset.dropped == "false")
+  
+  //** LESSON 1 */
+  if(currentLessonSceneIndex == 0)
   {
-    console.log("drag over...");
+    if(event.target.dataset.dropped == "false")
+    {
+      console.log("drag over...");
+    }
   }
-  else
+  //** LESSON 2 */
+  else if(currentLessonSceneIndex == 1)
   {
-
+    if(!event.target.classList.contains('hovered'))
+    {
+      event.target.classList.toggle('hovered');
+    }
   }
 }
-function dropLeave(event)
+function dragLeave(event)
 {
   //event.target.classList.remove("droppable-hover");
   console.log("drop leave...");
+
+  if(event.target.classList.contains('hovered'))
+  {
+    event.target.classList.toggle('hovered');
+  }
 }
 
 var r, g, b;
 function drop(event)
 {
   event.preventDefault();
-  console.log("drop...");
-  var allFilled = false;
+  //console.log("drop...");
+  
   var count = 0;
   const sourceID = event.dataTransfer.getData('text/plain');
-
-  console.log(document.getElementById(sourceID).dataset.dropped);
-
-  if(event.target.dataset.filled == "false")
+  //** LESSON 1 */
+  if(currentLessonSceneIndex == 0)
   {
-    if(document.getElementById(sourceID).dataset.dropped == "false")
+    if(event.target.dataset.filled == "false")
     {
-      event.target.appendChild(document.getElementById(sourceID));
-      event.target.dataset.filled = "true";
-      document.getElementById(sourceID).style.top = 0;
-      document.getElementById(sourceID).style.left = 0;
-      document.getElementById(sourceID).dataset.dropped = "true";
-  
-      droppableElements.forEach(elem =>
+      if(document.getElementById(sourceID).dataset.dropped == "false")
       {
-          console.log(elem.children);
-          if(elem.dataset.filled == "true")
-          {
-            count++;
-            //event.target.id
-  
-            if(event.target.id == "dropRed")
+        event.target.appendChild(document.getElementById(sourceID));
+        event.target.dataset.filled = "true";
+        document.getElementById(sourceID).style.top = 0;
+        document.getElementById(sourceID).style.left = 0;
+        document.getElementById(sourceID).dataset.dropped = "true";
+    
+        droppableElements.forEach(elem =>
+        {
+            console.log(elem.children);
+            if(elem.dataset.filled == "true")
             {
-              if(elem.children)
+              count++;
+              //event.target.id
+    
+              if(event.target.id == "dropRed")
               {
-                r = elem.children[0].id;
-                elem.dataset.filled = "true";
+                if(elem.children)
+                {
+                  r = elem.children[0].id;
+                  elem.dataset.filled = "true";
+                }
+                else
+                {
+                  r = "";
+                  elem.dataset.filled = "false";
+                }
               }
-              else
+              else if(event.target.id == "dropGreen")
               {
-                r = "";
-                elem.dataset.filled = "false";
+                if(elem.children)
+                {
+                  g = elem.children[0].id;
+                  elem.dataset.filled = "true";
+                }
+                else
+                {
+                  g = "";
+                  elem.dataset.filled = "false";
+                }
               }
+              else if(event.target.id == "dropBlue")
+              {
+                if(elem.children)
+                {
+                  b = elem.children[0].id;
+                  elem.dataset.filled = "true";
+                }
+                else
+                {
+                  b = "";
+                  elem.dataset.filled = "false";
+                }
+              }
+    
+              console.log("R: " + r + " G: " + g + " B: " + b);
             }
-            else if(event.target.id == "dropGreen")
+            if(count == 3)
             {
-              if(elem.children)
-              {
-                g = elem.children[0].id;
-                elem.dataset.filled = "true";
-              }
-              else
-              {
-                g = "";
-                elem.dataset.filled = "false";
-              }
+              allFilled = true;
+              console.log("ALL FILLED");
+              imagesFilled(r, g, b);
             }
-            else if(event.target.id == "dropBlue")
-            {
-              if(elem.children)
-              {
-                b = elem.children[0].id;
-                elem.dataset.filled = "true";
-              }
-              else
-              {
-                b = "";
-                elem.dataset.filled = "false";
-              }
-            }
-  
-            console.log("R: " + r + " G: " + g + " B: " + b);
-          }
-          if(count == 3)
-          {
-            allFilled = true;
-            console.log("ALL FILLED");
-            imagesFilled(r, g, b);
-          }
-      });
+        });
+      }
     }
-  }
-
-  else
-  {
-    if(event.target.firstChild)
+    else
     {
-      console.log(event.target.firstChild);
+      if(event.target.firstChild)
+      {
+        console.log(event.target.firstChild);
+      }
+    }
+    console.log("DROPPED");
+  }
+  //** LESSON 2 */
+  else if(currentLessonIndex == 1)
+  {
+    if(event.target.classList.contains('hovered'))
+    {
+      event.target.classList.toggle('hovered');
+    }
+
+    console.log(lesson2ActivityList[0][1] + lesson2ActivityList.length);
+    let answer = document.getElementById("lesson2Answer");
+
+    if(sourceID == "dropTrueColor" && lesson2ActivityList[lesson2ActivityIndex][1] || sourceID == "dropFalseColor" && !lesson2ActivityList[lesson2ActivityIndex][1])
+    {
+      if(answer.classList.contains("wrong"))
+      {
+        answer.classList.toggle("wrong");
+      }
+      
+      if(lesson2ActivityIndex < lesson2ActivityList.length - 1)
+      {
+        lesson2ActivityIndex++;
+      }
+      else
+      {
+        lesson2ActivityIndex = 0;
+      }
+
+      draggable2Elements.forEach(elem =>{
+        elem.setAttribute('draggable', false);
+      });
+
+      if(!answer.classList.contains("active"))
+      {
+        answer.classList.toggle("active");
+      }
+
+      setTimeout(function() 
+      {
+        draggable2Elements.forEach(elem =>{
+          elem.setAttribute('draggable', true);
+        });
+        
+        if(answer.classList.contains("active"))
+        {
+          answer.classList.toggle("active");
+        }
+
+        droppable2Elements[0].style.backgroundImage = lesson2ActivityList[lesson2ActivityIndex][0];
+      }, 2500);
+
+      console.log("RIGHT ANSWER");
+    }
+    else
+    {
+      if(!answer.classList.contains("active"))
+      {
+        answer.classList.toggle("active");
+      }
+      if(!answer.classList.contains("wrong"))
+      {
+        answer.classList.toggle("wrong");
+      }
+      setTimeout(function() 
+      {
+        if(answer.classList.contains("active"))
+        {
+          answer.classList.toggle("active");
+        }
+        if(answer.classList.contains("wrong"))
+        {
+          answer.classList.toggle("wrong");
+        }
+
+      }, 2500);
+      
+      console.log("WRONG ANSWER");
     }
   }
+}
+function updateLesson2Activity()
+{
+  
 }
 function imagesFilled(r, g, b)
 {
@@ -5067,6 +5809,7 @@ function resetLesson1()
   r = null;
   g = null;
   b = null;
+  allFilled = false;
 
   if(combinationText.classList.contains('active'))
   {
@@ -5095,6 +5838,10 @@ function resetLesson1()
     }
   }
 }
+function updateLesson2()
+{
+
+}
 
 
 //** LESSON 1 ACTIVITY */
@@ -5106,27 +5853,17 @@ audioButton.addEventListener("click", function (ev) {
   ev.stopPropagation();
   if (audioPlaying) {
     audioPlaying = false;
-    music.pause();
     clickSound.play();
+    listener.setMasterVolume(0.0);
     audioButton.style.backgroundImage =
       "url('/resources/images/audio-pause.png')";
   } else {
     audioPlaying = true;
-    music.play();
     clickSound.play();
+    listener.setMasterVolume(1.0);
     audioButton.style.backgroundImage =
       "url('/resources/images/audio-play.png')";
   }
-
-  //** STOP MUSIC FROM PLAYING */
-  // if(music.isPlaying)
-  // {
-  //   music.pause();
-  // }
-  // else
-  // {
-  //   music.play();
-  // }
 });
 //** CONTINUE BUTTON, FOR START WITH YOUTUBE VIDEO */
 continueButton.addEventListener("click", function (ev) {
@@ -5139,12 +5876,12 @@ continueButton.addEventListener("click", function (ev) {
     startButton.classList.toggle("active");
   }
 
-  music.play();
+  clickSound.play();
 });
 //** START BUTTON EVENT LISTENER */
 startButton.addEventListener("click", function (ev) {
   ev.stopPropagation();
-  if (RESOURCES_LOADED) {
+  if (RESOURCES_LOADED && !gameStarted) {
     gameStarted = true;
     startButton.classList.toggle("active");
     audioButton.classList.toggle("disabled");
@@ -5155,6 +5892,8 @@ startButton.addEventListener("click", function (ev) {
     bugIcon3.classList.toggle("disabled");
     bugIcon4.classList.toggle("disabled");
     startScreenCover.classList.toggle("disabled");
+    music.play();
+    hubworldSound.play();
     
     //tutorialHighlight.classList.toggle("active");
     //highlightText.classList.toggle("active");
@@ -5167,10 +5906,7 @@ startButton.addEventListener("click", function (ev) {
 
     currentCamera = hubCamera;
     currentScene = hubScene;
-
-    //currentSceneNumber = 1;
-    //controls.enabled = true;
-    music.play();
+    clickSound.play();
   }
   console.log("START BUTTON");
 });
@@ -5217,13 +5953,14 @@ xButton5.addEventListener("click", function (ev) {
 tutClickImage.addEventListener('click', function(ev){
   if(!transitioning && !isTweening && tutorial)
   {
-    // if(tutorialIndex == 4)
-    // {
-    //   tutorialSequence();
-    // }
     
-    console.log("Tutorial Image Click");
-    tutorialSequence();
+    
+    
+    if(tutorialIndex <= 2)
+    {
+      tutorialSequence();
+      console.log("Tutorial Image Click: " + tutorialIndex);
+    }
   }
 });
 
@@ -5328,8 +6065,23 @@ backButton.addEventListener("click", function (ev) {
   ev.stopPropagation(); // prevent event from bubbling up to .container
 
   if (!transitioning && !isTweening && !tutorial) {
-    if (currentSceneNumber == 2) {
-    } else if (currentSceneNumber == 1) 
+    if (currentSceneNumber == 2) 
+    {
+      console.log("click back in index 2");
+      if(currentLessonSceneIndex == 4)
+      {
+        console.log("click back in lessonSceneIndex: 4");
+        hubTransitioning = true;
+        transitionParams.transition = 1;
+        new TWEEN.Tween(transitionParams)
+          .to({ transition: 0 }, 2000)
+          // .delay( 2000 )
+          //.yoyo( true )
+          .start(TransitionStart())
+          .onComplete(TransitionDone);
+      }
+    } 
+    else if (currentSceneNumber == 1) 
     {
       hubTransitioning = true;
       transitionParams.transition = 1;
@@ -5364,8 +6116,6 @@ window.addEventListener("click", () => {
     }
   }
 });
-//** DOUBLE CLICK IN WINDOW */
-window.addEventListener("dblclick", doubleClickEvent, false);
 
 //**EVENT FOR WHEN MOUSE IS MOVING**//
 window.addEventListener("mousemove", function (event) {
