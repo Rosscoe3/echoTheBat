@@ -960,7 +960,7 @@ body {
 }
 .lesson2Container .droppable2 .answer.wrong{
   content: "\d7"; /* This will render the 'X' */
-  opacity: 100%;
+  opacity: 0%;
   transition: all .5s;
 }
 

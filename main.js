@@ -22,7 +22,7 @@ import Stats from 'https://cdn.skypack.dev/stats.js';
 
 const stats = new Stats();
 stats.showPanel(0); // 0: fps, 1: ms, 2: mb, 3+: custom
-document.body.appendChild(stats.dom);
+//document.body.appendChild(stats.dom);
 
 //** LOAD MANAGER */
 const manager = new THREE.LoadingManager();
@@ -615,15 +615,24 @@ const cubeMaterial = new THREE.MeshBasicMaterial( { color: 0x00ff00, transparent
 const cube = new THREE.Mesh( cubeGeometry, cubeMaterial );
 
 let outlineBug = new THREE.Group();
+outlineBug.name = 'outlineBug';
 let Echo = new THREE.Group();
+Echo.name = 'Echo';
 var mixer;
 var echoBox, echoActions;
 var echoClicked = false;
 var echoLocTween, echoRotTween, echoScaleTween;
 
 let phoenixModel = new THREE.Group();
+phoenixModel.name = "phoenixModel";
 let grasshopperModel = new THREE.Group();
+grasshopperModel.name = "cathedralRockModel";
 let blackMesaModel = new THREE.Group();
+blackMesaModel.name = "blackMesaModel";
+let cave = new THREE.Group();
+cave.name = 'cave';
+let grandCanyonModel = new THREE.Group();
+grandCanyonModel.name = "grandCanyonModel";
 
 let hubworldModel = new THREE.Group();
 let hubworldRaycast = new THREE.Group();
@@ -633,8 +642,6 @@ let computerScreen;
 
 //Load Arizona Map Model
 let arizona = new THREE.Group();
-let cave = new THREE.Group();
-let grandCanyonModel = new THREE.Group();
 let walkieTalkie = new THREE.Group();
 
 /** HTML ELEMENTS */
@@ -865,19 +872,29 @@ function init() {
   glowSprite = new THREE.Sprite(glowMaterial);
 
   sprite_deathValley = new THREE.Sprite(deathValleyMaterial);
+  sprite_deathValley.name = 'blackMesa';
+
   sprite_grandCanyon = new THREE.Sprite(grandCanyonMaterial);
   sprite_coloradoRiver = new THREE.Sprite(coloradoRiverMaterial);
   sprite_phoenix = new THREE.Sprite(phoenixMaterial);
+  sprite_phoenix.name = 'phoenix';
+
   sprite_tempe = new THREE.Sprite(tempeMaterial);
   sprite_tuscon = new THREE.Sprite(tusconMaterial);
+  sprite_tuscon.name = 'tuscon';
+
   sprite_catalinaMountains = new THREE.Sprite(catalinaMountainsMaterial);
   sprite_sonoranDesert = new THREE.Sprite(sonoranDesertMaterial);
   sprite_rooseveltLake = new THREE.Sprite(rooseveltLakeMaterial);
   sprite_gilaRiver = new THREE.Sprite(yumaMaterial);
   sprite_saltRiver = new THREE.Sprite(saltRiverMaterial);
   sprite_cathedralRock = new THREE.Sprite(cathedralRockMaterial);
+  sprite_cathedralRock.name = 'cathedralRock';
+
   sprite_fatmansLoop = new THREE.Sprite(fatmansLoopMaterial);
   sprite_horseshoeBend = new THREE.Sprite(horseshoeBendMaterial);
+  sprite_horseshoeBend.name = 'horseshoe';
+
   sprite_micaViewTrail = new THREE.Sprite(micaViewTrailMaterial);
   sprite_navajoPoint = new THREE.Sprite(navajoPointMaterial);
   sprite_paintedDesert = new THREE.Sprite(paintedDesertMaterial);
@@ -1431,13 +1448,13 @@ function init() {
     }
   };
   gui.add(guiWorld.xPos, "x", -4, 4).onChange(() => {
-    hubCamera.position.set(
+    bugBlue.position.set(
       guiWorld.xPos.x,
-      hubCamera.position.y,
-      hubCamera.position.z
+      bugBlue.position.y,
+      bugBlue.position.z
     );
     //renderer.gammaFactor = guiWorld.xPos.x;
-    console.log(hubCamera.position);
+    console.log(bugBlue.position);
     //console.log(Echo.position);
   });
 
@@ -1868,9 +1885,7 @@ function initLessonScene() {
     grasshopperModel.add(gltf.scene);
   });
   grasshopperModel.scale.set(0.1, 0.1, 0.1);
-  //grasshopperModel.rotation.set(0, 3.107, 0);
   grasshopperModel.rotation.set(0, -0.534, 0);
-  //grasshopperModel.position.set(0.7127, -0.719, 3.543);
   grasshopperModel.position.set(-133, -18.17, 41.96);
 
   //BlackMesa Model
@@ -1944,7 +1959,6 @@ function initLessonScene() {
   outlineBug.rotation.set(-0.25, -0.06, -0.25);
   outlineBug.position.set(-2.41, -1.01, 1.48);
   outlineBug.scale.set(.5, .5, .5);
-  //console.log(outlineBug);
 
   loader.load("/resources/models/echo-7.glb", function (gltf) 
   {
@@ -2104,7 +2118,7 @@ function initHubScene()
   });
   hubworldModel.position.set(-1.37, -0.5, -0.5);
 
-  loader.load("/resources/models/Walke-Talkie-Garmin-5.glb", function (gltf) 
+  loader.load("/resources/models/Walke-Talkie-Garmin.glb", function (gltf) 
   {
     var model = gltf.scene;
     model.traverse((o) => 
@@ -2670,379 +2684,707 @@ function updateLessonScene(index)
     echoScaleTween.stop();
   }
 
+  console.log("UPDATE LESSON SCENE!!!");
+
   //** UPDATE SCENE FROM WALKIE TALKIE FUNCTION */
-  if(index)
+  if(index != null)
   {
+    console.log("Update lesson scene: " + index);
+    
+    //** BACK TO PHOENIX SCENE */
     if(index == 0)
     {
-      if(currentLessonSceneIndex == 1)
+      //** FROM HORSESHOE BEND */
+      lessonScene.remove(Echo);
+      lessonComposer.removePass(filmPass);
+      filmPass = new FilmPass(
+        0.5,   // noise intensity
+        0.1,  // scanline intensity
+        648,    // scanline count
+        false,  // grayscale
+      );
+      lessonComposer.addPass(filmPass); 
+      lessonScene.fog = new THREE.Fog(0xffffff, 0.1, 0);
+
+      //** IF THE BUG HAS ALREADY BEEN FOUND */
+      if(bugsFound.includes(0))
       {
-  
-      }
-      else if(currentLessonSceneIndex == 2)
-      {
-  
-      }
-      else if(currentLessonSceneIndex == 3)
-      {
-  
-      }
-      else if(currentLessonSceneIndex == 4)
-      {
-  
+        lessonScene.remove(outlineBug);
+        
+        setTimeout(function() 
+        {
+          toggleLessonPopup();
+          startLesson();
+        }, 6000);
       }
       else
       {
-  
+        if(!lessonScene.getObjectByName('outlineBug'))
+        {
+          console.log("ADDED OUTLINE BUG BACK");
+          lessonScene.add(outlineBug);
+        }
+        
+        outlineBug.rotation.set(-0.25, -0.06, -0.25);
+        outlineBug.position.set(-2.41, -1.01, 1.48);
+        outlineBug.scale.set(.5, .5, .5);
+        outlineBug.children[0].children[0].material.map = bugTexture_blue;
+        outlineBug.children[0].children[0].material.map.flipY = false;
+        outlineBug.children[0].children[0].material.map.needsUpdate = true;
+        
+        setTimeout(function() 
+        {
+          toggleLessonPopup();
+          startLesson();
+        }, 10000);
+      }
+
+      //** IF COMING FROM GRAND CANYON */
+      if(lessonsCompleted == 1)
+      {
+        lessonScene.remove(grandCanyonModel);
+        lessonScene.add(phoenixModel);
+      }
+      //** IF COMING FROM CATHEDRAL ROCK */
+      else if(lessonsCompleted == 2)
+      {
+        lessonScene.remove(grasshopperModel);
+        lessonScene.add(phoenixModel);
+      }
+      //** IF COMING FROM BLACK MESA */
+      else if(lessonsCompleted == 3)
+      {
+        lessonScene.remove(blackMesaModel);
+        lessonScene.add(phoenixModel);
+      }
+      //** IF COMING FROM TUSCON */
+      else if(lessonsCompleted == 4)
+      {
+        if(lessonScene.getObjectByName('bugBlue'))
+        {
+          bugBlue.position.set(0, -5, 0);
+          console.log("get rid of bug blue");
+        }
+        if(lessonScene.getObjectByName('bugYellow'))
+        {
+          bugYellow.position.set(0, -5, 0);
+          console.log("get rid of bug blue");
+        }
+        if(lessonScene.getObjectByName('bugRed'))
+        {
+          bugRed.position.set(0, -5, 0);
+          console.log("get rid of bug red");
+        }
+        if(lessonScene.getObjectByName('bugGreen'))
+        {
+          bugGreen.position.set(0, -5, 0);
+          console.log("get rid of bug green");
+        }
+        
+        lessonScene.remove(cave);
+        lessonScene.add(phoenixModel);
       }
     }
+    //** BACK TO HORSESHOE SCENE */
     else if(index == 1)
     {
-      if(currentLessonSceneIndex == 1)
+      lessonScene.remove(Echo);
+      lessonComposer.removePass(filmPass);
+      filmPass = new FilmPass(
+        0.5,   // noise intensity
+        0.1,  // scanline intensity
+        648,    // scanline count
+        false,  // grayscale
+      );
+      lessonComposer.addPass(filmPass); 
+      lessonScene.fog.color.set("#FFFFFF");
+      lessonScene.fog.far = 25;
+
+      //** IF THE BUG HAS ALREADY BEEN FOUND */
+      if(bugsFound.includes(1))
       {
-  
-      }
-      else if(currentLessonSceneIndex == 2)
-      {
-  
-      }
-      else if(currentLessonSceneIndex == 3)
-      {
-  
-      }
-      else if(currentLessonSceneIndex == 4)
-      {
-  
+        lessonScene.remove(outlineBug);
+        
+        setTimeout(function() 
+        {
+          toggleLessonPopup();
+          startLesson();
+        }, 6000);
       }
       else
       {
-  
+        if(!lessonScene.getObjectByName('outlineBug'))
+        {
+          console.log("ADDED OUTLINE BUG BACK");
+          lessonScene.add(outlineBug);
+        }
+        
+        outlineBug.rotation.set(0, -5, 0);
+        outlineBug.position.set(0.39, -1.2, 0.79);
+        outlineBug.scale.set(.125, .125, .125);
+        outlineBug.children[0].children[0].material.map = bugTexture_yellow;
+        outlineBug.children[0].children[0].material.map.flipY = false;
+        outlineBug.children[0].children[0].material.map.needsUpdate = true;
+        
+        setTimeout(function() 
+        {
+          toggleLessonPopup();
+          startLesson();
+        }, 10000);
+      }
+
+      //** IF COMING FROM CATHEDRAL ROCK */
+      if(lessonsCompleted == 2)
+      {
+        lessonScene.remove(grasshopperModel);
+        lessonScene.add(grandCanyonModel);
+      }
+      //** IF COMING FROM BLACK MESA */
+      else if(lessonsCompleted == 3)
+      {
+        lessonScene.remove(blackMesaModel);
+        lessonScene.add(grandCanyonModel);
+      }
+      //** IF COMING FROM TUSCON */
+      else if(lessonsCompleted == 4)
+      {
+        if(lessonScene.getObjectByName('bugBlue'))
+        {
+          bugBlue.position.set(0, -5, 0);
+          console.log("get rid of bug blue");
+        }
+        if(lessonScene.getObjectByName('bugYellow'))
+        {
+          bugYellow.position.set(0, -5, 0);
+          console.log("get rid of bug blue");
+        }
+        if(lessonScene.getObjectByName('bugRed'))
+        {
+          bugRed.position.set(0, -5, 0);
+          console.log("get rid of bug red");
+        }
+        if(lessonScene.getObjectByName('bugGreen'))
+        {
+          bugGreen.position.set(0, -5, 0);
+          console.log("get rid of bug green");
+        }
+        
+        lessonScene.remove(cave);
+        lessonScene.add(grandCanyonModel);
       }
     }
+    //** BACK TO CATHEDRAL ROCK SCENE */
     else if(index == 2)
     {
-      if(currentLessonSceneIndex == 1)
+      lessonScene.remove(Echo);
+      lessonComposer.removePass(filmPass);
+      filmPass = new FilmPass(
+        0.5,   // noise intensity
+        0.1,  // scanline intensity
+        648,    // scanline count
+        false,  // grayscale
+      );
+      lessonComposer.addPass(filmPass); 
+      lessonScene.fog.near = 0.015;
+      lessonScene.fog.far = 1000;
+      lessonScene.fog.color.set("#ffffff");
+
+      //** IF THE BUG HAS ALREADY BEEN FOUND */
+      if(bugsFound.includes(2))
       {
-  
-      }
-      else if(currentLessonSceneIndex == 2)
-      {
-  
-      }
-      else if(currentLessonSceneIndex == 3)
-      {
-  
-      }
-      else if(currentLessonSceneIndex == 4)
-      {
-  
+        lessonScene.remove(outlineBug);
+        
+        setTimeout(function() 
+        {
+          toggleLessonPopup();
+          startLesson();
+        }, 6000);
       }
       else
       {
-  
+        if(!lessonScene.getObjectByName('outlineBug'))
+        {
+          console.log("ADDED OUTLINE BUG BACK");
+          lessonScene.add(outlineBug);
+        }
+        
+        outlineBug.position.set(0.23, -1.03, 0.926);
+        outlineBug.rotation.set(-0.63, 4, 0);
+        outlineBug.scale.set(0.075, 0.075, 0.075);
+        outlineBug.children[0].children[0].material.map = bugTexture_red;
+        outlineBug.children[0].children[0].material.map.flipY = false;
+        outlineBug.children[0].children[0].material.map.needsUpdate = true;
+        
+        setTimeout(function() 
+        {
+          toggleLessonPopup();
+          startLesson();
+        }, 10000);
+      }
+      //** IF COMING FROM BLACK MESA */
+      if(lessonsCompleted == 3)
+      {
+        lessonScene.remove(blackMesaModel);
+        lessonScene.add(grasshopperModel);
+      }
+      //** IF COMING FROM TUSCON */
+      else if(lessonsCompleted == 4)
+      {
+        if(lessonScene.getObjectByName('bugBlue'))
+        {
+          bugBlue.position.set(0, -5, 0);
+          console.log("get rid of bug blue");
+        }
+        if(lessonScene.getObjectByName('bugYellow'))
+        {
+          bugYellow.position.set(0, -5, 0);
+          console.log("get rid of bug blue");
+        }
+        if(lessonScene.getObjectByName('bugRed'))
+        {
+          bugRed.position.set(0, -5, 0);
+          console.log("get rid of bug red");
+        }
+        if(lessonScene.getObjectByName('bugGreen'))
+        {
+          bugGreen.position.set(0, -5, 0);
+          console.log("get rid of bug green");
+        }
+        
+        lessonScene.remove(cave);
+        lessonScene.add(grasshopperModel);
       }
     }
+    //** BACK TO BLAC MESA SCENE */
     else if(index == 3)
     {
-      if(currentLessonSceneIndex == 1)
+      lessonScene.remove(Echo);
+      lessonComposer.removePass(filmPass);
+      filmPass = new FilmPass(
+        0.5,   // noise intensity
+        0.1,  // scanline intensity
+        648,    // scanline count
+        false,  // grayscale
+      );
+      lessonComposer.addPass(filmPass); 
+      lessonScene.fog.near = 0.015;
+      lessonScene.fog.far = 150;
+      lessonScene.fog.color.set("#ffffff");
+
+      //** IF THE BUG HAS ALREADY BEEN FOUND */
+      if(bugsFound.includes(3))
       {
-  
-      }
-      else if(currentLessonSceneIndex == 2)
-      {
-  
-      }
-      else if(currentLessonSceneIndex == 3)
-      {
-  
-      }
-      else if(currentLessonSceneIndex == 4)
-      {
-  
+        lessonScene.remove(outlineBug);
+        
+        setTimeout(function() 
+        {
+          toggleLessonPopup();
+          startLesson();
+        }, 6000);
       }
       else
       {
-  
+        if(!lessonScene.getObjectByName('outlineBug'))
+        {
+          console.log("ADDED OUTLINE BUG BACK");
+          lessonScene.add(outlineBug);
+        }
+        
+        outlineBug.position.set(-3.85, -1.89, -8.21);
+        outlineBug.rotation.set(0, -2.45, 0);
+        outlineBug.scale.set(0.75, 0.75, 0.75);
+        outlineBug.children[0].children[0].material.map = bugTexture_green;
+        outlineBug.children[0].children[0].material.map.flipY = false;
+        outlineBug.children[0].children[0].material.map.needsUpdate = true;
+        
+        setTimeout(function() 
+        {
+          toggleLessonPopup();
+          startLesson();
+        }, 10000);
+      }
+      //** IF COMING FROM TUSCON */
+      if(lessonsCompleted == 4)
+      {
+        if(lessonScene.getObjectByName('bugBlue'))
+        {
+          bugBlue.position.set(0, -5, 0);
+          console.log("get rid of bug blue");
+        }
+        if(lessonScene.getObjectByName('bugYellow'))
+        {
+          bugYellow.position.set(0, -5, 0);
+          console.log("get rid of bug blue");
+        }
+        if(lessonScene.getObjectByName('bugRed'))
+        {
+          bugRed.position.set(0, -5, 0);
+          console.log("get rid of bug red");
+        }
+        if(lessonScene.getObjectByName('bugGreen'))
+        {
+          bugGreen.position.set(0, -5, 0);
+          console.log("get rid of bug green");
+        }
+        
+        lessonScene.remove(cave);
+        lessonScene.add(blackMesaModel);
       }
     }
   }
-
-  //**HORSESHOE BEND SCENE**//
-  if(currentLessonSceneIndex == 1)
+  else
   {
-    lessonComposer.removePass(filmPass);
-    filmPass = new FilmPass(
-      0.5,   // noise intensity
-      0.1,  // scanline intensity
-      648,    // scanline count
-      false,  // grayscale
-    );
-    lessonComposer.addPass(filmPass); 
+    console.log(bugsFound);
     
-    Echo.position.set(0.621, -1.14, -0.05);
-    Echo.rotation.set(0, 0, 0);
-    Echo.scale.set(0.03, 0.03, 0.03);
-    playEchoAnimation(1);
-
-    console.log("UPDATE SCENE");
-    lessonScene.remove(phoenixModel);
-    lessonScene.add(grandCanyonModel);
-    //lessonCamera.setFocalLength(10);
-    lessonScene.fog.color.set("#FFFFFF");
-    lessonScene.fog.far = 25;
-    
-    outlineBug.rotation.set(0, -5, 0);
-    outlineBug.position.set(0.39, -1.2, 0.79);
-    outlineBug.scale.set(.125, .125, .125);
-    outlineBug.children[0].children[0].material.map = bugTexture_yellow;
-    outlineBug.children[0].children[0].material.map.flipY = false;
-    outlineBug.children[0].children[0].material.map.needsUpdate = true;
-
-    // bugFlyTween = new TWEEN.Tween(outlineBug.position)
-    // .to({ y: -1.1, z: -0.5}, 4000)
-    // .yoyo(true)
-    // .repeat(Infinity);
-    // bugFlyTween.easing(TWEEN.Easing.Quadratic.InOut);
-    // bugFlyTween.start();
-
-    // bugRotTween = new TWEEN.Tween(outlineBug.rotation)
-    // .to({x: 0.5, y: -4, z: 0.25}, 3750)
-    // .yoyo(true)
-    // .repeat(Infinity);
-    // bugRotTween.easing(TWEEN.Easing.Quadratic.InOut);
-    // bugRotTween.start();
-
-  }
-  //** CATHEDRAL ROCK */
-  else if(currentLessonSceneIndex == 2)
-  {
-    lessonComposer.removePass(filmPass);
-    filmPass = new FilmPass(
-      0.5,   // noise intensity
-      0.1,  // scanline intensity
-      648,    // scanline count
-      false,  // grayscale
-    );
-    lessonComposer.addPass(filmPass); 
-    
-    Echo.position.set(0.465, -1.075, -0.05);
-    Echo.rotation.set(0, 0, 0);
-    Echo.scale.set(0.03, 0.03, 0.03);
-    playEchoAnimation(5);
-    lessonScene.remove(grandCanyonModel);
-    lessonScene.add(grasshopperModel);
-
-    outlineBug.position.set(0.23, -1.03, 0.926);
-    outlineBug.rotation.set(-0.63, 4, 0);
-    outlineBug.scale.set(0.075, 0.075, 0.075);
-    outlineBug.children[0].children[0].material.map = bugTexture_red;
-    outlineBug.children[0].children[0].material.map.flipY = false;
-    outlineBug.children[0].children[0].material.map.needsUpdate = true;
-
-    // bugFlyTween = new TWEEN.Tween(outlineBug.position)
-    // .to({ y: -1.05, z: -0.25}, 4000)
-    // .yoyo(true)
-    // .repeat(Infinity);
-    // bugFlyTween.easing(TWEEN.Easing.Quadratic.InOut);
-    // bugFlyTween.start();
-
-    // bugRotTween = new TWEEN.Tween(outlineBug.rotation)
-    // .to({x: 0.5, y: 1, z: 0.25}, 3750)
-    // .yoyo(true)
-    // .repeat(Infinity);
-    // bugRotTween.easing(TWEEN.Easing.Quadratic.InOut);
-    // bugRotTween.start();
-
-    //lessonScene.background = hdr1;
-    //lessonScene.enviroment = hdr1;
-    lessonScene.fog.near = 0.015;
-    lessonScene.fog.far = 1000;
-    lessonScene.fog.color.set("#ffffff");
-
-    lessonScene.add(pointLight);
-    lessonScene.add(pointLight2);
-    lessonScene.add(pointLight3);
-    lessonScene.add(pointLight4);
-
-    console.log("GRASSHOPPER!!!");
-  }
-  //** BLACK MESA */
-  else if(currentLessonSceneIndex == 3)
-  {
-    lessonComposer.removePass(filmPass);
-    filmPass = new FilmPass(
-      0.5,   // noise intensity
-      0.1,  // scanline intensity
-      648,    // scanline count
-      false,  // grayscale
-    );
-    lessonComposer.addPass(filmPass); 
-    
-    Echo.position.set(0.29, -1.11, -0.05);
-    Echo.rotation.set(0, 0, 0);
-    Echo.scale.set(0.03, 0.03, -0.03);
-    playEchoAnimation(5);
-
-    lessonScene.remove(grasshopperModel);
-    lessonScene.add(blackMesaModel);
-    //lessonScene.remove(outlineBug);
-
-    lessonScene.fog.near = 0.015;
-    lessonScene.fog.far = 150;
-    lessonScene.fog.color.set("#ffffff");
-
-    outlineBug.position.set(-3.85, -1.89, -8.21);
-    outlineBug.rotation.set(0, -2.45, 0);
-    outlineBug.scale.set(0.75, 0.75, 0.75);
-    outlineBug.children[0].children[0].material.map = bugTexture_green;
-    outlineBug.children[0].children[0].material.map.flipY = false;
-    outlineBug.children[0].children[0].material.map.needsUpdate = true;
-
-    //lessonScene.background = new THREE.Color(0x000000);
-    lessonScene.add(pointLight);
-    lessonScene.add(pointLight2);
-    lessonScene.add(pointLight3);
-    lessonScene.add(pointLight4);
-  }
-  //**CAVE SCENE**//
-  else if(currentLessonSceneIndex == 4)
-  {
-    lessonComposer.removePass(filmPass);
-    filmPass = new FilmPass(
-      0.5,   // noise intensity
-      0.1,  // scanline intensity
-      648,    // scanline count
-      false,  // grayscale
-    );
-    lessonComposer.addPass(filmPass); 
-    
-    Echo.position.set(-1.153, -0.50, 0.147);
-    Echo.rotation.set(-3, 0, 0);
-    Echo.scale.set(0.1, 0.1, 0.1);
-    playEchoAnimation(5);
-    
-    lessonScene.remove(blackMesaModel);
-    lessonScene.remove(outlineBug);
-    lessonScene.add(cave);
-    filmPass.grayscale = true;
-
-    // outlineBug.position.set(-2.88, -2.6359, 0);
-    // outlineBug.rotation.set(0, 0, 0);
-    // outlineBug.scale.set(0.75, 0.75, 0.75);
-    // outlineBug.children[0].children[0].material.map = bugTexture_green;
-    // outlineBug.children[0].children[0].material.map.flipY = false;
-    // outlineBug.children[0].children[0].material.map.needsUpdate = true;
-
-
-    //** ADDS BUGS DEPENDING ON WHICH ONES YOU HAVE COLLECTED */
-    console.log(bugsFound.length);
-    for(var i = 0; i < bugsFound.length; i++)
+    //** REMOVING OBJECTS BASED ON WHAT CURRENT SCENE IS OPEN */
+    if(!lessonScene.getObjectByName('Echo'))
     {
-      //var newBug = outlineBug.clone(true);
-
-      //** PHOENIX BUG */
-      if(bugsFound[i] == 0)
-      {
-        bugBlue = outlineBug.clone(true);
-        var blueBugMaterial = new THREE.MeshBasicMaterial({transparent: true});
-        bugBlue.children[0].children[0].material = blueBugMaterial;
-
-        bugBlue.children[0].children[0].material.map = bugTexture_blue;
-        bugBlue.children[0].children[0].material.map.flipY = false;
-        bugBlue.children[0].children[0].material.map.needsUpdate = true;
-        bugBlue.position.set(-2.88, -2.6359, bugLocations[i]);
-        bugBlue.rotation.set(0, -1, 0);
-        lessonScene.add(bugBlue);
-      }
-      //** HORSESHOEBEND BUG */
-      else if(bugsFound[i] == 1)
-      {
-        bugYellow = outlineBug.clone(true);
-        var yellowBugMaterial = new THREE.MeshBasicMaterial({transparent: true});
-        bugYellow.children[0].children[0].material = yellowBugMaterial;
-
-        bugYellow.children[0].children[0].material.map = bugTexture_yellow;
-        bugYellow.children[0].children[0].material.map.flipY = false;
-        bugYellow.children[0].children[0].material.map.needsUpdate = true;
-        bugYellow.position.set(-2.88, -2.6359, bugLocations[i]);
-        bugYellow.rotation.set(bugYellow.rotation.x, -1.25, bugYellow.rotation.x);
-        lessonScene.add(bugYellow);
-      }
-      //** CATHEDRAL ROCK BUG */
-      else if(bugsFound[i] == 2)
-      {
-        bugRed = outlineBug.clone(true);
-        var redBugMaterial = new THREE.MeshBasicMaterial({transparent: true});
-        bugRed.children[0].children[0].material = redBugMaterial;
-        
-        bugRed.children[0].children[0].material.map = bugTexture_red;
-        bugRed.children[0].children[0].material.map.flipY = false;
-        bugRed.children[0].children[0].material.map.needsUpdate = true;
-        bugRed.position.set(-2.88, -2.6359, bugLocations[i]);
-        bugRed.rotation.set(bugRed.rotation.x, -1.5, bugRed.rotation.x);
-        lessonScene.add(bugRed);
-
-        console.log(bugRed.children[0].children[0].material.map);
-      }
-      //** BLACK MESA BUG */
-      else if(bugsFound[i] == 3)
-      {
-        bugGreen = outlineBug.clone(true);
-        var greenBugMaterial = new THREE.MeshBasicMaterial({transparent: true});
-        bugGreen.children[0].children[0].material = greenBugMaterial;
-        
-        bugGreen.children[0].children[0].material.map = bugTexture_green;
-        bugGreen.children[0].children[0].material.map.flipY = false;
-        bugGreen.children[0].children[0].material.map.needsUpdate = true;
-        bugGreen.position.set(-2.88, -2.6359, bugLocations[i]);
-        bugGreen.rotation.set(bugGreen.rotation.x, -1, bugGreen.rotation.x);
-        lessonScene.add(bugGreen);
-      }
-      
-      //lessonScene.add(newBug);
-      console.log("BUGS FOUND NUMBER:" + bugsFound[i]);
+      console.log("ADDED ECHO BACK");
+      lessonScene.add(Echo);
+    }
+    if(!lessonScene.getObjectByName('outlineBug'))
+    {
+      console.log("ADDED OUTLINE BUG BACK");
+      lessonScene.add(outlineBug);
+    }
+    if(lessonScene.getObjectByName('phoenixModel'))
+    {
+      lessonScene.remove(phoenixModel);
+    }
+    else if(lessonScene.getObjectByName('grandCanyonModel'))
+    {
+      lessonScene.remove(grandCanyonModel);
+    }
+    else if(lessonScene.getObjectByName('cathedralRockModel'))
+    {
+      lessonScene.remove(grasshopperModel);
+    }
+    else if(lessonScene.getObjectByName('blackMesaModel'))
+    {
+      lessonScene.remove(blackMesaModel);
+    }
+    else if(lessonScene.getObjectByName('cave'))
+    {
+      lessonScene.remove(cave);
     }
 
-    //lessonScene.background = new THREE.Color(0x000000);
-    lessonScene.fog.near = 0.015;
-    lessonScene.fog.far = 115;
-    lessonScene.fog.color.set("#66000f");
-    lessonScene.add(pointLight);
-    lessonScene.add(pointLight2);
-    lessonScene.add(pointLight3);
-    lessonScene.add(pointLight4);
-  }
-  //**PHOENIX SCENE**//
-  else if (currentLessonSceneIndex == 0)
-  {
-    lessonComposer.removePass(filmPass);
-    filmPass = new FilmPass(
-      0.5,   // noise intensity
-      0.1,  // scanline intensity
-      648,    // scanline count
-      false,  // grayscale
-    );
-    lessonComposer.addPass(filmPass); 
-    // console.log("UPDATE SCENE");
-    // lessonScene.remove(grandCanyonModel);
-    // lessonScene.add(phoenixModel);
-    // //lessonCamera.setFocalLength(10);
+    console.log("blue: " + bugBlue);
+    console.log("yellow: " + bugYellow);
+    console.log("red: " + bugRed);
+    console.log("green: " + bugYellow);
 
-    // lessonScene.fog.near = 0.1;
-    // lessonScene.fog.far = 0;
+    //**HORSESHOE BEND SCENE**//
+    if(lessonsCompleted == 1)
+    { 
+      lessonComposer.removePass(filmPass);
+      filmPass = new FilmPass(
+        0.5,   // noise intensity
+        0.1,  // scanline intensity
+        648,    // scanline count
+        false,  // grayscale
+      );
+      lessonComposer.addPass(filmPass); 
+      
+      Echo.position.set(0.621, -1.14, -0.05);
+      Echo.rotation.set(0, 0, 0);
+      Echo.scale.set(0.03, 0.03, 0.03);
+      playEchoAnimation(1);
+  
+      console.log("UPDATE SCENE");
+      lessonScene.remove(phoenixModel);
+      lessonScene.add(grandCanyonModel);
+      //lessonCamera.setFocalLength(10);
+      lessonScene.fog.color.set("#FFFFFF");
+      lessonScene.fog.far = 25;
+      
+      outlineBug.rotation.set(0, -5, 0);
+      outlineBug.position.set(0.39, -1.2, 0.79);
+      outlineBug.scale.set(.125, .125, .125);
+      outlineBug.children[0].children[0].material.map = bugTexture_yellow;
+      outlineBug.children[0].children[0].material.map.flipY = false;
+      outlineBug.children[0].children[0].material.map.needsUpdate = true;
+  
+      // bugFlyTween = new TWEEN.Tween(outlineBug.position)
+      // .to({ y: -1.1, z: -0.5}, 4000)
+      // .yoyo(true)
+      // .repeat(Infinity);
+      // bugFlyTween.easing(TWEEN.Easing.Quadratic.InOut);
+      // bugFlyTween.start();
+  
+      // bugRotTween = new TWEEN.Tween(outlineBug.rotation)
+      // .to({x: 0.5, y: -4, z: 0.25}, 3750)
+      // .yoyo(true)
+      // .repeat(Infinity);
+      // bugRotTween.easing(TWEEN.Easing.Quadratic.InOut);
+      // bugRotTween.start();
+  
+    }
+    //** CATHEDRAL ROCK */
+    else if(lessonsCompleted == 2)
+    {
+      lessonComposer.removePass(filmPass);
+      filmPass = new FilmPass(
+        0.5,   // noise intensity
+        0.1,  // scanline intensity
+        648,    // scanline count
+        false,  // grayscale
+      );
+      lessonComposer.addPass(filmPass); 
+      
+      Echo.position.set(0.465, -1.075, -0.05);
+      Echo.rotation.set(0, 0, 0);
+      Echo.scale.set(0.03, 0.03, 0.03);
+      playEchoAnimation(5);
+      lessonScene.remove(grandCanyonModel);
+      lessonScene.add(grasshopperModel);
+  
+      outlineBug.position.set(0.23, -1.03, 0.926);
+      outlineBug.rotation.set(-0.63, 4, 0);
+      outlineBug.scale.set(0.075, 0.075, 0.075);
+      outlineBug.children[0].children[0].material.map = bugTexture_red;
+      outlineBug.children[0].children[0].material.map.flipY = false;
+      outlineBug.children[0].children[0].material.map.needsUpdate = true;
+  
+      // bugFlyTween = new TWEEN.Tween(outlineBug.position)
+      // .to({ y: -1.05, z: -0.25}, 4000)
+      // .yoyo(true)
+      // .repeat(Infinity);
+      // bugFlyTween.easing(TWEEN.Easing.Quadratic.InOut);
+      // bugFlyTween.start();
+  
+      // bugRotTween = new TWEEN.Tween(outlineBug.rotation)
+      // .to({x: 0.5, y: 1, z: 0.25}, 3750)
+      // .yoyo(true)
+      // .repeat(Infinity);
+      // bugRotTween.easing(TWEEN.Easing.Quadratic.InOut);
+      // bugRotTween.start();
 
-    //bugFlyTween.to({ y: -0.85}, 2000);
-    //bugFlyTween.start();
+      lessonScene.fog.near = 0.015;
+      lessonScene.fog.far = 1000;
+      lessonScene.fog.color.set("#ffffff");
+  
+      lessonScene.add(pointLight);
+      lessonScene.add(pointLight2);
+      lessonScene.add(pointLight3);
+      lessonScene.add(pointLight4);
+  
+      console.log("GRASSHOPPER!!!");
+    }
+    //** BLACK MESA */
+    else if(lessonsCompleted == 3)
+    {
+      lessonComposer.removePass(filmPass);
+      filmPass = new FilmPass(
+        0.5,   // noise intensity
+        0.1,  // scanline intensity
+        648,    // scanline count
+        false,  // grayscale
+      );
+      lessonComposer.addPass(filmPass); 
+      
+      Echo.position.set(0.29, -1.11, -0.05);
+      Echo.rotation.set(0, 0, 0);
+      Echo.scale.set(0.03, 0.03, -0.03);
+      playEchoAnimation(5);
+  
+      lessonScene.remove(grasshopperModel);
+      lessonScene.add(blackMesaModel);
+  
+      lessonScene.fog.near = 0.015;
+      lessonScene.fog.far = 150;
+      lessonScene.fog.color.set("#ffffff");
+  
+      outlineBug.position.set(-3.85, -1.89, -8.21);
+      outlineBug.rotation.set(0, -2.45, 0);
+      outlineBug.scale.set(0.75, 0.75, 0.75);
+      outlineBug.children[0].children[0].material.map = bugTexture_green;
+      outlineBug.children[0].children[0].material.map.flipY = false;
+      outlineBug.children[0].children[0].material.map.needsUpdate = true;
+  
+      lessonScene.add(pointLight);
+      lessonScene.add(pointLight2);
+      lessonScene.add(pointLight3);
+      lessonScene.add(pointLight4);
+    }
+    //**CAVE SCENE**//
+    else if(lessonsCompleted == 4)
+    {
+      lessonComposer.removePass(filmPass);
+      filmPass = new FilmPass(
+        0.5,   // noise intensity
+        0.1,  // scanline intensity
+        648,    // scanline count
+        false,  // grayscale
+      );
+      lessonComposer.addPass(filmPass); 
+      
+      Echo.position.set(-1.153, -0.50, 0.147);
+      Echo.rotation.set(-3, 0, 0);
+      Echo.scale.set(0.1, 0.1, 0.1);
+      playEchoAnimation(5);
+      
+      lessonScene.remove(blackMesaModel);
+      lessonScene.remove(outlineBug);
+      lessonScene.add(cave);
+      filmPass.grayscale = true;
+      lessonSubtitleSequenceNumber = 8;
+  
+      // outlineBug.position.set(-2.88, -2.6359, 0);
+      // outlineBug.rotation.set(0, 0, 0);
+      // outlineBug.scale.set(0.75, 0.75, 0.75);
+      // outlineBug.children[0].children[0].material.map = bugTexture_green;
+      // outlineBug.children[0].children[0].material.map.flipY = false;
+      // outlineBug.children[0].children[0].material.map.needsUpdate = true;
+  
+  
+      //** ADDS BUGS DEPENDING ON WHICH ONES YOU HAVE COLLECTED */
+      console.log(bugsFound.length);
+      for(var i = 0; i < bugsFound.length; i++)
+      {
+        //var newBug = outlineBug.clone(true);
+  
+        //** PHOENIX BUG */
+        if(bugsFound[i] == 0)
+        {
+          if(!lessonScene.getObjectByName('bugBlue'))
+          {
+            bugBlue = outlineBug.clone(true);
+            var blueBugMaterial = new THREE.MeshBasicMaterial({transparent: true});
+            bugBlue.children[0].children[0].material = blueBugMaterial;
     
-    // outlineBug.rotation.set(0, -5.48, 0);
-    // outlineBug.position.set(0.534, -1.325, 0.246);
-    // outlineBug.scale.set(.125, .125, .125);
-    // outlineBug.children[0].children[0].material.map = bugTexture_blue;
-    // outlineBug.children[0].children[0].material.map.flipY = false;
-    // outlineBug.children[0].children[0].material.map.needsUpdate = true;
+            bugBlue.children[0].children[0].material.map = bugTexture_blue;
+            bugBlue.children[0].children[0].material.map.flipY = false;
+            bugBlue.children[0].children[0].material.map.needsUpdate = true;
+            bugBlue.position.set(-2.88, -2.6359, bugLocations[i]);
+            bugBlue.rotation.set(0, -1, 0);
+            bugBlue.name = "bugBlue";
+            lessonScene.add(bugBlue);
+          }
+          else
+          {
+            bugBlue.position.set(-2.88, -2.6359, bugLocations[i]);
+            bugBlue.rotation.set(0, -1, 0);
+          }
+        }
+        //** HORSESHOEBEND BUG */
+        else if(bugsFound[i] == 1)
+        {
+          
+          if(!lessonScene.getObjectByName('bugYellow'))
+          {
+            bugYellow = outlineBug.clone(true);
+            var yellowBugMaterial = new THREE.MeshBasicMaterial({transparent: true});
+            bugYellow.children[0].children[0].material = yellowBugMaterial;
+    
+            bugYellow.children[0].children[0].material.map = bugTexture_yellow;
+            bugYellow.children[0].children[0].material.map.flipY = false;
+            bugYellow.children[0].children[0].material.map.needsUpdate = true;
+            bugYellow.position.set(-2.88, -2.6359, bugLocations[i]);
+            bugYellow.rotation.set(bugYellow.rotation.x, -1.25, bugYellow.rotation.x);
+            bugYellow.name = "bugYellow";
+            lessonScene.add(bugYellow);
+          }
+          else
+          {
+            bugYellow.position.set(-2.88, -2.6359, bugLocations[i]);
+            bugYellow.rotation.set(bugYellow.rotation.x, -1.25, bugYellow.rotation.x);
+          }
+        }
+        //** CATHEDRAL ROCK BUG */
+        else if(bugsFound[i] == 2)
+        {
+          
+          if(!lessonScene.getObjectByName('bugRed'))
+          {
+            bugRed = outlineBug.clone(true);
+            var redBugMaterial = new THREE.MeshBasicMaterial({transparent: true});
+            bugRed.children[0].children[0].material = redBugMaterial;
+            
+            bugRed.children[0].children[0].material.map = bugTexture_red;
+            bugRed.children[0].children[0].material.map.flipY = false;
+            bugRed.children[0].children[0].material.map.needsUpdate = true;
+            bugRed.position.set(-2.88, -2.6359, bugLocations[i]);
+            bugRed.rotation.set(bugRed.rotation.x, -1.5, bugRed.rotation.x);
+            bugRed.name = "bugRed";
+            lessonScene.add(bugRed);
+          }
+          else
+          {
+            bugRed.position.set(-2.88, -2.6359, bugLocations[i]);
+            bugRed.rotation.set(bugRed.rotation.x, -1.5, bugRed.rotation.x);
+          }
+  
+          console.log(bugRed.children[0].children[0].material.map);
+        }
+        //** BLACK MESA BUG */
+        else if(bugsFound[i] == 3)
+        {
+          
+          if(!lessonScene.getObjectByName('bugGreen'))
+          {
+            bugGreen = outlineBug.clone(true);
+            var greenBugMaterial = new THREE.MeshBasicMaterial({transparent: true});
+            bugGreen.children[0].children[0].material = greenBugMaterial;
+            
+            bugGreen.children[0].children[0].material.map = bugTexture_green;
+            bugGreen.children[0].children[0].material.map.flipY = false;
+            bugGreen.children[0].children[0].material.map.needsUpdate = true;
+            bugGreen.position.set(-2.88, -2.6359, bugLocations[i]);
+            bugGreen.rotation.set(bugGreen.rotation.x, -1, bugGreen.rotation.x);
+            bugGreen.name = "bugGreen";
+            lessonScene.add(bugGreen);
+          }
+          else
+          {
+            bugGreen.position.set(-2.88, -2.6359, bugLocations[i]);
+            bugGreen.rotation.set(bugGreen.rotation.x, -1, bugGreen.rotation.x);
+          }
+        }
+        
+        //lessonScene.add(newBug);
+        console.log("BUGS FOUND NUMBER:" + bugsFound[i]);
+      }
+  
+      //lessonScene.background = new THREE.Color(0x000000);
+      lessonScene.fog.near = 0.015;
+      lessonScene.fog.far = 115;
+      lessonScene.fog.color.set("#66000f");
+      lessonScene.add(pointLight);
+      lessonScene.add(pointLight2);
+      lessonScene.add(pointLight3);
+      lessonScene.add(pointLight4);
+    }
+    //**PHOENIX SCENE**//
+    else if (lessonsCompleted == 0)
+    {
+      lessonComposer.removePass(filmPass);
+      filmPass = new FilmPass(
+        0.5,   // noise intensity
+        0.1,  // scanline intensity
+        648,    // scanline count
+        false,  // grayscale
+      );
+      lessonComposer.addPass(filmPass); 
+      // console.log("UPDATE SCENE");
+      // lessonScene.remove(grandCanyonModel);
+      // lessonScene.add(phoenixModel);
+      // //lessonCamera.setFocalLength(10);
+  
+      // lessonScene.fog.near = 0.1;
+      // lessonScene.fog.far = 0;
+  
+      //bugFlyTween.to({ y: -0.85}, 2000);
+      //bugFlyTween.start();
+      
+      // outlineBug.rotation.set(0, -5.48, 0);
+      // outlineBug.position.set(0.534, -1.325, 0.246);
+      // outlineBug.scale.set(.125, .125, .125);
+      // outlineBug.children[0].children[0].material.map = bugTexture_blue;
+      // outlineBug.children[0].children[0].material.map.flipY = false;
+      // outlineBug.children[0].children[0].material.map.needsUpdate = true;
+    }
   }
-
-  console.log("Lesson Index:" + currentLessonIndex);
+  console.log("Lesson Index:" + currentLessonSceneIndex);
 
   //** RESET LESSON SCREEN UI */
   if(lessonDoneBtn.classList.contains("active"))
@@ -3057,20 +3399,38 @@ function updateLessonScene(index)
   }
 }
 
+//** RESET HUBWORLD OBJECTS TO ORGINIAL POSITIONS */
+function resetHubWorld()
+{
+  //** SET HUB OBJECTS TO OG POSITIONS */
+  hubCamera.position.set(0, 0, 0);
+  garminModel.position.set(-1.9, -0.28, -0.3);
+  garminHover = false;
+  walkieTalkieScreenModel.material.opacity = 0;
+  hubworldScreenClick = false;
+}
+
 //** USED WHEN THE LESSON IS DONE TO CHANGE WHICH POPUP LEADS TO THE NEXT LESSON */
 function lessonComplete()
 {
-  sceneTransitionSprites[currentLessonSceneIndex].userData.ping = false;
-  sceneTransitionSprites[currentLessonSceneIndex].userData.popup = true;
-  currentLessonSceneIndex++
-  console.log("Lesson Scene Index: " + currentLessonSceneIndex);
-
-  if(currentLessonSceneIndex == 1)
+  sceneTransitionSprites[lessonsCompleted].userData.ping = false;
+  sceneTransitionSprites[lessonsCompleted].userData.popup = true;
+  
+  //** PREVENT COMPLETING ANOTHER LESSON WHEN GOING BACK AGAIN */
+  if(currentLessonSceneIndex >= lessonsCompleted)
   {
-    sceneTransitionSprites[currentLessonSceneIndex].userData.ping = true;
-    sceneTransitionSprites[currentLessonSceneIndex].userData.popup = false;
-    document.getElementById("towerMessage").innerHTML = "May or may not be Phoenix";
-    echoPingLocation = makeEchoPing(towerIcons[currentLessonSceneIndex].position.x, towerIcons[currentLessonSceneIndex].position.z);
+    lessonsCompleted++;
+  }
+
+  console.log("Lesson Scene Index: " + currentLessonSceneIndex);
+  console.log("Lesson's completed " + lessonsCompleted);
+
+  if(lessonsCompleted == 1)
+  {
+    sceneTransitionSprites[lessonsCompleted].userData.ping = true;
+    sceneTransitionSprites[lessonsCompleted].userData.popup = false;
+    document.getElementById("towerMessage").innerHTML = "May or may not be Horseshoe Bend";
+    echoPingLocation = makeEchoPing(towerIcons[lessonsCompleted].position.x, towerIcons[lessonsCompleted].position.z);
     
     //** SETUP ALL LOCATION SPRITES */
     lessonLocation_phoenix_sprite.material.opacity = 1;
@@ -3083,30 +3443,30 @@ function lessonComplete()
     garminModel.add(lessonLocation_cathedralRock_sprite);
     garminModel.add(lessonLocation_blackMesa_sprite);
   }
-  else if(currentLessonSceneIndex == 2)
+  else if(lessonsCompleted == 2)
   {
-    sceneTransitionSprites[currentLessonSceneIndex].userData.ping = true;
-    sceneTransitionSprites[currentLessonSceneIndex].userData.popup = false;
-    document.getElementById("towerMessage").innerHTML = "May or may not be the Grand Canyon";
-    echoPingLocation = makeEchoPing(towerIcons[currentLessonSceneIndex].position.x, towerIcons[currentLessonSceneIndex].position.z);
+    sceneTransitionSprites[lessonsCompleted].userData.ping = true;
+    sceneTransitionSprites[lessonsCompleted].userData.popup = false;
+    document.getElementById("towerMessage").innerHTML = "May or may not be the Cathedral Rock";
+    echoPingLocation = makeEchoPing(towerIcons[lessonsCompleted].position.x, towerIcons[lessonsCompleted].position.z);
     
     lessonLocation_horseshoe_sprite.material.opacity = 1;
   }
-  else if(currentLessonSceneIndex == 3)
+  else if(lessonsCompleted == 3)
   {
-    sceneTransitionSprites[currentLessonSceneIndex].userData.ping = true;
-    sceneTransitionSprites[currentLessonSceneIndex].userData.popup = false;
-    document.getElementById("towerMessage").innerHTML = "May or may not be Cathedral Rock";
-    echoPingLocation = makeEchoPing(towerIcons[currentLessonSceneIndex].position.x, towerIcons[currentLessonSceneIndex].position.z);
+    sceneTransitionSprites[lessonsCompleted].userData.ping = true;
+    sceneTransitionSprites[lessonsCompleted].userData.popup = false;
+    document.getElementById("towerMessage").innerHTML = "May or may not be Black Mesa";
+    echoPingLocation = makeEchoPing(towerIcons[lessonsCompleted].position.x, towerIcons[lessonsCompleted].position.z);
     
     lessonLocation_cathedralRock_sprite.material.opacity = 1;
   }
-  else if(currentLessonSceneIndex == 4)
+  else if(lessonsCompleted == 4)
   {
-    sceneTransitionSprites[currentLessonSceneIndex].userData.ping = true;
-    sceneTransitionSprites[currentLessonSceneIndex].userData.popup = false;
+    sceneTransitionSprites[lessonsCompleted].userData.ping = true;
+    sceneTransitionSprites[lessonsCompleted].userData.popup = false;
     document.getElementById("towerMessage").innerHTML = "May or may not be Tuscon";
-    echoPingLocation = makeEchoPing(towerIcons[currentLessonSceneIndex].position.x, towerIcons[currentLessonSceneIndex].position.z);
+    echoPingLocation = makeEchoPing(towerIcons[lessonsCompleted].position.x, towerIcons[lessonsCompleted].position.z);
   
     lessonLocation_blackMesa_sprite.material.opacity = 1;
   }
@@ -3296,28 +3656,28 @@ function hoverObject() {
       {
         intersectObject.material.opacity = 0;
         
-        if(currentLessonSceneIndex == 1)
+        if(lessonsCompleted == 1)
         {
           lessonLocation_phoenix_sprite.material.opacity = 1;
           lessonLocation_horseshoe_sprite.material.opacity = 0.1;
           lessonLocation_cathedralRock_sprite.material.opacity = 0.1;
           lessonLocation_blackMesa_sprite.material.opacity = 0.1;
         }
-        else if(currentLessonSceneIndex == 2)
+        else if(lessonsCompleted == 2)
         {
           lessonLocation_phoenix_sprite.material.opacity = 1;
           lessonLocation_horseshoe_sprite.material.opacity = 1;
           lessonLocation_cathedralRock_sprite.material.opacity = 0.1;
           lessonLocation_blackMesa_sprite.material.opacity = 0.1;
         }
-        else if(currentLessonSceneIndex == 3)
+        else if(lessonsCompleted == 3)
         {
           lessonLocation_phoenix_sprite.material.opacity = 1;
           lessonLocation_horseshoe_sprite.material.opacity = 1;
           lessonLocation_cathedralRock_sprite.material.opacity = 1;
           lessonLocation_blackMesa_sprite.material.opacity = 0.1;
         }
-        else if(currentLessonSceneIndex == 4)
+        else if(lessonsCompleted == 4)
         {
           lessonLocation_phoenix_sprite.material.opacity = 1;
           lessonLocation_horseshoe_sprite.material.opacity = 1;
@@ -3515,7 +3875,7 @@ function hoverObject() {
       //console.log(intersects[0]);
       if (intersects.length > 0 && intersects[0].object.userData.name == "bug") 
       {
-        if (intersects[0].object != intersectObject && currentLessonSceneIndex != 4) 
+        if (intersects[0].object != intersectObject && lessonsCompleted != 4) 
         {
           intersectObject = intersects[0].object;
           intersected = true;
@@ -3631,10 +3991,6 @@ function subtitleChange()
       }
       
     }, 10000);
-    // if(currentLessonSceneIndex == 0)
-    // {
-
-    // }
   }
 
   if(walkieTalkie1.isPlaying)
@@ -3849,16 +4205,40 @@ function clickEvent() {
         {
           console.log(intersects[0].object.name);
       
-          if(locationFound && walkieTalkieView)
+          if(locationFound && walkieTalkieView && !transitioning)
           {
             if(intersects[0].object.name == "sprite_phoenix")
             {
               console.log("Clicked on phoenix");
+              updateLessonScene(0);
+              currentLessonSceneIndex = 0;
             }
-          }
-          
-        }
-        
+            else if(intersects[0].object.name == "sprite_horseshoe")
+            {
+              console.log("Clicked on horseshoe");
+              updateLessonScene(1);
+              currentLessonSceneIndex = 1;
+            }
+            else if(intersects[0].object.name == "sprite_cathedralRock")
+            {
+              console.log("Clicked on Cathedral");
+              updateLessonScene(2);
+              currentLessonSceneIndex = 2;
+            }
+            else if(intersects[0].object.name == "sprite_blackMesa")
+            {
+              console.log("Clicked on phoenix");
+              updateLessonScene(3);
+              currentLessonSceneIndex = 3;
+            }
+
+            transitionParams.transition = 1;
+            new TWEEN.Tween(transitionParams)
+            .to({ transition: 0 }, 2000)
+            .start(TransitionStart())
+            .onComplete(TransitionDone);
+          }  
+        }       
       }
     }
     //** MAP SCENE */ 
@@ -3902,7 +4282,28 @@ function clickEvent() {
           } else if (intersects[0].object.userData.ping) {
             clickPingLocation(intersects);
             cameraTweenTo(intersects, false, 0.1, true);
-            
+
+            if(intersects[0].object.name == 'phoenix')
+            {
+              currentLessonSceneIndex = 0;
+            }
+            else if(intersects[0].object.name == 'horseshoe')
+            {
+              currentLessonSceneIndex = 1;
+            }
+            else if(intersects[0].object.name == 'cathedralRock')
+            {
+              currentLessonSceneIndex = 2;
+            }
+            else if(intersects[0].object.name == 'blackMesa')
+            {
+              currentLessonSceneIndex = 3;
+            }
+            else if(intersects[0].object.name == 'tuscon')
+            {
+              currentLessonSceneIndex = 4;
+            }
+            console.log(intersects[0].object.name);
 
             //** USED TO TELL IF ANY LOCATION HAS BEEN REACHED */
             if(!locationFound)
@@ -3915,7 +4316,7 @@ function clickEvent() {
             clickOpenURL(intersects);
             cameraTweenTo(intersects, true);
           }
-    
+
           clickSound.play();
         }
       }
@@ -4087,7 +4488,6 @@ function playEchoAnimation(index, tween)
   {
     index = 5;
   }
-
   
   if(tween)
   {
@@ -4313,6 +4713,8 @@ function playEchoAnimation(index, tween)
         echoScaleTween.start();
       },1500);
     }
+
+    console.log("ECHO TWEENING!: " + currentLessonSceneIndex);
         
   }
 
@@ -4994,7 +5396,7 @@ function animate() {
 
   //console.log(renderer.info.render.calls);
 
-  // console.log("Current Lesson Index: " + currentLessonSceneIndex);
+  //console.log("Current Lesson Index: " + currentLessonSceneIndex);
   //console.log("Current Scene: " + currentSceneNumber);
   //console.log("HUB TRANSITION: " + hubTransitioning);
 
@@ -5072,12 +5474,7 @@ function TransitionDone() {
         tutorialReset();
       }
 
-      //** SET HUB OBJECTS TO OG POSITIONS */
-      hubCamera.position.set(0, 0, 0);
-      garminModel.position.set(-1.9, -0.28, -0.3);
-      garminHover = false;
-      walkieTalkieScreenModel.material.opacity = 0;
-      hubworldScreenClick = false;
+      resetHubWorld();
       
       controls.enabled = true;
       renderer.render(currentScene, currentCamera);
@@ -5110,6 +5507,7 @@ function TransitionDone() {
       console.log("LESSON TO HUB SCENE");
       controls.enabled = false;
       renderer.render(currentScene, currentCamera);
+      updateLessonScene();
 
       if(!mapButton.classList.contains("disabled"))
       {
@@ -5126,7 +5524,15 @@ function TransitionDone() {
   //**MAP TO LESSON**//
   else
   {
-    if (currentSceneNumber == 1) {
+    if (currentSceneNumber == 0) {
+      console.log("HUB TO LESSON SCENE?");
+      currentScene = lessonScene;
+      currentCamera = lessonCamera;
+      currentSceneNumber = 2;
+      resetHubWorld();
+      
+    }
+    else if (currentSceneNumber == 1) {
       currentScene = lessonScene;
       currentCamera = lessonCamera;
       currentSceneNumber = 2;
@@ -6068,17 +6474,18 @@ backButton.addEventListener("click", function (ev) {
     if (currentSceneNumber == 2) 
     {
       console.log("click back in index 2");
-      if(currentLessonSceneIndex == 4)
+      hubTransitioning = true;
+      transitionParams.transition = 1;
+      new TWEEN.Tween(transitionParams)
+        .to({ transition: 0 }, 2000)
+        // .delay( 2000 )
+        //.yoyo( true )
+        .start(TransitionStart())
+        .onComplete(TransitionDone);
+
+      if(document.getElementById("lessonContainer").classList.contains("active"))
       {
-        console.log("click back in lessonSceneIndex: 4");
-        hubTransitioning = true;
-        transitionParams.transition = 1;
-        new TWEEN.Tween(transitionParams)
-          .to({ transition: 0 }, 2000)
-          // .delay( 2000 )
-          //.yoyo( true )
-          .start(TransitionStart())
-          .onComplete(TransitionDone);
+        document.getElementById("lessonContainer").classList.toggle("active");
       }
     } 
     else if (currentSceneNumber == 1) 
