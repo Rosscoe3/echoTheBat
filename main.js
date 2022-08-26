@@ -16,6 +16,8 @@ import { ShaderPass } from 'https://cdn.skypack.dev/three@0.127.0/examples/jsm/p
 import { VignetteShader } from 'https://cdn.skypack.dev/three@0.127.0/examples/jsm/shaders/VignetteShader.js';
 import { PixelShader } from 'https://cdn.skypack.dev/three@0.127.0/examples/jsm/shaders/PixelShader.js'; 
 import { FXAAShader } from 'https://cdn.skypack.dev/three@0.127.0/examples/jsm/shaders/FXAAShader.js'; 
+import { GammaCorrectionShader } from 'https://cdn.skypack.dev/three@0.127.0/examples/jsm/shaders/GammaCorrectionShader.js';
+
 import * as dat from "dat.gui";
 import { mapLinear } from "https://cdn.jsdelivr.net/npm/three@0.139.0/src/math/MathUtils.js";
 import Stats from 'https://cdn.skypack.dev/stats.js';
@@ -121,8 +123,10 @@ filmPass.renderToScreen = true;
   //** VINGETTE */
 const shaderVignette = VignetteShader;
 const effectVignette = new ShaderPass(shaderVignette);
-effectVignette.uniforms[ 'offset' ].value = 1;
-effectVignette.uniforms[ 'darkness' ].value = .90;
+effectVignette.uniforms[ 'offset' ].value = 1.36;
+effectVignette.uniforms[ 'darkness' ].value = 1;
+//** GAMMA CORRECTION */
+const gammaCorrection = new ShaderPass( GammaCorrectionShader );
   //** PIXEL SHADER */
 const shaderPixel = PixelShader;
 const effectPixel = new ShaderPass(shaderPixel);
@@ -151,7 +155,7 @@ lessonComposer.addPass(effectPixel);
 
 mapComposer.addPass(new RenderPass(mapScene, mainCamera));
 mapComposer.addPass(effectVignette);
-//mapComposer.addPass(effectFXAA);
+mapComposer.addPass(gammaCorrection);
 
 hubComposer.addPass(new RenderPass(hubScene, hubCamera));
 //hubComposer.addPass(effectFXAA);
@@ -218,8 +222,8 @@ var bugFlyTween;
 var bugRotTween;
 var echoAnimFinal = false;
 const pingWrldPosTemp = new THREE.Vector3();
-var maxSpriteSize = 0.2;
-var minSpriteSize = 0.15;
+var maxSpriteSize = 0.4;
+var minSpriteSize = 0.2;
 var elem;
 var gameStarted = false;
 var tutorial = false;
@@ -654,10 +658,11 @@ let audioButton = document.getElementById("audioToggle");
 let xButton = document.getElementById("close-btn");
 let xButton2 = document.getElementById("close-btn2");
 let xButton3 = document.getElementById("close-btn3");
-let xButton4 = document.getElementById("mapPopupCloseBtn");
 let xButton5 = document.getElementById("creditsCloseBtn");
-let mapButton = document.getElementById("mapIcon");
-let mapPopup = document.getElementById("mapPopup");
+let miniMap = document.getElementById("miniMap");
+let mapMoveIcon = document.getElementById("mapImage");
+
+let toggleMapPopup = document.getElementById("toggleMapPopup");
 let hamburger = document.getElementById("dropdown");
 let roadButton = document.getElementById("roadBtn");
 let mosaicButton = document.getElementById("mosaicBtn");
@@ -824,7 +829,7 @@ function init() {
   //startButton.classList.toggle("active");
   startButton.classList.toggle("disabled");
   audioButton.classList.toggle("disabled");
-  mapButton.classList.toggle("disabled");
+  miniMap.classList.toggle("disabled");
   hamburger.classList.toggle("disabled");
   backButton.classList.toggle("disabled");
   bugIcon.classList.toggle("disabled");
@@ -833,7 +838,7 @@ function init() {
   bugIcon4.classList.toggle("disabled");
 
   mapScene.background = new THREE.Color(0xd4d2d2);
-  mapScene.fog = new THREE.Fog(0xd4d2d2, 0.015, 10);
+  // mapScene.fog = new THREE.Fog(0xd4d2d2, 0.015, 10);
 
   /** RENDERER & CAMERA SETUP */
   renderer.setPixelRatio(window.devicePixelRatio);
@@ -914,6 +919,7 @@ function init() {
 
   locationSpriteSetup();
   lessonSequenceSetup();
+  youAreHereUpdate();
 
   uiLocationSprites = [
     sprite_deathValley,
@@ -1447,24 +1453,26 @@ function init() {
       z: 0,
     }
   };
-  gui.add(guiWorld.xPos, "x", -4, 4).onChange(() => {
-    bugBlue.position.set(
-      guiWorld.xPos.x,
-      bugBlue.position.y,
-      bugBlue.position.z
-    );
-    //renderer.gammaFactor = guiWorld.xPos.x;
-    console.log(bugBlue.position);
-    //console.log(Echo.position);
+  gui.add(guiWorld.xPos, "x", 0, 2).onChange(() => {
+    // bugBlue.position.set(
+    //   guiWorld.xPos.x,
+    //   bugBlue.position.y,
+    //   bugBlue.position.z
+    // );
+
+    effectVignette.uniforms[ 'offset' ].value = guiWorld.xPos.x;
+    console.log(effectVignette.uniforms[ 'offset' ].value);
   });
 
   gui.add(guiWorld.xPos, "y", -4, 4).onChange(() => {
-    outlineBug.rotation.set(
-      outlineBug.rotation.x,
-      guiWorld.xPos.y,
-      outlineBug.rotation.z
-    );
-    console.log(outlineBug.rotation);
+    // outlineBug.rotation.set(
+    //   outlineBug.rotation.x,
+    //   guiWorld.xPos.y,
+    //   outlineBug.rotation.z
+    // );
+
+    effectVignette.uniforms[ 'darkness' ].value = guiWorld.xPos.y;
+    console.log(effectVignette.uniforms[ 'darkness' ].value);
     
   });
 
@@ -1484,7 +1492,7 @@ function init() {
   focusCube.scale.set(0.1, 0.1, 0.1);
   focusCube.visible = true;
   //Loads arizona Map
-  loader.load("/resources/models/ArizonaMap.glb", function (gltf) {
+  loader.load("/resources/models/arizona-map-5.glb", function (gltf) {
     //landsat = gltf.scene;
     arizona.userData.name = "Arizona";
     arizona.scale.setY(1);
@@ -1563,8 +1571,8 @@ function tutorialSequence()
   if(tutorialIndex == 0)
   {
     // tutorialHighlight.style = "top: 50%";
-    tutorialHighlight.style.top = "50%";
-    tutorialHighlight.style.left = "50%";
+    tutorialHighlight.style.width = '30vh';
+    tutorialHighlight.style.height = '20vh';
     //highlightText.innerHTML = "Click and drag to move around the map";
     mouseIcon.classList.toggle("init");
     
@@ -1582,8 +1590,8 @@ function tutorialSequence()
   }
   else if(tutorialIndex == 1)
   {
-    tutorialHighlight.style.top = "50%";
-    tutorialHighlight.style.left = "50%";
+    tutorialHighlight.style.width = '15vh';
+    tutorialHighlight.style.height = '15vh';
     //highlightText.innerHTML = "Look for Echo by clicking each map icon";
     //lessonSceneRaycast.add(glowSprite);
     mouseIcon.classList.toggle("active");
@@ -1626,9 +1634,10 @@ function tutorialSequence()
   }
   else if(tutorialIndex == 3)
   {
-    tutorialHighlight.style.top = "97.5%";
-    tutorialHighlight.style.left = "97.5%";
-    tutorialHighlight.style.opacity = "50%";
+    tutorialHighlight.style.bottom = "15.5vh";
+    tutorialHighlight.style.right = "15.5vh";
+    tutorialHighlight.style.width = '30vh';
+    tutorialHighlight.style.height = '30vh';
     lessonSceneRaycast.remove(glowSprite);
     //highlightText.innerHTML = "Use the map to get your bearings";
     
@@ -1653,7 +1662,6 @@ function tutorialSequence()
   {
     tutorialIndex = 0;
     tutorial = false;
-    tutorialHighlight.style.opacity = "0%";
     tutorialHighlight.classList.toggle("active");
     //highlightText.classList.toggle("active");
 
@@ -1673,9 +1681,8 @@ function tutorialSequence()
 
 function tutorialReset()
 {
-  tutorialHighlight.style.top = "50%";
-  tutorialHighlight.style.left = "50%";
-  tutorialHighlight.style.opacity = "50%";
+  tutorialHighlight.style.width = '30vh';
+  tutorialHighlight.style.height = '20vh';
   highlightText.innerHTML = "Click and drag to move around the map";
   
   if(walkieTalkie1.isPlaying)
@@ -5450,9 +5457,9 @@ function TransitionDone() {
       currentSceneNumber = 1;
       console.log("TRANSITIONED TO MAP SCENE");
 
-      if(mapButton.classList.contains("disabled"))
+      if(miniMap.classList.contains("disabled"))
       {
-        mapButton.classList.toggle("disabled");
+        miniMap.classList.toggle("disabled");
       }
       if(!backButton.classList.contains("active"))
       {
@@ -5489,9 +5496,9 @@ function TransitionDone() {
       controls.enabled = false;
       renderer.render(currentScene, currentCamera);
 
-      if(!mapButton.classList.contains("disabled"))
+      if(!miniMap.classList.contains("disabled"))
       {
-        mapButton.classList.toggle("disabled");
+        miniMap.classList.toggle("disabled");
       }
       if(backButton.classList.contains("active"))
       {
@@ -5509,9 +5516,9 @@ function TransitionDone() {
       renderer.render(currentScene, currentCamera);
       updateLessonScene();
 
-      if(!mapButton.classList.contains("disabled"))
+      if(!miniMap.classList.contains("disabled"))
       {
-        mapButton.classList.toggle("disabled");
+        miniMap.classList.toggle("disabled");
       }
       if(backButton.classList.contains("active"))
       {
@@ -5540,9 +5547,9 @@ function TransitionDone() {
       startLesson();
       subtitleChange();
 
-      if(!mapButton.classList.contains("disabled"))
+      if(!miniMap.classList.contains("disabled"))
       {
-        mapButton.classList.toggle("disabled");
+        miniMap.classList.toggle("disabled");
       }
       if(backButton.classList.contains("active"))
       {
@@ -5595,9 +5602,9 @@ function TransitionDone() {
       currentSceneNumber = 1;
       console.log("TRANSITIONED TO MAP SCENE");
 
-      if(mapButton.classList.contains("disabled"))
+      if(miniMap.classList.contains("disabled"))
       {
-        mapButton.classList.toggle("disabled");
+        miniMap.classList.toggle("disabled");
       }
       if(!backButton.classList.contains("active"))
       {
@@ -5652,7 +5659,7 @@ function pingLocationReached() {
 
   //Toggle UI When scene Transitions
   //hamburger.classList.toggle("disabled");
-  mapButton.classList.toggle("disabled");
+  miniMap.classList.toggle("disabled");
 
   transitionParams.transition = 0;
   new TWEEN.Tween(transitionParams)
@@ -5684,24 +5691,19 @@ function youAreHereUpdate() {
   var camX = mainCamera.position.x;
   var camZ = mainCamera.position.z;
   
-  //CAM BOUNDS 
-  // right: x: 7.1 
-  // left: -7.6
-  // top: z: -8.75
-  // bottom: 8.5
 
-  //HTML BOUNDS
-  // right: left:87%
-  // left: left:12%
-  // top: top:4%
-  // bottom: top:96%
+  var posX = mapLinear(camX, -7.27, 6.78, 39, -49);
+  var posZ = mapLinear(camZ, -8.49, 8.25, 35, -55);
 
-  var posX = mapLinear(camX, -7.32, 6.8, 15, 85);
-  var posZ = mapLinear(camZ, -8.52, 8.31, 7, 88);
+  // var posX = mapLinear(camX, -7.27, 6.78, 49, -37);
+  // var posZ = mapLinear(camZ, -8.49, 8.25, 45, -45);
+
+  mapMoveIcon.style.transform = "translate(" + posX + "%, " + posZ + "%)";
 
   //youAreHereIcon.style.top = posZ + "%";
   //youAreHereIcon.style.left = posX + "%";
 
+  console.log("You are here cam: " + camX + ", Z: " + camZ);
   console.log("You are here update X: " + posX + ", Y: " + posZ);
 }
 
@@ -5839,15 +5841,6 @@ function Transition(sceneA, sceneB) {
 
   material.uniforms.tDiffuse1.value = sceneA.fbo.texture;
   material.uniforms.tDiffuse2.value = sceneB.fbo.texture;
-
-  // //** TRANSITION TWEEN */
-  //** activated here will start the transition immediately.
-  // new TWEEN.Tween( transitionParams )
-  //   .to( { transition: 1 }, 2000 )
-  //   // .delay( 2000 )
-  //   //.yoyo( true )
-  //   .start(TransitionStart())
-  //   .onComplete(TransitionDone);
 
   this.needsTextureChange = false;
 
@@ -6292,7 +6285,7 @@ startButton.addEventListener("click", function (ev) {
     startButton.classList.toggle("active");
     audioButton.classList.toggle("disabled");
     hamburger.classList.toggle("disabled");
-    //mapButton.classList.toggle("disabled");
+    //miniMap.classList.toggle("disabled");
     bugIcon.classList.toggle("disabled");
     bugIcon2.classList.toggle("disabled");
     bugIcon3.classList.toggle("disabled");
@@ -6329,25 +6322,6 @@ xButton2.addEventListener("click", function (ev) {
   toggleTowerPopup();
   clickSound.play();
 });
-//** YOUTUBE POPUP X BUTTON*/
-// xButton3.addEventListener("click", function (ev) {
-//   //ev.stopPropagation(); // prevent event from bubbling up to .container
-//   ev.stopPropagation()
-//   toggleLessonPopup();
-//   clickSound.play();
-
-//   var iframe = document.getElementsByTagName("iframe")[0].contentWindow;
-//   iframe.postMessage('{"event":"command","func":"stopVideo","args":""}', "*");
-//   // ...do whatever you like
-// });
-//** MAP POPUP X BUTTON*/
-xButton4.addEventListener("click", function (ev) {
-  //ev.stopPropagation(); // prevent event from bubbling up to .container
-
-  document.getElementById("mapPopup").classList.toggle("active");
-  clickSound.play();
-  // ...do whatever you like
-});
 //** CREDITS POPUP X BUTTON*/
 xButton5.addEventListener("click", function (ev) {
   console.log("CLOSE");
@@ -6371,7 +6345,7 @@ tutClickImage.addEventListener('click', function(ev){
 });
 
 //** MAP BUTTON CLICK FUNCTIONALITY */
-mapButton.addEventListener('click', function(ev) {
+miniMap.addEventListener('click', function(ev) {
   ev.stopPropagation(); // prevent event from bubbling up to .container
 
   
@@ -6396,18 +6370,18 @@ mapButton.addEventListener('click', function(ev) {
       //cameraTweenTo(undefined, false, 12, false, true);
       
       //mapPopup.classList.toggle("acitve");
-      document.getElementById("mapPopup").classList.toggle("active");
+      document.getElementById("toggleMapPopup").classList.toggle("active");
     }
 
-    if(tutorial)
-    {
-      if(tutorialIndex == 3)
-      {
-        tutorialSequence();
-      }
-    }
+    // if(tutorial)
+    // {
+    //   if(tutorialIndex == 3)
+    //   {
+    //     tutorialSequence();
+    //   }
+    // }
 
-    youAreHereUpdate();
+    //youAreHereUpdate();
   }
   
   clickSound.play();
@@ -6425,6 +6399,9 @@ roadButton.addEventListener('click', function(ev) {
     else if(currentSceneNumber == 1)
     {
       document.getElementById("mapImage").src = "resources/images/arizona-road.png";
+      mosaicButton.style.borderColor = "rgb(200, 200, 200)";
+      geographyButton.style.borderColor = "rgb(200, 200, 200)";
+      roadButton.style.borderColor = "rgb(0, 0, 0)";
     }
   }
 
@@ -6443,6 +6420,9 @@ mosaicButton.addEventListener('click', function(ev) {
     else if(currentSceneNumber == 1)
     {
       document.getElementById("mapImage").src = "resources/images/arizona-mosaic.jpg";
+      mosaicButton.style.borderColor = "rgb(0, 0, 0)";
+      geographyButton.style.borderColor = "rgb(200, 200, 200)";
+      roadButton.style.borderColor = "rgb(200, 200, 200)";
     }
   }
 
@@ -6461,6 +6441,9 @@ geographyButton.addEventListener('click', function(ev) {
     else if(currentSceneNumber == 1)
     {
       document.getElementById("mapImage").src = "resources/images/arizona-geography.jpg";
+      mosaicButton.style.borderColor = "rgb(200, 200, 200)";
+      geographyButton.style.borderColor = "rgb(0, 0, 0)";
+      roadButton.style.borderColor = "rgb(200, 200, 200)";
     }
   }
 
@@ -6789,7 +6772,7 @@ lessonDoneBtn.addEventListener("click", function (ev) {
 
       //backButton.classList.toggle("active");
       //backButton.classList.toggle("disabled");
-      mapButton.classList.toggle("disabled");
+      miniMap.classList.toggle("disabled");
 
       console.log("MAP ICON SCENE: " + currentSceneNumber);
     } else if (currentSceneNumber == 1) {
@@ -6797,6 +6780,51 @@ lessonDoneBtn.addEventListener("click", function (ev) {
   }
 
   clickSound.play();
+});
+
+//** MAP POPUP CONTAINER */
+miniMap.addEventListener("mouseover", function (ev) {
+  //ev.stopPropagation(); // prevent event from bubbling up to .container
+  ev.stopPropagation();
+  console.log("HOVER MAP MINIMAP");
+
+  if(!transitioning && !isTweening)
+  {
+    if(tutorial)
+    {
+      if(tutorialIndex == 3)
+      {
+        tutorialSequence();
+      }
+    }
+
+  }
+  if(!document.getElementById("toggleMapPopup").classList.contains("active"))
+  {
+    document.getElementById("toggleMapPopup").classList.toggle("active");
+  } 
+});
+
+// miniMap.addEventListener("mouseleave", function (ev) {
+//   //ev.stopPropagation(); // prevent event from bubbling up to .container
+//   ev.stopPropagation();
+//   console.log("HOVER TOGGLE MAP");
+
+//   if(document.getElementById("toggleMapPopup").classList.contains("active"))
+//   {
+//     document.getElementById("toggleMapPopup").classList.toggle("active");
+//   }
+// });
+
+toggleMapPopup.addEventListener("mouseleave", function (ev) {
+  //ev.stopPropagation(); // prevent event from bubbling up to .container
+  ev.stopPropagation();
+  console.log("HOVER TOGGLE MAP");
+
+  if(document.getElementById("toggleMapPopup").classList.contains("active"))
+  {
+    document.getElementById("toggleMapPopup").classList.toggle("active");
+  }
 });
 
 //**EVENT TO CHANGE MOUSE CURSOR TO 'GRABBING'**//
@@ -6828,6 +6856,8 @@ controls.addEventListener( 'end', function ( event ) {
         tutorialSequence();
       }
     }
+
+    youAreHereUpdate();
   }
 } );
 

@@ -1013,32 +1013,37 @@ body {
 /** bottom image recenters map **/
 .bottom-image {
   position: absolute;
-  bottom: 1.5vh;
+  bottom: 2.5vh;
   right: 2.5vh;
-  height: 7vh;
-  width: 7vh;
+  height: 25vh;
+  width: 25vh;
   opacity: 100%;
+  border-radius: 5%;
+  overflow: hidden;
 
-  background-image: url("/resources/images/map-icon-white.png");
+  /* background-image: url("/resources/images/map-icon-white.png"); */
   /* background-color: rgb(119, 0, 255); */
   background-repeat: no-repeat;
-  /* mix-blend-mode: saturation; */
   background-size: 100%;
+  background-color: white;
 
-  transition: opacity .25s ease-in-out;
-   -moz-transition: opacity .25s ease-in-out;
-   -webkit-transition: opacity .25s ease-in-out;
-  /* background-color: crimson; */
+  transition: all .5 ease-in-out;
+   -moz-transition: all .5s ease-in-out;
+   -webkit-transition: all .5s ease-in-out;
+   
+   border-style: solid;
+   border-color: rgb(200, 200, 200);
+   border-width: 2%;
 }
 .bottom-image:hover {
-  opacity: 0.5;
+  opacity: 1000%;
   cursor: pointer;
   transition: opacity .25s ease-in-out;
    -moz-transition: opacity .25s ease-in-out;
    -webkit-transition: opacity .25s ease-in-out;
 }
 bottom-image:hover > .hover {
-  opacity: 0.4;
+  opacity: 50%;
 }
 .bottom-image.disabled {
   pointer-events: none;
@@ -1047,6 +1052,15 @@ bottom-image:hover > .hover {
   transition: opacity .25s ease-in-out;
    -moz-transition: opacity .25s ease-in-out;
    -webkit-transition: opacity .25s ease-in-out;
+}
+.bottom-image img{
+  height: 125%;
+  top: 50%;
+  left: 50%;
+  opacity: 1;
+  transform: translate(0%, 0%);
+  transition: all 0.25s;
+  mix-blend-mode: multiply;
 }
 
 /* YOUTUBE PLAYER CONTAINER */
@@ -1161,27 +1175,43 @@ bottom-image:hover > .hover {
 /* TUTORIAL */
 .highlight{
   position: absolute;
+  pointer-events: none;
+  --b: 5px;   /* thickness of the border */
+  --c: white;   /* color of the border */
+  --w: 20px;  /* width of border */
   
+
+  border: var(--b) solid #0000; /* space for the border */
+  --_g: #0000 90deg,var(--c) 0;
+  --_p: var(--w) var(--w) border-box no-repeat;
+  background:
+    conic-gradient(from 90deg  at top    var(--b) left  var(--b),var(--_g)) 0    0    / var(--_p),
+    conic-gradient(from 180deg at top    var(--b) right var(--b),var(--_g)) 100% 0    / var(--_p),
+    conic-gradient(from 0deg   at bottom var(--b) left  var(--b),var(--_g)) 0    100% / var(--_p),
+    conic-gradient(from -90deg at bottom var(--b) right var(--b),var(--_g)) 100% 100% / var(--_p);
+  
+  /*Irrelevant code*/  
+  width:10vh;
+  height:10vh;
+  box-sizing:border-box;
+  display:inline-flex;
+  font-size:30px;
+  justify-content:center;
+  align-items:center;
+  text-align:center;
   opacity: 0%;
 
-  height: 0vh;
-  width: 0vh;
-  left: 2.5vw;
-  top: 2.5vw;
-  box-shadow: 
-    0 0 60px 30px #fff,  /* inner white */
-    0 0 100px 60px rgb(255, 217, 0), /* middle magenta */
-    0 0 140px 90px rgb(255, 196, 0); /* outer cyan */
-  
-  transition: opacity .25s ease-in-out;
-  -moz-transition: opacity .25s ease-in-out;
-  -webkit-transition: opacity .25s ease-in-out;  
+  bottom: 50%;
+  right: 50%;
+  transform: translate(50%, 50%); 
+
+  transition: all .5s;
 }
 .highlight.active{
-  opacity: 50%;
-  transition: opacity .25s ease-in-out;
-   -moz-transition: opacity .25s ease-in-out;
-   -webkit-transition: opacity .25s ease-in-out;
+  opacity: 100%;
+  transition: all .25s ease-in-out;
+   -moz-transition: all .25s ease-in-out;
+   -webkit-transition: all .25s ease-in-out;
 }
 .highlightText{
   position: absolute;
@@ -1313,8 +1343,8 @@ bottom-image:hover > .hover {
 .tutClickImage{
   position: absolute;
   cursor: pointer;
-  top:50%;
-  left: 50%;
+  bottom:50%;
+  right: 50%;
   opacity: 0%;
   width: 10vh;
   height: 10vh;
@@ -1322,7 +1352,7 @@ bottom-image:hover > .hover {
   color: white;
   /* background-color: white; */
 
-  transform: translate(-50%, -50%) scale(0);
+  transform: translate(50%, 50%) scale(0);
 
   background-image: url("/resources/images/location/horseshoeBend.jpg");
   background-size: contain;
@@ -1334,7 +1364,7 @@ bottom-image:hover > .hover {
    -webkit-transition: all .25s ease-in-out;
 }
 .tutClickImage.active:hover{
-  transform: translate(-50%, -50%) scale(1.5);
+  transform: translate(50%, 50%) scale(1.5);
   opacity: 50%;
 
   transition: all .25s ease-in-out;
@@ -1343,7 +1373,7 @@ bottom-image:hover > .hover {
 }
 .tutClickImage.active{
   opacity: 100%;
-  transform: translate(-50%, -50%) scale(1);
+  transform: translate(50%, 50%) scale(1);
   transition: all .25s ease-in-out;
    -moz-transition: all .25s ease-in-out;
    -webkit-transition: all .25s ease-in-out;
@@ -1531,64 +1561,55 @@ button {
    -webkit-transition: opacity .25s ease-in-out;
 }
 
+.relative-wrap{
+  position: relative;
+}
+
 .mapChangePopup{
   position: absolute;
 
-  top: 50%;
-  left: 50%;
-  max-width: 80vh;
-  max-height: 80vh;
+  bottom: 2.5vh;
+  right: 30vh;
+  width: fit-content;
+  height: 8vh;
   padding: 20px;
   gap: 10px;
+
   border-radius: 10px;
   opacity: 0%;
 
-  pointer-events: block;
+  pointer-events: none;
 
-  display: grid;
-  grid-template-areas: 
-  "img img img"
-  ". . ." ;
-  grid-template-rows: 95% 5%;
-  /* justify-content: center; */
-
-  text-align: center;
-
+  display: flex;
   background-color: white;
-
-  transform: translate(-50%, -50%) scale(0);
 
   transition: all 500ms ease-in-out;
 }
-.mapChangePopup .mapContainer{
-  grid-area: img;
-}
-.mapChangePopup .mapContainer .youAreHere{
-  position: absolute;
-  
-  top: 88%;
-  left: 75%;
-
-  width: 0.5vh;
-  height: 0.5vh;
-
-  background-color: red;
-
-  font-family: roboto-condensed, sans-serif;
-  font-style: italic;
-  font-size: 2.5vw;
-}
-.mapChangePopup .mapContainer img{
+.mapChangePopup img{
 
   object-fit: contain;
   height: 100%;
   width: 100%;
   max-width: 100%;
 
-  /* background-color: black; */
+  background-size: cover;
+  background-position: center;
+  opacity: 100%;
 
-  background-size: cover; /* <-- background size */
-  background-position: center; /* <-- background position */
+  border-style: solid;
+  border-color: rgb(200, 200, 200);
+  border-radius: 10%;
+
+  transition: all 0.5s;
+}
+.mapChangePopup img:hover{
+  opacity: 50%;
+  transition: all 0.5s;
+}
+
+.mapChangePopup img.active{
+  border-color: rgb(0, 0, 0);
+  transition: all 0.5s;
 }
 
 .youAreHere{
@@ -1599,9 +1620,10 @@ button {
   top: 50%;
   left: 50%;
 
-  width: 1vh;
-  height: 1vh;
+  width: 1%;
+  height: 1%;
 
+  border-radius: 50%;
   background-color: red;
 }
 
@@ -1638,7 +1660,7 @@ button {
 
 .mapChangePopup.active{
   transition: all 500ms ease-in-out;
-  transform: translate(-50%, -50%) scale(1);
+  pointer-events: auto;
   /* transform: translate(-50%, -50%) scale(1); */
   opacity: 100%;
 }

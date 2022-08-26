@@ -74,18 +74,20 @@
       </div>
     </div>
 
-    <!-- MAP INTERACTIVE UI -->
-    <div class="mapChangePopup" id = "mapPopup">
-      <div class="close-btn" style="top: 1%; right: 1%;" id ="mapPopupCloseBtn">&times;</div>
-      <!-- <img src ="resources/images/arizona-geography.png" id = "mapImage"> -->
-      <div class="mapContainer">
-        <!-- <div class="youAreHere" id="youAreHere">You Are Here</div> -->
-        <img src ="resources/images/arizona-geography.jpg" id = "mapImage">
-      </div>
-      <div class="button" id ="mosaicBtn">MOSAIC</div>
-      <div class="button" id ="roadBtn">ROAD</div>
-      <div class="button" id ="geographyBtn">GEOGRAPHY</div>
+    <div class="bottom-image" id = "miniMap">
+      <img src="resources/images/arizona-geography.jpg" id = "mapImage">
+      <div class="youAreHere" id="youAreHere"></div>
     </div>
+    <div class="mapChangePopup" id = "toggleMapPopup">
+      <!-- <img src ="resources/images/arizona-geography.png" id = "mapImage"> -->
+      <img src ="resources/images/arizona-mosaic.jpg" id = "mosaicBtn">
+      <img src ="resources/images/arizona-road.png" id = "roadBtn">
+      <img src ="resources/images/arizona-geography.jpg" id = "geographyBtn" style = "border-color: rgb(0, 0, 0);">
+    </div>
+
+
+    <!-- MAP INTERACTIVE UI -->
+  
     <div class="popup" id="popup-1">
       <div class="overlay" ></div>
       <div class="content">
@@ -189,7 +191,6 @@
         </div>
       </div>
     </div> -->
-    <!-- <div class="youAreHere"></div> -->
 
     <!-- MAP SCREEN UI -->
     <div class="audio-toggle" id = "audioToggle"></div>
@@ -199,7 +200,6 @@
       <div class="bugIcon" id = "bugIcon3"></div>
       <div class="bugIcon" id = "bugIcon4"></div>
     </div>
-    <div class="bottom-image" id = "mapIcon"></div>
     <div class="creditsContainer" id ="creditsContainer">
       <div class="close-btn" id ="creditsCloseBtn">&times;</div>
       <p>Interactive and Story based on the original Echo The Bat book by Ginger Butcher</p>
