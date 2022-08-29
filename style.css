@@ -1011,41 +1011,44 @@ body {
 }
 
 /** bottom image recenters map **/
-.bottom-image {
+.miniMap {
   position: absolute;
   bottom: 2.5vh;
   right: 2.5vh;
   height: 25vh;
-  width: 25vh;
+  width: fit-content;
   opacity: 100%;
   border-radius: 5%;
-  overflow: hidden;
+  pointer-events: auto;
 
-  /* background-image: url("/resources/images/map-icon-white.png"); */
-  /* background-color: rgb(119, 0, 255); */
+  transform: translate(0%, 0%);
+  /* overflow: hidden; */
+
+  aspect-ratio: 9 / 10;
+
+  background-color: rgb(0, 0, 0, 0.25);
   background-repeat: no-repeat;
   background-size: 100%;
-  background-color: white;
 
   transition: all .5 ease-in-out;
    -moz-transition: all .5s ease-in-out;
    -webkit-transition: all .5s ease-in-out;
    
    border-style: solid;
-   border-color: rgb(200, 200, 200);
+   border-color: rgb(255, 255, 255);
    border-width: 2%;
 }
-.bottom-image:hover {
-  opacity: 1000%;
+.miniMap:hover {
+  border-color: rgb(200, 200, 200);
   cursor: pointer;
   transition: opacity .25s ease-in-out;
    -moz-transition: opacity .25s ease-in-out;
    -webkit-transition: opacity .25s ease-in-out;
 }
-bottom-image:hover > .hover {
+miniMap:hover > .hover {
   opacity: 50%;
 }
-.bottom-image.disabled {
+.miniMap.disabled {
   pointer-events: none;
   opacity: 0.0;
   /* mix-blend-mode: exclusion; */
@@ -1053,14 +1056,55 @@ bottom-image:hover > .hover {
    -moz-transition: opacity .25s ease-in-out;
    -webkit-transition: opacity .25s ease-in-out;
 }
-.bottom-image img{
-  height: 125%;
-  top: 50%;
-  left: 50%;
+.miniMap.open {
+  height: 75%;
+
+  bottom: 52.5%;
+  right: 50%;
+  transform: translate(50%, 50%);
+
+  width: fit-content;
+  aspect-ratio: 9 / 10;
+  transition: all .5s ease-in-out;
+   -moz-transition: all .5s ease-in-out;
+   -webkit-transition: all .5s ease-in-out;
+}
+
+.miniMap .close-btn{
+  opacity: 0%;
+}
+
+.miniMap.open .close-btn{
+  opacity: 100%;
+  cursor: pointer;
+  position: absolute;
+  right: 20px;
+  top: 20px;
+  width: 30px;
+  height: 30px;
+  background: #222;
+  color: #fff;
+  font-size: 25px;
+  font-weight: 600;
+  line-height: 30px;
+  text-align: center;
+  border-radius: 50%;
+  overflow: hidden;
+
+  transition: all .5s ease-in-out;
+   -moz-transition: all .5s ease-in-out;
+   -webkit-transition: all .5s ease-in-out;
+}
+
+.miniMap img{
+  position: absolute;
+  
+  height: 100%;
+  top: 0%;
+  left: 0%;
   opacity: 1;
   transform: translate(0%, 0%);
   transition: all 0.25s;
-  mix-blend-mode: multiply;
 }
 
 /* YOUTUBE PLAYER CONTAINER */
@@ -1565,11 +1609,11 @@ button {
   position: relative;
 }
 
-.mapChangePopup{
+.mapToggle{
   position: absolute;
 
   bottom: 2.5vh;
-  right: 30vh;
+  right: 27.5vh;
   width: fit-content;
   height: 8vh;
   padding: 20px;
@@ -1581,11 +1625,15 @@ button {
   pointer-events: none;
 
   display: flex;
-  background-color: white;
+  background-color: rgba(0, 0, 0, 0.25);
+
+  border-style: dashed;
+  border-color: rgb(255, 255, 255);
+  border-width: 2%;
 
   transition: all 500ms ease-in-out;
 }
-.mapChangePopup img{
+.mapToggle img{
 
   object-fit: contain;
   height: 100%;
@@ -1597,17 +1645,16 @@ button {
   opacity: 100%;
 
   border-style: solid;
-  border-color: rgb(200, 200, 200);
+  border-color: rgba(255, 255, 255, .25);
   border-radius: 10%;
 
   transition: all 0.5s;
 }
-.mapChangePopup img:hover{
+.mapToggle img:hover{
   opacity: 50%;
   transition: all 0.5s;
 }
-
-.mapChangePopup img.active{
+.mapToggle img.active{
   border-color: rgb(0, 0, 0);
   transition: all 0.5s;
 }
@@ -1615,20 +1662,29 @@ button {
 .youAreHere{
   position: absolute;
 
+  background-image: url("/resources/images/star.png");
+  background-repeat: no-repeat;
+  background-size: 100%;
+
   transform: translate(-50%, -50%);
   
-  top: 50%;
-  left: 50%;
+  top: 95%;
+  left: 85%;
 
-  width: 1%;
-  height: 1%;
+  width: 5%;
+  aspect-ratio: 1/1;
 
-  border-radius: 50%;
-  background-color: red;
+  /* border-radius: 50%;
+  background-color: black;
+  border-style: solid;
+  border-color: white;
+  border-width: 2%; */
+
+  transition: all 0.2s;
 }
 
 
-.mapChangePopup .button{
+.mapToggle .button{
   width: 100%;
   height: fit-content;
 
@@ -1651,34 +1707,18 @@ button {
   transition-duration: 0.4s;
 }
 
-.mapChangePopup .button:hover{
+.mapToggle .button:hover{
   background-color: #cecece; /* Green */
   color: black;
 
   transition-duration: 0.4s;
 }
 
-.mapChangePopup.active{
+.mapToggle.active{
   transition: all 500ms ease-in-out;
   pointer-events: auto;
   /* transform: translate(-50%, -50%) scale(1); */
   opacity: 100%;
-}
-
-.mapChangePopup .close-btn{
-  cursor: pointer;
-  position: absolute;
-  right: 20px;
-  top: 20px;
-  width: 30px;
-  height: 30px;
-  background: #222;
-  color: #fff;
-  font-size: 25px;
-  font-weight: 600;
-  line-height: 30px;
-  text-align: center;
-  border-radius: 50%;
 }
 
 

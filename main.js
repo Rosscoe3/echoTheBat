@@ -199,6 +199,7 @@ let points;
 let togglePopupOpen = false;
 let toggleTowerPopupOpen = false;
 let toggleLessonPopupOpen = false;
+let hoverMapToggle = false;
 let cameraPos = new THREE.Vector3(0, 5, 0);
 let transition, transition2;
 let transitioning = false;
@@ -661,6 +662,7 @@ let xButton3 = document.getElementById("close-btn3");
 let xButton5 = document.getElementById("creditsCloseBtn");
 let miniMap = document.getElementById("miniMap");
 let mapMoveIcon = document.getElementById("mapImage");
+let youAreHere = document.getElementById("youAreHere");
 
 let toggleMapPopup = document.getElementById("toggleMapPopup");
 let hamburger = document.getElementById("dropdown");
@@ -1967,7 +1969,7 @@ function initLessonScene() {
   outlineBug.position.set(-2.41, -1.01, 1.48);
   outlineBug.scale.set(.5, .5, .5);
 
-  loader.load("/resources/models/echo-7.glb", function (gltf) 
+  loader.load("/resources/models/echo-tan.glb", function (gltf) 
   {
     gltf.animations; // Array<THREE.AnimationClip>
     gltf.scene; // THREE.Group
@@ -2597,7 +2599,7 @@ function lessonSequenceSetup()
 function makeEchoPing(x, z) {
   //****PING LOCATION SPRITE */
   var pingLocationTexture = new THREE.TextureLoader().load(
-    "/resources/sprites/LocationPing-sheet-4x7.png"
+    "/resources/sprites/LocationPing-sheet-4x7-white.png"
   );
   var pingLocationSprite = new TextureAnimator(
     pingLocationTexture,
@@ -5692,16 +5694,16 @@ function youAreHereUpdate() {
   var camZ = mainCamera.position.z;
   
 
-  var posX = mapLinear(camX, -7.27, 6.78, 39, -49);
-  var posZ = mapLinear(camZ, -8.49, 8.25, 35, -55);
+  var posX = mapLinear(camX, -7.27, 6.78, 7, 93);
+  var posZ = mapLinear(camZ, -8.49, 8.25, 5, 95);
 
   // var posX = mapLinear(camX, -7.27, 6.78, 49, -37);
   // var posZ = mapLinear(camZ, -8.49, 8.25, 45, -45);
 
-  mapMoveIcon.style.transform = "translate(" + posX + "%, " + posZ + "%)";
+  //mapMoveIcon.style.transform = "translate(" + posX + "%, " + posZ + "%)";
 
-  //youAreHereIcon.style.top = posZ + "%";
-  //youAreHereIcon.style.left = posX + "%";
+  youAreHereIcon.style.top = posZ + "%";
+  youAreHereIcon.style.left = posX + "%";
 
   console.log("You are here cam: " + camX + ", Z: " + camZ);
   console.log("You are here update X: " + posX + ", Y: " + posZ);
@@ -6351,37 +6353,42 @@ miniMap.addEventListener('click', function(ev) {
   
   if(!transitioning && !isTweening)
   {
-    if(currentSceneNumber == 2)
+    if(tutorial)
     {
-      // new TWEEN.Tween( transitionParams )
-      // .to( { transition: 0 }, 2000 )
-      // // .delay( 2000 )
-      // //.yoyo( true )
-      // .start(TransitionStart())
-      // .onComplete(TransitionDone);
-      // updateLinePath();
-      
-      // console.log("MAP ICON SCENE: " + currentSceneNumber);
+      if(tutorialIndex == 3)
+      {
+        tutorialSequence();
+        miniMap.classList.toggle("open");
+        if(document.getElementById("toggleMapPopup").classList.contains("active"))
+        {
+          document.getElementById("toggleMapPopup").classList.toggle("active");
+        }
+      }
     }
-    else if(currentSceneNumber == 1)
+    else
     {
-      //console.log("MAP ICON SCENE: " + currentSceneNumber);
-      //controls.maxDistance = 12;
-      //cameraTweenTo(undefined, false, 12, false, true);
-      
-      //mapPopup.classList.toggle("acitve");
-      document.getElementById("toggleMapPopup").classList.toggle("active");
+      if(currentSceneNumber == 2)
+      {
+        // new TWEEN.Tween( transitionParams )
+        // .to( { transition: 0 }, 2000 )
+        // // .delay( 2000 )
+        // //.yoyo( true )
+        // .start(TransitionStart())
+        // .onComplete(TransitionDone);
+        // updateLinePath();
+        
+        // console.log("MAP ICON SCENE: " + currentSceneNumber);
+      }
+      else if(currentSceneNumber == 1)
+      {
+        miniMap.classList.toggle("open");
+        if(document.getElementById("toggleMapPopup").classList.contains("active"))
+        {
+          document.getElementById("toggleMapPopup").classList.toggle("active");
+        }
+      }
     }
-
-    // if(tutorial)
-    // {
-    //   if(tutorialIndex == 3)
-    //   {
-    //     tutorialSequence();
-    //   }
-    // }
-
-    //youAreHereUpdate();
+    
   }
   
   clickSound.play();
@@ -6399,9 +6406,9 @@ roadButton.addEventListener('click', function(ev) {
     else if(currentSceneNumber == 1)
     {
       document.getElementById("mapImage").src = "resources/images/arizona-road.png";
-      mosaicButton.style.borderColor = "rgb(200, 200, 200)";
-      geographyButton.style.borderColor = "rgb(200, 200, 200)";
-      roadButton.style.borderColor = "rgb(0, 0, 0)";
+      mosaicButton.style.borderColor = "rgba(255, 255, 255, 0.25)";
+      geographyButton.style.borderColor = "rgba(255, 255, 255, 0.25)";
+      roadButton.style.borderColor = "rgba(255, 0, 0, 0.5)";
     }
   }
 
@@ -6419,10 +6426,10 @@ mosaicButton.addEventListener('click', function(ev) {
     }
     else if(currentSceneNumber == 1)
     {
-      document.getElementById("mapImage").src = "resources/images/arizona-mosaic.jpg";
-      mosaicButton.style.borderColor = "rgb(0, 0, 0)";
-      geographyButton.style.borderColor = "rgb(200, 200, 200)";
-      roadButton.style.borderColor = "rgb(200, 200, 200)";
+      document.getElementById("mapImage").src = "resources/images/arizona-mosaic.png";
+      mosaicButton.style.borderColor = "rgba(255, 0, 0, 0.5)";
+      geographyButton.style.borderColor = "rgba(255, 255, 255, 0.25)";
+      roadButton.style.borderColor = "rgba(255, 255, 255, 0.25)";
     }
   }
 
@@ -6440,10 +6447,10 @@ geographyButton.addEventListener('click', function(ev) {
     }
     else if(currentSceneNumber == 1)
     {
-      document.getElementById("mapImage").src = "resources/images/arizona-geography.jpg";
-      mosaicButton.style.borderColor = "rgb(200, 200, 200)";
-      geographyButton.style.borderColor = "rgb(0, 0, 0)";
-      roadButton.style.borderColor = "rgb(200, 200, 200)";
+      document.getElementById("mapImage").src = "resources/images/arizona-geography.png";
+      mosaicButton.style.borderColor = "rgba(255, 255, 255, 0.25)";
+      geographyButton.style.borderColor = "rgba(255, 0, 0, 0.5)";
+      roadButton.style.borderColor = "rgba(255, 255, 255, 0.25)";
     }
   }
 
@@ -6772,7 +6779,7 @@ lessonDoneBtn.addEventListener("click", function (ev) {
 
       //backButton.classList.toggle("active");
       //backButton.classList.toggle("disabled");
-      miniMap.classList.toggle("disabled");
+      //miniMap.classList.toggle("disabled");
 
       console.log("MAP ICON SCENE: " + currentSceneNumber);
     } else if (currentSceneNumber == 1) {
@@ -6782,11 +6789,9 @@ lessonDoneBtn.addEventListener("click", function (ev) {
   clickSound.play();
 });
 
-//** MAP POPUP CONTAINER */
+//** MINI MAP FUNCTIONALITY **//
 miniMap.addEventListener("mouseover", function (ev) {
-  //ev.stopPropagation(); // prevent event from bubbling up to .container
   ev.stopPropagation();
-  console.log("HOVER MAP MINIMAP");
 
   if(!transitioning && !isTweening)
   {
@@ -6794,37 +6799,61 @@ miniMap.addEventListener("mouseover", function (ev) {
     {
       if(tutorialIndex == 3)
       {
-        tutorialSequence();
+        //tutorialSequence();
+        if(!document.getElementById("toggleMapPopup").classList.contains("active"))
+        {
+          document.getElementById("toggleMapPopup").classList.toggle("active");
+        }
       }
+    }
+    else
+    {
+      if(!document.getElementById("miniMap").classList.contains("open"))
+      {
+        if(!document.getElementById("toggleMapPopup").classList.contains("active"))
+        {
+          document.getElementById("toggleMapPopup").classList.toggle("active");
+        }
+      }
+      
     }
 
   }
-  if(!document.getElementById("toggleMapPopup").classList.contains("active"))
+
+});
+miniMap.addEventListener("mouseleave", function (ev) {
+  ev.stopPropagation();
+
+  setTimeout(function() 
   {
-    document.getElementById("toggleMapPopup").classList.toggle("active");
-  } 
+    if(!hoverMapToggle)
+    {
+      if(document.getElementById("toggleMapPopup").classList.contains("active"))
+      {
+        document.getElementById("toggleMapPopup").classList.toggle("active");
+      }
+    }
+  }, 250);
+
 });
 
-// miniMap.addEventListener("mouseleave", function (ev) {
-//   //ev.stopPropagation(); // prevent event from bubbling up to .container
-//   ev.stopPropagation();
-//   console.log("HOVER TOGGLE MAP");
+toggleMapPopup.addEventListener("mouseover", function (ev) {
+  ev.stopPropagation();
 
-//   if(document.getElementById("toggleMapPopup").classList.contains("active"))
-//   {
-//     document.getElementById("toggleMapPopup").classList.toggle("active");
-//   }
-// });
-
+  if(!transitioning && !isTweening)
+  {
+    hoverMapToggle = true;
+  }
+});
 toggleMapPopup.addEventListener("mouseleave", function (ev) {
   //ev.stopPropagation(); // prevent event from bubbling up to .container
   ev.stopPropagation();
-  console.log("HOVER TOGGLE MAP");
 
   if(document.getElementById("toggleMapPopup").classList.contains("active"))
   {
     document.getElementById("toggleMapPopup").classList.toggle("active");
   }
+  hoverMapToggle = false;
 });
 
 //**EVENT TO CHANGE MOUSE CURSOR TO 'GRABBING'**//
