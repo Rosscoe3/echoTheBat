@@ -223,7 +223,7 @@ var bugFlyTween;
 var bugRotTween;
 var echoAnimFinal = false;
 const pingWrldPosTemp = new THREE.Vector3();
-var maxSpriteSize = 0.4;
+var maxSpriteSize = 0.3;
 var minSpriteSize = 0.2;
 var elem;
 var gameStarted = false;
@@ -450,7 +450,7 @@ const fatmansLoopTexture = new THREE.TextureLoader(manager).load(
   "/resources/images/location/fatmansLoop.jpg"
 );
 const horseshoeBendTexture = new THREE.TextureLoader(manager).load(
-  "/resources/images/location/horseshoeBend.jpg"
+  "/resources/images/location/horseshoeBend-2.jpg"
 );
 const micaViewTrailTexture = new THREE.TextureLoader(manager).load(
   "/resources/images/location/micaViewTrail.jpg"
@@ -659,8 +659,11 @@ let audioButton = document.getElementById("audioToggle");
 let xButton = document.getElementById("close-btn");
 let xButton2 = document.getElementById("close-btn2");
 let xButton3 = document.getElementById("close-btn3");
+let xButton4 = document.getElementById("close-btn4");
 let xButton5 = document.getElementById("creditsCloseBtn");
 let miniMap = document.getElementById("miniMap");
+let mapPopup = document.getElementById("mapPopup");
+
 let mapMoveIcon = document.getElementById("mapImage");
 let youAreHere = document.getElementById("youAreHere");
 
@@ -686,6 +689,7 @@ let creditsButton = document.getElementById("creditsButton");
 let creditsContainer = document.getElementById("creditsContainer");
 
 let youAreHereIcon = document.getElementById("youAreHere");
+let youAreHereIconPopup = document.getElementById("youAreHere2");
 
 let lessonButton_right = document.getElementById("talkie-button-right");
 let lessonButton_left = document.getElementById("talkie-button-left");
@@ -1455,36 +1459,36 @@ function init() {
       z: 0,
     }
   };
-  gui.add(guiWorld.xPos, "x", 0, 2).onChange(() => {
-    // bugBlue.position.set(
-    //   guiWorld.xPos.x,
-    //   bugBlue.position.y,
-    //   bugBlue.position.z
-    // );
+  gui.add(guiWorld.xPos, "x", -4, 4).onChange(() => {
+    outlineBug.rotation.set(
+      guiWorld.xPos.x,
+      outlineBug.rotation.y,
+      outlineBug.rotation.z
+    );
 
-    effectVignette.uniforms[ 'offset' ].value = guiWorld.xPos.x;
-    console.log(effectVignette.uniforms[ 'offset' ].value);
+    //effectVignette.uniforms[ 'offset' ].value = guiWorld.xPos.x;
+    console.log(outlineBug.rotation);
   });
 
   gui.add(guiWorld.xPos, "y", -4, 4).onChange(() => {
-    // outlineBug.rotation.set(
-    //   outlineBug.rotation.x,
-    //   guiWorld.xPos.y,
-    //   outlineBug.rotation.z
-    // );
+    outlineBug.rotation.set(
+      outlineBug.rotation.x,
+      guiWorld.xPos.y,
+      outlineBug.rotation.z
+    );
 
-    effectVignette.uniforms[ 'darkness' ].value = guiWorld.xPos.y;
-    console.log(effectVignette.uniforms[ 'darkness' ].value);
+    //effectVignette.uniforms[ 'darkness' ].value = guiWorld.xPos.y;
+    console.log(outlineBug.rotation);
     
   });
 
   gui.add(guiWorld.xPos, "z", -4, 4).onChange(() => {
-    hubCamera.position.set(
-      hubCamera.position.x,
-      hubCamera.position.y,
+    outlineBug.rotation.set(
+      outlineBug.rotation.x,
+      outlineBug.rotation.y,
       guiWorld.xPos.z
     );
-    console.log(hubCamera.position);
+    console.log(outlineBug.rotation);
   });
 
   //** TOWER ICON INSTANTIATIONS */
@@ -1611,7 +1615,7 @@ function tutorialSequence()
     }
 
     tutClickImage.classList.toggle("active");
-    tutClickImage.style = "background-image: url('/resources/images/location/horseshoeBend.jpg');";
+    tutClickImage.style = "background-image: url('/resources/images/location/horseshoeBend-2.jpg');";
     
     //tutorialIndex++;
   }
@@ -1636,10 +1640,10 @@ function tutorialSequence()
   }
   else if(tutorialIndex == 3)
   {
-    tutorialHighlight.style.bottom = "15.5vh";
-    tutorialHighlight.style.right = "15.5vh";
-    tutorialHighlight.style.width = '30vh';
-    tutorialHighlight.style.height = '30vh';
+    tutorialHighlight.style.bottom = "6vh";
+    tutorialHighlight.style.right = "5.5vh";
+    tutorialHighlight.style.width = '8vh';
+    tutorialHighlight.style.height = '10vh';
     lessonSceneRaycast.remove(glowSprite);
     //highlightText.innerHTML = "Use the map to get your bearings";
     
@@ -1665,6 +1669,7 @@ function tutorialSequence()
     tutorialIndex = 0;
     tutorial = false;
     tutorialHighlight.classList.toggle("active");
+    console.log("TUTORIAL INDEX IS 4");
     //highlightText.classList.toggle("active");
 
     mouseIcon.classList.toggle("mapClick");
@@ -1674,6 +1679,16 @@ function tutorialSequence()
     {
       subtitles.classList.toggle("active");
       subtitleLines.innerHTML = tutorialSubtitles[tutorialIndex];
+
+      setTimeout(function() 
+      {
+        subtitleLines.innerHTML = "Good luck finding Echo!";
+        subtitles.classList.toggle("active");
+        setTimeout(function() 
+        {
+          subtitles.classList.toggle("active");
+        }, 10000);
+      }, 500);
     }
   }
 
@@ -2031,12 +2046,12 @@ function initLessonScene() {
   //console.log(outlineBug);
 
   //** INITIAL BUG TWEEN */
-  // bugFlyTween = new TWEEN.Tween(outlineBug.position)
-  //   .to({ y: -0.85, z: -1.5}, 3000)
-  //   .yoyo(true)
-  //   .repeat(Infinity);
-  // bugFlyTween.easing(TWEEN.Easing.Quadratic.InOut);
-  // bugFlyTween.start();
+  bugFlyTween = new TWEEN.Tween(outlineBug.position)
+    .to({ y: -0.63}, 3000)
+    .yoyo(true)
+    .repeat(Infinity);
+  bugFlyTween.easing(TWEEN.Easing.Quadratic.InOut);
+  bugFlyTween.start();
 
   // bugRotTween = new TWEEN.Tween(outlineBug.rotation)
   //   .to({x: 0.25, y: 3, z: 0.25}, 2750)
@@ -2452,7 +2467,7 @@ function locationSpriteSetup() {
   sprite_horseshoeBend.userData.popupText = "A dam on the Salt River formed Apache Lake.";
   sprite_horseshoeBend.userData.satelliteImage =
     "/resources/images/landsat/horseshoe-bend.jpg";
-  sprite_horseshoeBend.userData.img = "/resources/images/location/horseshoeBend.jpg";
+  sprite_horseshoeBend.userData.img = "/resources/images/location/horseshoeBend-2.jpg";
   sprite_horseshoeBend.userData.index = 13;
 
   sprite_micaViewTrail.userData.popup = true;
@@ -2622,7 +2637,7 @@ function makeEchoPing(x, z) {
   pingLocationMesh.position.set(x, uiMinheight - uiMinheight / 10, z);
   pingLocationMesh.scale.set(0.1, 0.1, 0.1);
   pingLocationMesh.rotation.x = Math.PI / -2;
-  pingLocationMesh.userData.name = "ping";
+  pingLocationMesh.name = "ping";
   mapScene.add(pingLocationMesh);
 
   //const elem = locationNameElem;
@@ -2741,6 +2756,13 @@ function updateLessonScene(index)
         outlineBug.children[0].children[0].material.map.flipY = false;
         outlineBug.children[0].children[0].material.map.needsUpdate = true;
         
+        bugFlyTween = new TWEEN.Tween(outlineBug.position)
+          .to({ y: -0.63}, 3000)
+          .yoyo(true)
+          .repeat(Infinity);
+        bugFlyTween.easing(TWEEN.Easing.Quadratic.InOut);
+        bugFlyTween.start();
+        
         setTimeout(function() 
         {
           toggleLessonPopup();
@@ -2828,12 +2850,19 @@ function updateLessonScene(index)
           lessonScene.add(outlineBug);
         }
         
-        outlineBug.rotation.set(0, -5, 0);
+        outlineBug.rotation.set(-0.4, 0.12, 0);
         outlineBug.position.set(0.39, -1.2, 0.79);
         outlineBug.scale.set(.125, .125, .125);
         outlineBug.children[0].children[0].material.map = bugTexture_yellow;
         outlineBug.children[0].children[0].material.map.flipY = false;
         outlineBug.children[0].children[0].material.map.needsUpdate = true;
+
+        bugFlyTween = new TWEEN.Tween(outlineBug.position)
+        .to({ y: -1.1}, 4000)
+        .yoyo(true)
+        .repeat(Infinity);
+        bugFlyTween.easing(TWEEN.Easing.Quadratic.InOut);
+        bugFlyTween.start();
         
         setTimeout(function() 
         {
@@ -2918,11 +2947,18 @@ function updateLessonScene(index)
         }
         
         outlineBug.position.set(0.23, -1.03, 0.926);
-        outlineBug.rotation.set(-0.63, 4, 0);
-        outlineBug.scale.set(0.075, 0.075, 0.075);
+        outlineBug.rotation.set(-0.49, -0.49, -0.375);
+        outlineBug.scale.set(0.1, 0.1, 0.1);
         outlineBug.children[0].children[0].material.map = bugTexture_red;
         outlineBug.children[0].children[0].material.map.flipY = false;
         outlineBug.children[0].children[0].material.map.needsUpdate = true;
+
+        bugFlyTween = new TWEEN.Tween(outlineBug.position)
+        .to({ y: -0.9}, 4000)
+        .yoyo(true)
+        .repeat(Infinity);
+        bugFlyTween.easing(TWEEN.Easing.Quadratic.InOut);
+        bugFlyTween.start();
         
         setTimeout(function() 
         {
@@ -3000,11 +3036,18 @@ function updateLessonScene(index)
         }
         
         outlineBug.position.set(-3.85, -1.89, -8.21);
-        outlineBug.rotation.set(0, -2.45, 0);
-        outlineBug.scale.set(0.75, 0.75, 0.75);
+        outlineBug.rotation.set(0.57, 3.18, 0.23);
+        outlineBug.scale.set(0.5, 0.5, 0.5);
         outlineBug.children[0].children[0].material.map = bugTexture_green;
         outlineBug.children[0].children[0].material.map.flipY = false;
         outlineBug.children[0].children[0].material.map.needsUpdate = true;
+
+        bugFlyTween = new TWEEN.Tween(outlineBug.position)
+        .to({ y: -1.24}, 4000)
+        .yoyo(true)
+        .repeat(Infinity);
+        bugFlyTween.easing(TWEEN.Easing.Quadratic.InOut);
+        bugFlyTween.start();
         
         setTimeout(function() 
         {
@@ -3106,19 +3149,19 @@ function updateLessonScene(index)
       lessonScene.fog.color.set("#FFFFFF");
       lessonScene.fog.far = 25;
       
-      outlineBug.rotation.set(0, -5, 0);
+      outlineBug.rotation.set(-0.4, 0.12, 0);
       outlineBug.position.set(0.39, -1.2, 0.79);
       outlineBug.scale.set(.125, .125, .125);
       outlineBug.children[0].children[0].material.map = bugTexture_yellow;
       outlineBug.children[0].children[0].material.map.flipY = false;
       outlineBug.children[0].children[0].material.map.needsUpdate = true;
   
-      // bugFlyTween = new TWEEN.Tween(outlineBug.position)
-      // .to({ y: -1.1, z: -0.5}, 4000)
-      // .yoyo(true)
-      // .repeat(Infinity);
-      // bugFlyTween.easing(TWEEN.Easing.Quadratic.InOut);
-      // bugFlyTween.start();
+      bugFlyTween = new TWEEN.Tween(outlineBug.position)
+      .to({ y: -1.1}, 4000)
+      .yoyo(true)
+      .repeat(Infinity);
+      bugFlyTween.easing(TWEEN.Easing.Quadratic.InOut);
+      bugFlyTween.start();
   
       // bugRotTween = new TWEEN.Tween(outlineBug.rotation)
       // .to({x: 0.5, y: -4, z: 0.25}, 3750)
@@ -3148,18 +3191,18 @@ function updateLessonScene(index)
       lessonScene.add(grasshopperModel);
   
       outlineBug.position.set(0.23, -1.03, 0.926);
-      outlineBug.rotation.set(-0.63, 4, 0);
-      outlineBug.scale.set(0.075, 0.075, 0.075);
+      outlineBug.rotation.set(-0.49, -0.49, -0.375);
+      outlineBug.scale.set(0.1, 0.1, 0.1);
       outlineBug.children[0].children[0].material.map = bugTexture_red;
       outlineBug.children[0].children[0].material.map.flipY = false;
       outlineBug.children[0].children[0].material.map.needsUpdate = true;
   
-      // bugFlyTween = new TWEEN.Tween(outlineBug.position)
-      // .to({ y: -1.05, z: -0.25}, 4000)
-      // .yoyo(true)
-      // .repeat(Infinity);
-      // bugFlyTween.easing(TWEEN.Easing.Quadratic.InOut);
-      // bugFlyTween.start();
+      bugFlyTween = new TWEEN.Tween(outlineBug.position)
+      .to({ y: -0.9}, 4000)
+      .yoyo(true)
+      .repeat(Infinity);
+      bugFlyTween.easing(TWEEN.Easing.Quadratic.InOut);
+      bugFlyTween.start();
   
       // bugRotTween = new TWEEN.Tween(outlineBug.rotation)
       // .to({x: 0.5, y: 1, z: 0.25}, 3750)
@@ -3195,6 +3238,13 @@ function updateLessonScene(index)
       Echo.rotation.set(0, 0, 0);
       Echo.scale.set(0.03, 0.03, -0.03);
       playEchoAnimation(5);
+
+      bugFlyTween = new TWEEN.Tween(outlineBug.position)
+      .to({ y: -1.24}, 4000)
+      .yoyo(true)
+      .repeat(Infinity);
+      bugFlyTween.easing(TWEEN.Easing.Quadratic.InOut);
+      bugFlyTween.start();
   
       lessonScene.remove(grasshopperModel);
       lessonScene.add(blackMesaModel);
@@ -3204,8 +3254,8 @@ function updateLessonScene(index)
       lessonScene.fog.color.set("#ffffff");
   
       outlineBug.position.set(-3.85, -1.89, -8.21);
-      outlineBug.rotation.set(0, -2.45, 0);
-      outlineBug.scale.set(0.75, 0.75, 0.75);
+      outlineBug.rotation.set(0.57, 3.18, 0.23);
+      outlineBug.scale.set(0.5, 0.5, 0.5);
       outlineBug.children[0].children[0].material.map = bugTexture_green;
       outlineBug.children[0].children[0].material.map.flipY = false;
       outlineBug.children[0].children[0].material.map.needsUpdate = true;
@@ -3266,12 +3316,14 @@ function updateLessonScene(index)
             bugBlue.children[0].children[0].material.map.needsUpdate = true;
             bugBlue.position.set(-2.88, -2.6359, bugLocations[i]);
             bugBlue.rotation.set(0, -1, 0);
+            bugBlue.scale.set(0.5, 0.5, 0.5);
             bugBlue.name = "bugBlue";
             lessonScene.add(bugBlue);
           }
           else
           {
             bugBlue.position.set(-2.88, -2.6359, bugLocations[i]);
+            bugBlue.scale.set(0.5, 0.5, 0.5);
             bugBlue.rotation.set(0, -1, 0);
           }
         }
@@ -3290,12 +3342,15 @@ function updateLessonScene(index)
             bugYellow.children[0].children[0].material.map.needsUpdate = true;
             bugYellow.position.set(-2.88, -2.6359, bugLocations[i]);
             bugYellow.rotation.set(bugYellow.rotation.x, -1.25, bugYellow.rotation.x);
+            bugYellow.scale.set(0.5, 0.5, 0.5);
+            
             bugYellow.name = "bugYellow";
             lessonScene.add(bugYellow);
           }
           else
           {
             bugYellow.position.set(-2.88, -2.6359, bugLocations[i]);
+            bugYellow.scale.set(0.5, 0.5, 0.5);
             bugYellow.rotation.set(bugYellow.rotation.x, -1.25, bugYellow.rotation.x);
           }
         }
@@ -3314,6 +3369,8 @@ function updateLessonScene(index)
             bugRed.children[0].children[0].material.map.needsUpdate = true;
             bugRed.position.set(-2.88, -2.6359, bugLocations[i]);
             bugRed.rotation.set(bugRed.rotation.x, -1.5, bugRed.rotation.x);
+            bugRed.scale.set(0.5, 0.5, 0.5);
+
             bugRed.name = "bugRed";
             lessonScene.add(bugRed);
           }
@@ -3321,6 +3378,7 @@ function updateLessonScene(index)
           {
             bugRed.position.set(-2.88, -2.6359, bugLocations[i]);
             bugRed.rotation.set(bugRed.rotation.x, -1.5, bugRed.rotation.x);
+            bugRed.scale.set(0.5, 0.5, 0.5);
           }
   
           console.log(bugRed.children[0].children[0].material.map);
@@ -3340,6 +3398,7 @@ function updateLessonScene(index)
             bugGreen.children[0].children[0].material.map.needsUpdate = true;
             bugGreen.position.set(-2.88, -2.6359, bugLocations[i]);
             bugGreen.rotation.set(bugGreen.rotation.x, -1, bugGreen.rotation.x);
+            bugGreen.scale.set(0.5, 0.5, 0.5);
             bugGreen.name = "bugGreen";
             lessonScene.add(bugGreen);
           }
@@ -3347,6 +3406,7 @@ function updateLessonScene(index)
           {
             bugGreen.position.set(-2.88, -2.6359, bugLocations[i]);
             bugGreen.rotation.set(bugGreen.rotation.x, -1, bugGreen.rotation.x);
+            bugGreen.scale.set(0.5, 0.5, 0.5);
           }
         }
         
@@ -3382,8 +3442,12 @@ function updateLessonScene(index)
       // lessonScene.fog.near = 0.1;
       // lessonScene.fog.far = 0;
   
-      //bugFlyTween.to({ y: -0.85}, 2000);
-      //bugFlyTween.start();
+      bugFlyTween = new TWEEN.Tween(outlineBug.position)
+        .to({ y: -0.63}, 3000)
+        .yoyo(true)
+        .repeat(Infinity);
+      bugFlyTween.easing(TWEEN.Easing.Quadratic.InOut);
+      bugFlyTween.start();
       
       // outlineBug.rotation.set(0, -5.48, 0);
       // outlineBug.position.set(0.534, -1.325, 0.246);
@@ -3439,7 +3503,13 @@ function lessonComplete()
     sceneTransitionSprites[lessonsCompleted].userData.ping = true;
     sceneTransitionSprites[lessonsCompleted].userData.popup = false;
     document.getElementById("towerMessage").innerHTML = "May or may not be Horseshoe Bend";
-    echoPingLocation = makeEchoPing(towerIcons[lessonsCompleted].position.x, towerIcons[lessonsCompleted].position.z);
+    
+    if(!mapScene.getObjectByName("ping"))
+    {
+      console.log("ADDING A NEW PING");
+      echoPingLocation = makeEchoPing(towerIcons[lessonsCompleted].position.x, towerIcons[lessonsCompleted].position.z);
+    }
+    
     
     //** SETUP ALL LOCATION SPRITES */
     lessonLocation_phoenix_sprite.material.opacity = 1;
@@ -3457,8 +3527,13 @@ function lessonComplete()
     sceneTransitionSprites[lessonsCompleted].userData.ping = true;
     sceneTransitionSprites[lessonsCompleted].userData.popup = false;
     document.getElementById("towerMessage").innerHTML = "May or may not be the Cathedral Rock";
-    echoPingLocation = makeEchoPing(towerIcons[lessonsCompleted].position.x, towerIcons[lessonsCompleted].position.z);
     
+    if(!mapScene.getObjectByName("ping"))
+    {
+      console.log("ADDING A NEW PING");
+      echoPingLocation = makeEchoPing(towerIcons[lessonsCompleted].position.x, towerIcons[lessonsCompleted].position.z);
+    }
+
     lessonLocation_horseshoe_sprite.material.opacity = 1;
   }
   else if(lessonsCompleted == 3)
@@ -3466,7 +3541,12 @@ function lessonComplete()
     sceneTransitionSprites[lessonsCompleted].userData.ping = true;
     sceneTransitionSprites[lessonsCompleted].userData.popup = false;
     document.getElementById("towerMessage").innerHTML = "May or may not be Black Mesa";
-    echoPingLocation = makeEchoPing(towerIcons[lessonsCompleted].position.x, towerIcons[lessonsCompleted].position.z);
+    
+    if(!mapScene.getObjectByName("ping"))
+    {
+      console.log("ADDING A NEW PING");
+      echoPingLocation = makeEchoPing(towerIcons[lessonsCompleted].position.x, towerIcons[lessonsCompleted].position.z);
+    }
     
     lessonLocation_cathedralRock_sprite.material.opacity = 1;
   }
@@ -3475,7 +3555,12 @@ function lessonComplete()
     sceneTransitionSprites[lessonsCompleted].userData.ping = true;
     sceneTransitionSprites[lessonsCompleted].userData.popup = false;
     document.getElementById("towerMessage").innerHTML = "May or may not be Tuscon";
-    echoPingLocation = makeEchoPing(towerIcons[lessonsCompleted].position.x, towerIcons[lessonsCompleted].position.z);
+    
+    if(!mapScene.getObjectByName("ping"))
+    {
+      console.log("ADDING A NEW PING");
+      echoPingLocation = makeEchoPing(towerIcons[lessonsCompleted].position.x, towerIcons[lessonsCompleted].position.z);
+    }
   
     lessonLocation_blackMesa_sprite.material.opacity = 1;
   }
@@ -4145,7 +4230,7 @@ function clickEvent() {
         else if(intersects[0].object.name == "Landsat")
         {
           console.log("landsat click");
-          clickOpenURL(intersects, "https://landsat.gsfc.nasa.gov/outreach/camp-landsat/");
+          clickOpenURL(intersects, "https://landsat.gsfc.nasa.gov/");
           clickSound.play();
         }
         //** MICROSCOPE */
@@ -4358,6 +4443,7 @@ function clickEvent() {
           if(bugFlyTween)
           {
             bugFlyTween.stop();
+            console.log("BUG FLY STOP");
           }
           if(bugRotTween)
           {
@@ -4484,7 +4570,21 @@ function tweenBug(bugNumb)
     bugTween.easing(TWEEN.Easing.Quadratic.Out);
     bugTween.onUpdate(() => {
     });
+    bugTween.onComplete(() => {
+      console.log("bug is now invisible");
+      lessonScene.remove(outlineBug);
+    });
     bugTween.start();
+
+    if(bugFlyTween)
+    {
+      bugFlyTween.stop();
+      console.log("BUG FLY STOP STOP");
+    }
+    if(bugRotTween)
+    {
+      bugRotTween.stop();
+    }
 }
 
 function playEchoAnimation(index, tween)
@@ -5463,6 +5563,10 @@ function TransitionDone() {
       {
         miniMap.classList.toggle("disabled");
       }
+      if(mapPopup.classList.contains("open"))
+      {
+        mapPopup.classList.toggle("open");
+      }
       if(!backButton.classList.contains("active"))
       {
         backButton.classList.toggle("active");
@@ -5608,6 +5712,10 @@ function TransitionDone() {
       {
         miniMap.classList.toggle("disabled");
       }
+      if(mapPopup.classList.contains("open"))
+      {
+        mapPopup.classList.toggle("open");
+      }
       if(!backButton.classList.contains("active"))
       {
         backButton.classList.toggle("active");
@@ -5701,9 +5809,11 @@ function youAreHereUpdate() {
   // var posZ = mapLinear(camZ, -8.49, 8.25, 45, -45);
 
   //mapMoveIcon.style.transform = "translate(" + posX + "%, " + posZ + "%)";
-
   youAreHereIcon.style.top = posZ + "%";
   youAreHereIcon.style.left = posX + "%";
+
+  youAreHereIconPopup.style.top = posZ + "%";
+  youAreHereIconPopup.style.left = posX + "%";
 
   console.log("You are here cam: " + camX + ", Z: " + camZ);
   console.log("You are here update X: " + posX + ", Y: " + posZ);
@@ -6324,6 +6434,16 @@ xButton2.addEventListener("click", function (ev) {
   toggleTowerPopup();
   clickSound.play();
 });
+
+//** MAP POPUP BUTTON **/
+xButton4.addEventListener("click", function (ev) {
+  if(mapPopup.classList.contains("open"))
+  {
+    mapPopup.classList.toggle("open");
+  }
+  clickSound.play();
+});
+
 //** CREDITS POPUP X BUTTON*/
 xButton5.addEventListener("click", function (ev) {
   console.log("CLOSE");
@@ -6358,7 +6478,7 @@ miniMap.addEventListener('click', function(ev) {
       if(tutorialIndex == 3)
       {
         tutorialSequence();
-        miniMap.classList.toggle("open");
+        document.getElementById("mapPopup").classList.toggle("open");
         if(document.getElementById("toggleMapPopup").classList.contains("active"))
         {
           document.getElementById("toggleMapPopup").classList.toggle("active");
@@ -6367,25 +6487,9 @@ miniMap.addEventListener('click', function(ev) {
     }
     else
     {
-      if(currentSceneNumber == 2)
+      if(currentSceneNumber == 1)
       {
-        // new TWEEN.Tween( transitionParams )
-        // .to( { transition: 0 }, 2000 )
-        // // .delay( 2000 )
-        // //.yoyo( true )
-        // .start(TransitionStart())
-        // .onComplete(TransitionDone);
-        // updateLinePath();
-        
-        // console.log("MAP ICON SCENE: " + currentSceneNumber);
-      }
-      else if(currentSceneNumber == 1)
-      {
-        miniMap.classList.toggle("open");
-        if(document.getElementById("toggleMapPopup").classList.contains("active"))
-        {
-          document.getElementById("toggleMapPopup").classList.toggle("active");
-        }
+        document.getElementById("mapPopup").classList.toggle("open");
       }
     }
     
@@ -6399,12 +6503,13 @@ roadButton.addEventListener('click', function(ev) {
 
   if(!transitioning && !isTweening)
   {
-    if(currentSceneNumber == 2)
+    if(currentSceneNumber == 1)
     {
+      if(!mapPopup.classList.contains("open"))
+      {
+        mapPopup.classList.toggle("open");
+      }
       
-    }
-    else if(currentSceneNumber == 1)
-    {
       document.getElementById("mapImage").src = "resources/images/arizona-road.png";
       mosaicButton.style.borderColor = "rgba(255, 255, 255, 0.25)";
       geographyButton.style.borderColor = "rgba(255, 255, 255, 0.25)";
@@ -6420,12 +6525,13 @@ mosaicButton.addEventListener('click', function(ev) {
 
   if(!transitioning && !isTweening)
   {
-    if(currentSceneNumber == 2)
+    if(currentSceneNumber == 1)
     {
+      if(!mapPopup.classList.contains("open"))
+      {
+        mapPopup.classList.toggle("open");
+      }
       
-    }
-    else if(currentSceneNumber == 1)
-    {
       document.getElementById("mapImage").src = "resources/images/arizona-mosaic.png";
       mosaicButton.style.borderColor = "rgba(255, 0, 0, 0.5)";
       geographyButton.style.borderColor = "rgba(255, 255, 255, 0.25)";
@@ -6441,11 +6547,12 @@ geographyButton.addEventListener('click', function(ev) {
 
   if(!transitioning && !isTweening)
   {
-    if(currentSceneNumber == 2)
+    if(!mapPopup.classList.contains("open"))
     {
-      
+      mapPopup.classList.toggle("open");
     }
-    else if(currentSceneNumber == 1)
+
+    if(currentSceneNumber == 1)
     {
       document.getElementById("mapImage").src = "resources/images/arizona-geography.png";
       mosaicButton.style.borderColor = "rgba(255, 255, 255, 0.25)";
@@ -6456,7 +6563,6 @@ geographyButton.addEventListener('click', function(ev) {
 
   clickSound.play();
 });
-
 backButton.addEventListener("click", function (ev) {
   ev.stopPropagation(); // prevent event from bubbling up to .container
 
@@ -6493,7 +6599,6 @@ backButton.addEventListener("click", function (ev) {
 
   clickSound.play();
 });
-
 //** CLICK IN WINDOW USED FOR POPUPS */
 window.addEventListener("click", () => {
   if (!transitioning && !isTweening) {
@@ -6513,7 +6618,6 @@ window.addEventListener("click", () => {
     }
   }
 });
-
 //**EVENT FOR WHEN MOUSE IS MOVING**//
 window.addEventListener("mousemove", function (event) {
   if (!transitioning && !isTweening) {
@@ -6586,8 +6690,7 @@ document.addEventListener("click", (e) => {
       clickSound.play();
     }
   });
-});
-
+})
 helpButton.addEventListener("click", (e) => {
   if(!tutorial)
   {
@@ -6613,53 +6716,6 @@ creditsButton.addEventListener("click", (e) => {
     }
   }
 });
-
-//** USED TO CHANGE MAP MODE TO: ROAD */
-// roadDropdown.addEventListener("click", function (ev) {
-//   ev.stopPropagation(); // prevent event from bubbling up to .container
-
-//   if (!transitioning && !isTweening) {
-//     if (currentSceneNumber == 2) {
-//     } else if (currentSceneNumber == 1) {
-//       //arizona_mosaic_texture = arizona.children[0].children[0].material.map;
-//       arizona.children[0].children[0].material.map = arizona_road_texture;
-//       arizona.children[0].children[0].material.map.flipY = false;
-//       arizona.children[0].children[0].material.needsUpdate = true;
-//     }
-//   }
-
-//   clickSound.play();
-// });
-// //** USED TO CHANGE MAP MODE TO: MOSAIC */
-// mosaicDropdown.addEventListener("click", function (ev) {
-//   ev.stopPropagation(); // prevent event from bubbling up to .container
-
-//   if (!transitioning && !isTweening) {
-//     if (currentSceneNumber == 2) {
-//     } else if (currentSceneNumber == 1) {
-//       arizona.children[0].children[0].material.map = arizona_mosaic_texture;
-//       arizona.children[0].children[0].material.map.flipY = false;
-//       arizona.children[0].children[0].material.needsUpdate = true;
-//     }
-//   }
-
-//   clickSound.play();
-// });
-// //** USED TO CHANGE MAP MODE TO: GEOGRAPHY */
-// geographyDropdown.addEventListener("click", function (ev) {
-//   ev.stopPropagation(); // prevent event from bubbling up to .container
-
-//   if (!transitioning && !isTweening) {
-//     if (currentSceneNumber == 2) {
-//     } else if (currentSceneNumber == 1) {
-//       arizona.children[0].children[0].material.map = arizona_height_texture;
-//       arizona.children[0].children[0].material.map.flipY = false;
-//       arizona.children[0].children[0].material.needsUpdate = true;
-//     }
-//   }
-
-//   clickSound.play();
-// });
 
 //** EVENT FOR RIGHT LESSON BUTTON */
 lessonButton_right.addEventListener("click", function (ev) {
