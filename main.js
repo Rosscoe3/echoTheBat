@@ -102,7 +102,7 @@ const hubCamera = new THREE.PerspectiveCamera(
   50,
   window.innerWidth / window.innerHeight,
   0.1,
-  35
+  50
 );
 
 let renderer = new THREE.WebGLRenderer({ 
@@ -218,7 +218,13 @@ var audioPlaying = true;
 var bugAmount = 0;
 var bugsFound = [];
 var bugBlue, bugYellow, bugRed, bugGreen;
+var hub_bugBlue, hub_bugYellow, hub_bugRed, hub_bugGreen;
 var bugLocations = [0, 1, -1, 2];
+var hub_bugLocations = [-0.12, -0.06, 0, 0.06];
+var hub_scale = 0.125;
+var hub_Bug_pos_x = -2.27;
+var hub_Bug_pos_z = 0.69;
+
 var bugFlyTween;
 var bugRotTween;
 var echoAnimFinal = false;
@@ -1460,35 +1466,35 @@ function init() {
     }
   };
   gui.add(guiWorld.xPos, "x", -4, 4).onChange(() => {
-    outlineBug.rotation.set(
+    hub_bugGreen.rotation.set(
       guiWorld.xPos.x,
-      outlineBug.rotation.y,
-      outlineBug.rotation.z
+      hub_bugGreen.rotation.y,
+      hub_bugGreen.rotation.z
     );
 
     //effectVignette.uniforms[ 'offset' ].value = guiWorld.xPos.x;
-    console.log(outlineBug.rotation);
+    console.log(hub_bugGreen.rotation);
   });
 
   gui.add(guiWorld.xPos, "y", -4, 4).onChange(() => {
-    outlineBug.rotation.set(
-      outlineBug.rotation.x,
+    hub_bugGreen.rotation.set(
+      hub_bugGreen.rotation.x,
       guiWorld.xPos.y,
-      outlineBug.rotation.z
+      hub_bugGreen.rotation.z
     );
 
     //effectVignette.uniforms[ 'darkness' ].value = guiWorld.xPos.y;
-    console.log(outlineBug.rotation);
+    console.log(hub_bugGreen.rotation);
     
   });
 
   gui.add(guiWorld.xPos, "z", -4, 4).onChange(() => {
-    outlineBug.rotation.set(
-      outlineBug.rotation.x,
-      outlineBug.rotation.y,
+    hub_bugGreen.rotation.set(
+      hub_bugGreen.rotation.x,
+      hub_bugGreen.rotation.y,
       guiWorld.xPos.z
     );
-    console.log(outlineBug.rotation);
+    console.log(hub_bugGreen.rotation);
   });
 
   //** TOWER ICON INSTANTIATIONS */
@@ -2106,7 +2112,7 @@ function initHubScene()
       hubScene.enviroment = texture;
   });
 
-  loader.load("/resources/models/Hub-World.glb", function (gltf) 
+  loader.load("/resources/models/Hub-World-new-10.glb", function (gltf) 
   {
     var model = gltf.scene;
     model.traverse((o) => 
@@ -2121,16 +2127,20 @@ function initHubScene()
         //console.log("O:" + o.name);
 
 
-        if(o.name == "Computer_Monitor")
-        {
-          //console.log(o.children[0]);
-          computerScreen = o;
-          var newMaterial = new THREE.MeshBasicMaterial({color: 0x444ff});
-        }
         if(o.name == "Computer_Screen")
         {
           o.material = computerScreenMaterial;
           o.material.map.flipY = false;
+          o.renderOrder = 2;
+        }
+        if(o.name == "Jar")
+        {
+          o.material.transparent = true;
+          o.fog = false; 
+          o.receiveShadow = false;
+          o.renderOrder = 1;
+          o.material.opacity = 0.5;
+          console.log(o.material);
         }
       }
     });
@@ -3472,6 +3482,123 @@ function updateLessonScene(index)
   }
 }
 
+//** UPDATES HUBWORLD TO ADD BUGS TOO THE JAR */
+function updateHubworldScene()
+{
+  console.log("UPDATE HUBWOLRD SCENE");
+  
+  //** PHOENIX BUG */
+  for(var i = 0; i < bugsFound.length; i++)
+  {
+    if(bugsFound[i] == 0)
+    {
+      if(!hubScene.getObjectByName('hub_bugBlue'))
+      {
+        hub_bugBlue = outlineBug.clone(true);
+        var blueBugMaterial = new THREE.MeshBasicMaterial({transparent: true});
+        hub_bugBlue.children[0].children[0].material = blueBugMaterial;
+  
+        hub_bugBlue.children[0].children[0].material.map = bugTexture_blue;
+        hub_bugBlue.children[0].children[0].material.map.flipY = false;
+        hub_bugBlue.children[0].children[0].material.map.needsUpdate = true;
+        hub_bugBlue.position.set(-2.28, hub_bugLocations[i], 0.68);
+        hub_bugBlue.rotation.set(-0.49, -0.49, -0.4);
+        hub_bugBlue.scale.set(hub_scale, hub_scale, hub_scale);
+        hub_bugBlue.name = "hub_bugBlue";
+        hubScene.add(hub_bugBlue);
+
+        console.log("MAKE BLUE BUG");
+      }
+      else
+      {
+        hub_bugBlue.position.set(hub_Bug_pos_x, hub_bugLocations[i], hub_Bug_pos_z);
+        hub_bugBlue.rotation.set(-0.49, -0.49, -0.4);
+        hub_bugBlue.scale.set(hub_scale, hub_scale, hub_scale);
+      }
+    }
+    //** HORSESHOEBEND BUG */
+    else if(bugsFound[i] == 1)
+    {
+      if(!hubScene.getObjectByName('hub_bugYellow'))
+      {
+        hub_bugYellow = outlineBug.clone(true);
+        var yellowBugMaterial = new THREE.MeshBasicMaterial({transparent: true});
+        hub_bugYellow.children[0].children[0].material = yellowBugMaterial;
+  
+        hub_bugYellow.children[0].children[0].material.map = bugTexture_yellow;
+        hub_bugYellow.children[0].children[0].material.map.flipY = false;
+        hub_bugYellow.children[0].children[0].material.map.needsUpdate = true;
+        hub_bugYellow.position.set(hub_Bug_pos_x, hub_bugLocations[i], hub_Bug_pos_z);
+        hub_bugYellow.rotation.set(-2, -1, -2);
+        hub_bugYellow.scale.set(hub_scale, hub_scale, hub_scale);
+        hub_bugYellow.name = "hub_bugYellow";
+        hubScene.add(hub_bugYellow);
+      }
+      else
+      {
+        hub_bugYellow.position.set(hub_Bug_pos_x, hub_bugLocations[i], hub_Bug_pos_z);
+        hub_bugYellow.rotation.set(-2, -1, -2);
+        hub_bugYellow.scale.set(hub_scale, hub_scale, hub_scale);
+      }
+    }
+    //** CATHEDRAL ROCK BUG */
+    else if(bugsFound[i] == 2)
+    {
+      
+      if(!hubScene.getObjectByName('hub_bugRed'))
+      {
+        hub_bugRed = outlineBug.clone(true);
+        var redBugMaterial = new THREE.MeshBasicMaterial({transparent: true});
+        hub_bugRed.children[0].children[0].material = redBugMaterial;
+        
+        hub_bugRed.children[0].children[0].material.map = bugTexture_red;
+        hub_bugRed.children[0].children[0].material.map.flipY = false;
+        hub_bugRed.children[0].children[0].material.map.needsUpdate = true;
+        hub_bugRed.position.set(hub_Bug_pos_x, hub_bugLocations[i], hub_Bug_pos_z);
+        hub_bugRed.rotation.set(-0.2, 2.83, 0.57);
+        hub_bugRed.scale.set(hub_scale, hub_scale, hub_scale);
+  
+        hub_bugRed.name = "hub_bugRed";
+        hubScene.add(hub_bugRed);
+      }
+      else
+      {
+        hub_bugRed.position.set(hub_Bug_pos_x, hub_bugLocations[i], hub_Bug_pos_z);
+        hub_bugRed.rotation.set(-0.2, 2.83, 0.57);
+        hub_bugRed.scale.set(hub_scale, hub_scale, hub_scale);
+      }
+  
+      console.log(bugRed.children[0].children[0].material.map);
+    }
+    //** BLACK MESA BUG */
+    else if(bugsFound[i] == 3)
+    {
+      
+      if(!hubScene.getObjectByName('hub_bugGreen'))
+      {
+        hub_bugGreen = outlineBug.clone(true);
+        var greenBugMaterial = new THREE.MeshBasicMaterial({transparent: true});
+        hub_bugGreen.children[0].children[0].material = greenBugMaterial;
+        
+        hub_bugGreen.children[0].children[0].material.map = bugTexture_green;
+        hub_bugGreen.children[0].children[0].material.map.flipY = false;
+        hub_bugGreen.children[0].children[0].material.map.needsUpdate = true;
+        hub_bugGreen.position.set(hub_Bug_pos_x, hub_bugLocations[i], hub_Bug_pos_z);
+        hub_bugGreen.rotation.set(4, -1.15, -2.1);
+        hub_bugGreen.scale.set(hub_scale, hub_scale, hub_scale);
+        hub_bugGreen.name = "hub_bugGreen";
+        hubScene.add(hub_bugGreen);
+      }
+      else
+      {
+        hub_bugGreen.position.set(hub_Bug_pos_x, hub_bugLocations[i], hub_Bug_pos_z);
+        hub_bugGreen.rotation.set(4, -1.15, -2.1);
+        hub_bugGreen.scale.set(hub_scale, hub_scale, hub_scale);
+      }
+    }
+  }
+}
+
 //** RESET HUBWORLD OBJECTS TO ORGINIAL POSITIONS */
 function resetHubWorld()
 {
@@ -3673,6 +3800,18 @@ function hoverObject() {
       document.body.style.cursor = 'pointer';
 
     }
+    else if (intersects.length > 0 && intersects[0].object.name == "Jar" && lessonsCompleted == 4)
+    {
+      if (intersects[0].object != intersectObject) 
+      {
+        uiHoverOnSound.play();
+      }
+      intersectObject = intersects[0].object;
+      intersected = true;
+      intersectObject.material.opacity = 0.25;
+      document.body.style.cursor = 'pointer';
+
+    }
     else if (intersects.length > 0 && intersects[0].object.name == "Landsat")
     {
       if (intersects[0].object != intersectObject) 
@@ -3684,7 +3823,7 @@ function hoverObject() {
       intersectObject.material.opacity = 0.5;
       document.body.style.cursor = 'pointer';
     }
-    else if (intersects.length > 0 && intersects[0].object.name == "TestGlass")
+    else if (intersects.length > 0 && intersects[0].object.name == "Camp_Landsat")
     {
       if (intersects[0].object != intersectObject) 
       {
@@ -3695,7 +3834,7 @@ function hoverObject() {
       intersectObject.material.opacity = 0.5;
       document.body.style.cursor = 'pointer';
     }
-    else if (intersects.length > 0 && intersects[0].object.name == "Desk_+_Chair")
+    else if (intersects.length > 0 && intersects[0].object.name == "StillObjects")
     {
       //** FIRST TIME YOU HOVER OVER THE DESK */
       if(!garminHover)
@@ -3731,7 +3870,6 @@ function hoverObject() {
       
       intersectObject = intersects[0].object;
       intersected = true;
-      //intersectObject.material.opacity = 0.5;
       //document.body.style.cursor = 'pointer';
     }
     //** WALKIE TALKIE - GARMIN HOVER */
@@ -3843,6 +3981,10 @@ function hoverObject() {
           {
             intersectObject.material.opacity = 0;
           }
+        }
+        else if(intersectObject.name == "Jar")
+        {
+          intersectObject.material.opacity = 0.5;
         }
         else
         {
@@ -4234,10 +4376,10 @@ function clickEvent() {
           clickSound.play();
         }
         //** MICROSCOPE */
-        else if(intersects[0].object.name == "TestGlass")
+        else if(intersects[0].object.name == "Camp_Landsat")
         {
           console.log("landsat click");
-          clickOpenURL(intersects, "https://landsat.gsfc.nasa.gov/");
+          clickOpenURL(intersects, "https://landsat.gsfc.nasa.gov/outreach/camp-landsat/");
           clickSound.play();
         }
         //** WALKIE TALKIE */
@@ -4332,7 +4474,23 @@ function clickEvent() {
             .start(TransitionStart())
             .onComplete(TransitionDone);
           }  
-        }       
+        }
+        else if (intersects[0].object.name == "Jar" && lessonsCompleted == 4)
+        {
+          console.log(intersects[0].object.name);
+      
+          if(locationFound && !transitioning)
+          {
+            // updateLessonScene(4);
+            // currentLessonSceneIndex = 4;
+
+          }  
+          transitionParams.transition = 1;
+          new TWEEN.Tween(transitionParams)
+          .to({ transition: 0 }, 2000)
+          .start(TransitionStart())
+          .onComplete(TransitionDone);
+        }              
       }
     }
     //** MAP SCENE */ 
@@ -5498,6 +5656,8 @@ function animate() {
   computerScreenTexture.needsUpdate = true;
   walkieTalkieVideoTexture.needsUpdate = true;
 
+
+  //console.log("Lessons Completed: " + lessonsCompleted);
   // console.log("Scene polycount:", renderer.info.render.triangles);
   // console.log("Active Drawcalls:", renderer.info.render.calls);
   // console.log("Textures in Memory", renderer.info.memory.textures);
@@ -6505,6 +6665,14 @@ roadButton.addEventListener('click', function(ev) {
   {
     if(currentSceneNumber == 1)
     {
+      if(tutorial)
+      {
+        if(tutorialIndex == 3)
+        {
+          tutorialSequence();
+        }
+      }
+      
       if(!mapPopup.classList.contains("open"))
       {
         mapPopup.classList.toggle("open");
@@ -6527,6 +6695,14 @@ mosaicButton.addEventListener('click', function(ev) {
   {
     if(currentSceneNumber == 1)
     {
+      if(tutorial)
+      {
+        if(tutorialIndex == 3)
+        {
+          tutorialSequence();
+        }
+      }
+      
       if(!mapPopup.classList.contains("open"))
       {
         mapPopup.classList.toggle("open");
@@ -6550,6 +6726,14 @@ geographyButton.addEventListener('click', function(ev) {
     if(!mapPopup.classList.contains("open"))
     {
       mapPopup.classList.toggle("open");
+    }
+
+    if(tutorial)
+    {
+      if(tutorialIndex == 3)
+      {
+        tutorialSequence();
+      }
     }
 
     if(currentSceneNumber == 1)
@@ -6595,6 +6779,8 @@ backButton.addEventListener("click", function (ev) {
         .start(TransitionStart())
         .onComplete(TransitionDone);
     }
+
+    updateHubworldScene();
   }
 
   clickSound.play();
