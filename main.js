@@ -7,7 +7,7 @@ import { MapControls } from "https://cdn.skypack.dev/three@0.127.0/examples/jsm/
 import { GLTFLoader } from "https://cdn.skypack.dev/three@0.127.0/examples/jsm/loaders/GLTFLoader.js";
 import { DRACOLoader } from "https://cdn.skypack.dev/three@0.127.0/examples/jsm/loaders/DRACOLoader.js";
 import { RGBELoader } from 'https://cdn.jsdelivr.net/npm/three@0.127/examples/jsm/loaders/RGBELoader.js';
-import { DragControls } from "./DragControls";
+import { DragControls } from "https://cdn.skypack.dev/three@0.127.0/examples/jsm/controls/DragControls";
 import { EffectComposer } from 'https://cdn.skypack.dev/three@0.127.0/examples/jsm/postprocessing/EffectComposer.js';
 import { RenderPass } from 'https://cdn.skypack.dev/three@0.127.0/examples/jsm/postprocessing/RenderPass.js';
 import { UnrealBloomPass } from 'https://cdn.skypack.dev/three@0.127.0/examples/jsm/postprocessing/UnrealBloomPass.js';
@@ -163,10 +163,17 @@ hubComposer.addPass(new RenderPass(hubScene, hubCamera));
 const maxAnisotropy = renderer.capabilities.getMaxAnisotropy();
 let labelRenderer;
 let allFilled;
+
+//** MAP CONTROLS */
 const controls = new MapControls(mainCamera, renderer.domElement);
 const uiMinheight = 0.1;
 var mouse, raycaster;
 const gui = new dat.GUI();
+
+//** Drag Bug Controls */
+var dragabbleObjects = [];
+const dragBugControls = new DragControls(dragabbleObjects, lessonCamera, renderer.domElement);
+dragBugControls.deactivate();
 
 //**LIGHTS */
 const pointLight = new THREE.PointLight("#ff8400", 10);
@@ -276,6 +283,10 @@ const uiHoverOffSound = new THREE.Audio(listener);
 const clickSound = new THREE.Audio(listener);
 const transitionSound = new THREE.Audio(listener);
 
+const echoChewSound = new THREE.Audio(listener);
+const echoChewSound2 = new THREE.Audio(listener);
+const echoChewSound3 = new THREE.Audio(listener);
+
 const music_volume = 1.0;
 const sfx_volume = 1.0;
 
@@ -326,6 +337,23 @@ audioLoader.load("/resources/sounds/fx/lightClick.wav", function (buffer) {
   clickSound.setLoop(false);
   clickSound.setVolume(0.75);
   //clickSound.stop();
+});
+
+//** ECHO CHEWING SOUNDS */
+audioLoader.load("resources/sounds/fx/chew.mp3", function (buffer) {
+  echoChewSound.setBuffer(buffer);
+  echoChewSound.setLoop(false);
+  echoChewSound.setVolume(1);
+});
+audioLoader.load("resources/sounds/fx/chew2.mp3", function (buffer) {
+  echoChewSound2.setBuffer(buffer);
+  echoChewSound2.setLoop(false);
+  echoChewSound2.setVolume(1);
+});
+audioLoader.load("resources/sounds/fx/chew3.mp3", function (buffer) {
+  echoChewSound3.setBuffer(buffer);
+  echoChewSound3.setLoop(false);
+  echoChewSound3.setVolume(1);
 });
 //TRANSITION SOUND
 audioLoader.load(
@@ -456,7 +484,7 @@ const fatmansLoopTexture = new THREE.TextureLoader(manager).load(
   "/resources/images/location/fatmansLoop.jpg"
 );
 const horseshoeBendTexture = new THREE.TextureLoader(manager).load(
-  "/resources/images/location/horseshoeBend-2.jpg"
+  "/resources/images/location/horseshoeBend.jpg"
 );
 const micaViewTrailTexture = new THREE.TextureLoader(manager).load(
   "/resources/images/location/micaViewTrail.jpg"
@@ -627,6 +655,8 @@ const cube = new THREE.Mesh( cubeGeometry, cubeMaterial );
 
 let outlineBug = new THREE.Group();
 outlineBug.name = 'outlineBug';
+let bugTogether = new THREE.Group();
+bugTogether.name = 'bugTogether';
 let Echo = new THREE.Group();
 Echo.name = 'Echo';
 var mixer;
@@ -689,6 +719,7 @@ let bugIcon = document.getElementById("bugIcon1");
 let bugIcon2 = document.getElementById("bugIcon2");
 let bugIcon3 = document.getElementById("bugIcon3");
 let bugIcon4 = document.getElementById("bugIcon4");
+var bugClicked = false;
 
 let helpButton = document.getElementById("helpButton");
 let creditsButton = document.getElementById("creditsButton");
@@ -744,9 +775,10 @@ var walkieTalkieVideoMaterial = new THREE.MeshBasicMaterial({
 });
 var walkieTalkieScreenModel;
 
-
 locationNameElem.textContent = "";
 var echoPingLocation;
+var heartSprite = new THREE.Group();
+
 
 init();
 initLessonScene();
@@ -1466,35 +1498,33 @@ function init() {
     }
   };
   gui.add(guiWorld.xPos, "x", -4, 4).onChange(() => {
-    hub_bugGreen.rotation.set(
+    echoBounds.position.set(
       guiWorld.xPos.x,
-      hub_bugGreen.rotation.y,
-      hub_bugGreen.rotation.z
+      echoBounds.position.y,
+      echoBounds.position.z
     );
-
     //effectVignette.uniforms[ 'offset' ].value = guiWorld.xPos.x;
-    console.log(hub_bugGreen.rotation);
+    console.log(echoBounds.position);
   });
 
   gui.add(guiWorld.xPos, "y", -4, 4).onChange(() => {
-    hub_bugGreen.rotation.set(
-      hub_bugGreen.rotation.x,
+    echoBounds.position.set(
+      echoBounds.position.x,
       guiWorld.xPos.y,
-      hub_bugGreen.rotation.z
+      echoBounds.position.z
     );
-
     //effectVignette.uniforms[ 'darkness' ].value = guiWorld.xPos.y;
-    console.log(hub_bugGreen.rotation);
+    console.log(echoBounds.position);
     
   });
 
   gui.add(guiWorld.xPos, "z", -4, 4).onChange(() => {
-    hub_bugGreen.rotation.set(
-      hub_bugGreen.rotation.x,
-      hub_bugGreen.rotation.y,
+    echoBounds.position.set(
+      echoBounds.position.x,
+      echoBounds.position.y,
       guiWorld.xPos.z
     );
-    console.log(hub_bugGreen.rotation);
+    console.log(echoBounds.position);
   });
 
   //** TOWER ICON INSTANTIATIONS */
@@ -1510,16 +1540,6 @@ function init() {
     arizona.scale.setY(1);
     //arizona.castShadow = true;
     arizona.rotation.y = Math.PI / -2.15;
-    //arizona.material.normal = .01;
-
-    // gltf.parser.getDependencies( 'material' ).then( ( materials ) => {
-
-    //   console.log( materials );
-    //   var material = materials
-    //   materials.normalScale = {x: 0, y: 0};
-    //   console.log("MATERIALS");
-
-    // } );
 
     var model = gltf.scene;
     var newMaterial = new THREE.MeshStandardMaterial({ color: 0xff0000 });
@@ -1621,7 +1641,7 @@ function tutorialSequence()
     }
 
     tutClickImage.classList.toggle("active");
-    tutClickImage.style = "background-image: url('/resources/images/location/horseshoeBend-2.jpg');";
+    tutClickImage.style = "background-image: url('/resources/images/location/horseshoeBend.jpg');";
     
     //tutorialIndex++;
   }
@@ -1990,6 +2010,35 @@ function initLessonScene() {
   outlineBug.position.set(-2.41, -1.01, 1.48);
   outlineBug.scale.set(.5, .5, .5);
 
+  loader.load("/resources/models/Bug-together.glb", function (gltf) 
+  {
+    var model = gltf.scene;
+    model.traverse((o) => 
+    {
+      //**EDIT ITS IMPORTED MATERIAL**//
+      if (o.isMesh)
+      { 
+        var colorMap = o.material.map;
+        bugTexture_green = colorMap;
+        //var newMaterial = new THREE.MeshToonMaterial({transparent: true});
+        var newMaterial = new THREE.MeshBasicMaterial({transparent: true});
+        o.material = newMaterial;
+        o.material.map = bugTexture_blue;
+        o.material.map.flipY = false;
+
+        o.material.map.needsUpdate = true;
+        o.material.side = THREE.DoubleSide;
+      }
+    });
+    bugTogether.add(gltf.scene);
+
+    bugTogether.userData.name = "bug";
+    // lessonScene.add(outlineBug);
+  });
+  bugTogether.rotation.set(-0.25, -0.06, -0.25);
+  bugTogether.position.set(-2.41, -1.01, 1.48);
+  bugTogether.scale.set(.5, .5, .5);
+
   loader.load("/resources/models/echo-tan.glb", function (gltf) 
   {
     gltf.animations; // Array<THREE.AnimationClip>
@@ -2112,7 +2161,7 @@ function initHubScene()
       hubScene.enviroment = texture;
   });
 
-  loader.load("/resources/models/Hub-World-new-10.glb", function (gltf) 
+  loader.load("/resources/models/Hub-World-new.glb", function (gltf) 
   {
     var model = gltf.scene;
     model.traverse((o) => 
@@ -2332,7 +2381,7 @@ function roundRect(ctx, x, y, w, h, r) {
 }
 
 function locationSpriteSetup() {
-  sprite_deathValley.userData.locName = "Death Valley";
+  sprite_deathValley.userData.locName = "Black Mesa";
   sprite_grandCanyon.userData.locName = "Grand Canyon";
   sprite_coloradoRiver.userData.locName = "Colorado River";
   sprite_phoenix.userData.locName = "Phoenix";
@@ -2359,7 +2408,7 @@ function locationSpriteSetup() {
   sprite_wymola.userData.locName = "Wymola";
 
   sprite_deathValley.userData.popup = true;
-  sprite_deathValley.userData.popupTitle = "Death Valley";
+  sprite_deathValley.userData.popupTitle = "Black Mesa";
   sprite_deathValley.userData.popupText =
     "Death Valley is a vast national park with over 3 million acres of designated wilderness and hundreds of miles of backcountry roads.";
   sprite_deathValley.userData.satelliteImage =
@@ -2477,7 +2526,7 @@ function locationSpriteSetup() {
   sprite_horseshoeBend.userData.popupText = "A dam on the Salt River formed Apache Lake.";
   sprite_horseshoeBend.userData.satelliteImage =
     "/resources/images/landsat/horseshoe-bend.jpg";
-  sprite_horseshoeBend.userData.img = "/resources/images/location/horseshoeBend-2.jpg";
+  sprite_horseshoeBend.userData.img = "/resources/images/location/horseshoeBend.jpg";
   sprite_horseshoeBend.userData.index = 13;
 
   sprite_micaViewTrail.userData.popup = true;
@@ -2657,6 +2706,38 @@ function makeEchoPing(x, z) {
   return { pingLocationMesh, elem };
 }
 
+function makeAnimSprite(x, y, z) {
+  
+  if(!lessonScene.getObjectByName('hearts'))
+  {
+    var animSpriteTexture = new THREE.ImageUtils.loadTexture( '/resources/sprites/Hearts-13x4.png' );
+    heartSprite = new TextureAnimator( animSpriteTexture, 13, 5, 30, 52 ); // texture, #horiz, #vert, #total, duration.
+    var animSpriteMaterial = new THREE.MeshBasicMaterial( { map: animSpriteTexture, side:THREE.DoubleSide, transparent: true, opacity: 1 } );
+    var animSpriteGeometry = new THREE.PlaneGeometry(50, 50, 1, 1);
+    var animSpriteMesh = new THREE.Mesh(animSpriteGeometry, animSpriteMaterial);
+    animSpriteMesh.position.set(-3, -0.1, 0.147);
+    animSpriteMesh.scale.set(0.01, 0.01, 0.01);
+    animSpriteMesh.rotation.y = Math.PI / -2;
+    animSpriteMesh.name = "hearts";
+    animSpriteMesh.renderOrder = 3;
+  
+    lessonScene.add(animSpriteMesh);
+
+    playEchoAnimation(5);
+    console.log("HEARTS DON'T EXIST");
+
+    setTimeout(function() 
+    {
+      lessonScene.remove(animSpriteMesh);
+    }, 6000);
+  }
+  else
+  {
+    
+    console.log("HEARTS DO EXIST");
+  }
+}
+
 //** CREATES ECHO's DOTTED LINE PATH, setups up entire path with all positions */
 function makeEchoLinePath(intersectPoint) {
   points = [];
@@ -2704,6 +2785,7 @@ function updateLinePath() {
 function updateLessonScene(index)
 {
   echoClicked = false;
+  bugClicked = false;
 
   if(echoLocTween)
   {
@@ -3287,10 +3369,13 @@ function updateLessonScene(index)
       );
       lessonComposer.addPass(filmPass); 
       
-      Echo.position.set(-1.153, -0.50, 0.147);
+      Echo.position.set(-3.75, -0.03, 0.147);
       Echo.rotation.set(-3, 0, 0);
-      Echo.scale.set(0.1, 0.1, 0.1);
-      playEchoAnimation(5);
+      Echo.scale.set(0.2, 0.2, 0.2);
+      var bbox = new THREE.Box3().setFromObject(Echo);
+
+      const geometry = new THREE.PlaneGeometry( 1, 1 );
+      const material = new THREE.MeshBasicMaterial( {transparent: true, side: THREE.DoubleSide, opacity: 0} );
       
       lessonScene.remove(blackMesaModel);
       lessonScene.remove(outlineBug);
@@ -3317,22 +3402,23 @@ function updateLessonScene(index)
         {
           if(!lessonScene.getObjectByName('bugBlue'))
           {
-            bugBlue = outlineBug.clone(true);
+            bugBlue = bugTogether.clone(true);
             var blueBugMaterial = new THREE.MeshBasicMaterial({transparent: true});
             bugBlue.children[0].children[0].material = blueBugMaterial;
     
             bugBlue.children[0].children[0].material.map = bugTexture_blue;
             bugBlue.children[0].children[0].material.map.flipY = false;
             bugBlue.children[0].children[0].material.map.needsUpdate = true;
-            bugBlue.position.set(-2.88, -2.6359, bugLocations[i]);
+            bugBlue.position.set(-2.88, -2.5, bugLocations[i]);
             bugBlue.rotation.set(0, -1, 0);
             bugBlue.scale.set(0.5, 0.5, 0.5);
             bugBlue.name = "bugBlue";
             lessonScene.add(bugBlue);
+            dragabbleObjects.push(bugBlue);
           }
           else
           {
-            bugBlue.position.set(-2.88, -2.6359, bugLocations[i]);
+            bugBlue.position.set(-2.88, -2.5, bugLocations[i]);
             bugBlue.scale.set(0.5, 0.5, 0.5);
             bugBlue.rotation.set(0, -1, 0);
           }
@@ -3343,23 +3429,24 @@ function updateLessonScene(index)
           
           if(!lessonScene.getObjectByName('bugYellow'))
           {
-            bugYellow = outlineBug.clone(true);
+            bugYellow = bugTogether.clone(true);
             var yellowBugMaterial = new THREE.MeshBasicMaterial({transparent: true});
             bugYellow.children[0].children[0].material = yellowBugMaterial;
     
             bugYellow.children[0].children[0].material.map = bugTexture_yellow;
             bugYellow.children[0].children[0].material.map.flipY = false;
             bugYellow.children[0].children[0].material.map.needsUpdate = true;
-            bugYellow.position.set(-2.88, -2.6359, bugLocations[i]);
+            bugYellow.position.set(-2.88, -2.5, bugLocations[i]);
             bugYellow.rotation.set(bugYellow.rotation.x, -1.25, bugYellow.rotation.x);
             bugYellow.scale.set(0.5, 0.5, 0.5);
             
             bugYellow.name = "bugYellow";
             lessonScene.add(bugYellow);
+            dragabbleObjects.push(bugYellow);
           }
           else
           {
-            bugYellow.position.set(-2.88, -2.6359, bugLocations[i]);
+            bugYellow.position.set(-2.88, -2.5, bugLocations[i]);
             bugYellow.scale.set(0.5, 0.5, 0.5);
             bugYellow.rotation.set(bugYellow.rotation.x, -1.25, bugYellow.rotation.x);
           }
@@ -3370,23 +3457,24 @@ function updateLessonScene(index)
           
           if(!lessonScene.getObjectByName('bugRed'))
           {
-            bugRed = outlineBug.clone(true);
+            bugRed = bugTogether.clone(true);
             var redBugMaterial = new THREE.MeshBasicMaterial({transparent: true});
             bugRed.children[0].children[0].material = redBugMaterial;
             
             bugRed.children[0].children[0].material.map = bugTexture_red;
             bugRed.children[0].children[0].material.map.flipY = false;
             bugRed.children[0].children[0].material.map.needsUpdate = true;
-            bugRed.position.set(-2.88, -2.6359, bugLocations[i]);
+            bugRed.position.set(-2.88, -2.5, bugLocations[i]);
             bugRed.rotation.set(bugRed.rotation.x, -1.5, bugRed.rotation.x);
             bugRed.scale.set(0.5, 0.5, 0.5);
 
             bugRed.name = "bugRed";
             lessonScene.add(bugRed);
+            dragabbleObjects.push(bugRed);
           }
           else
           {
-            bugRed.position.set(-2.88, -2.6359, bugLocations[i]);
+            bugRed.position.set(-2.88, -2.5, bugLocations[i]);
             bugRed.rotation.set(bugRed.rotation.x, -1.5, bugRed.rotation.x);
             bugRed.scale.set(0.5, 0.5, 0.5);
           }
@@ -3399,22 +3487,23 @@ function updateLessonScene(index)
           
           if(!lessonScene.getObjectByName('bugGreen'))
           {
-            bugGreen = outlineBug.clone(true);
+            bugGreen = bugTogether.clone(true);
             var greenBugMaterial = new THREE.MeshBasicMaterial({transparent: true});
             bugGreen.children[0].children[0].material = greenBugMaterial;
             
             bugGreen.children[0].children[0].material.map = bugTexture_green;
             bugGreen.children[0].children[0].material.map.flipY = false;
             bugGreen.children[0].children[0].material.map.needsUpdate = true;
-            bugGreen.position.set(-2.88, -2.6359, bugLocations[i]);
+            bugGreen.position.set(-2.88, -2.5, bugLocations[i]);
             bugGreen.rotation.set(bugGreen.rotation.x, -1, bugGreen.rotation.x);
             bugGreen.scale.set(0.5, 0.5, 0.5);
             bugGreen.name = "bugGreen";
             lessonScene.add(bugGreen);
+            dragabbleObjects.push(bugGreen);
           }
           else
           {
-            bugGreen.position.set(-2.88, -2.6359, bugLocations[i]);
+            bugGreen.position.set(-2.88, -2.5, bugLocations[i]);
             bugGreen.rotation.set(bugGreen.rotation.x, -1, bugGreen.rotation.x);
             bugGreen.scale.set(0.5, 0.5, 0.5);
           }
@@ -3494,7 +3583,7 @@ function updateHubworldScene()
     {
       if(!hubScene.getObjectByName('hub_bugBlue'))
       {
-        hub_bugBlue = outlineBug.clone(true);
+        hub_bugBlue = bugTogether.clone(true);
         var blueBugMaterial = new THREE.MeshBasicMaterial({transparent: true});
         hub_bugBlue.children[0].children[0].material = blueBugMaterial;
   
@@ -3521,7 +3610,7 @@ function updateHubworldScene()
     {
       if(!hubScene.getObjectByName('hub_bugYellow'))
       {
-        hub_bugYellow = outlineBug.clone(true);
+        hub_bugYellow = bugTogether.clone(true);
         var yellowBugMaterial = new THREE.MeshBasicMaterial({transparent: true});
         hub_bugYellow.children[0].children[0].material = yellowBugMaterial;
   
@@ -3547,7 +3636,7 @@ function updateHubworldScene()
       
       if(!hubScene.getObjectByName('hub_bugRed'))
       {
-        hub_bugRed = outlineBug.clone(true);
+        hub_bugRed = bugTogether.clone(true);
         var redBugMaterial = new THREE.MeshBasicMaterial({transparent: true});
         hub_bugRed.children[0].children[0].material = redBugMaterial;
         
@@ -3576,7 +3665,7 @@ function updateHubworldScene()
       
       if(!hubScene.getObjectByName('hub_bugGreen'))
       {
-        hub_bugGreen = outlineBug.clone(true);
+        hub_bugGreen = bugTogether.clone(true);
         var greenBugMaterial = new THREE.MeshBasicMaterial({transparent: true});
         hub_bugGreen.children[0].children[0].material = greenBugMaterial;
         
@@ -4334,7 +4423,7 @@ function clickEvent() {
       if(intersects[0])
       {
         intersectObject = intersects[0].object;
-        //console.log(intersectObject);
+        console.log(intersectObject);
         
         //** COMPUTER SCREEN */
         if(intersects[0].object.name == "Computer_Screen" && !startingSequence)
@@ -4482,14 +4571,13 @@ function clickEvent() {
           if(locationFound && !transitioning)
           {
             // updateLessonScene(4);
-            // currentLessonSceneIndex = 4;
-
+            currentLessonSceneIndex = 4;
+            transitionParams.transition = 1;
+            new TWEEN.Tween(transitionParams)
+            .to({ transition: 0 }, 2000)
+            .start(TransitionStart())
+            .onComplete(TransitionDone);
           }  
-          transitionParams.transition = 1;
-          new TWEEN.Tween(transitionParams)
-          .to({ transition: 0 }, 2000)
-          .start(TransitionStart())
-          .onComplete(TransitionDone);
         }              
       }
     }
@@ -4586,14 +4674,15 @@ function clickEvent() {
       if (intersects[0])
       {
         intersectObject = intersects[0].object;
-        console.log(intersects[0]);
-        console.log(lessonScene.children);
+        //console.log(intersects[0]);
+        //console.log(lessonScene.children);
     
         //** CLICK BUG FUNCTIONALITY */
-        if (intersectObject.userData.name == "bug" && currentLessonSceneIndex != 4 && bugAmount < 4) 
+        if (intersectObject.userData.name == "bug" && currentLessonSceneIndex != 4 && bugAmount < 4 && !bugClicked) 
         {
           bugAmount++;
           console.log("BUG: " + bugAmount);
+          bugClicked = true;
           //lessonScene.remove(intersects[0].object);
           tweenBug();
           //toggleLessonPopup();
@@ -5803,7 +5892,18 @@ function TransitionDone() {
       currentCamera = lessonCamera;
       currentSceneNumber = 2;
       resetHubWorld();
-      
+
+      console.log(currentLessonSceneIndex);
+      if(currentLessonSceneIndex == 4)
+      {
+        dragBugControls.activate();
+
+        console.log(backButton.classList.contains("active"));
+        if(!backButton.classList.contains("active"))
+        {
+          backButton.classList.toggle("active");
+        }
+      }
     }
     else if (currentSceneNumber == 1) {
       currentScene = lessonScene;
@@ -5852,7 +5952,12 @@ function TransitionDone() {
       if(currentLessonSceneIndex == 4)
       {
         console.log(currentLessonSceneIndex);
-        backButton.classList.toggle("active");
+        dragBugControls.activate();
+
+        if(!backButton.classList.contains("active"))
+        {
+          backButton.classList.toggle("active");
+        }
       }
   
       //Toggle UI When scene Transitions
@@ -5909,6 +6014,7 @@ function TransitionDone() {
       console.log(currentLessonSceneIndex);
 
       updateLessonScene();
+      console.log("Camera tween");
       cameraTweenTo(undefined, false, 3, false);
   
       //Toggle UI When scene Transitions
@@ -5946,6 +6052,7 @@ function hubToMapTransition()
   
   hubTransitioning = true;
   isTweening = false;
+  mainCamera.position.set(mainCamera.position.x, 3, mainCamera.position.z);
   
   // new TWEEN.Tween(hubCamera.position).to({x: -1.65},2000)
   //   .easing(TWEEN.Easing.Quadratic.InOut)
@@ -6780,6 +6887,10 @@ backButton.addEventListener("click", function (ev) {
         .onComplete(TransitionDone);
     }
 
+    if(currentLessonSceneIndex == 4)
+    {
+      dragBugControls.deactivate();
+    }
     updateHubworldScene();
   }
 
@@ -7098,9 +7209,10 @@ toggleMapPopup.addEventListener("mouseleave", function (ev) {
   hoverMapToggle = false;
 });
 
+var initialBugPos;
+
 //**EVENT TO CHANGE MOUSE CURSOR TO 'GRABBING'**//
 controls.addEventListener( 'start', function ( event ) {
-
 	if(currentSceneNumber == 1)
   {
     mouseIsDragging = true;
@@ -7129,6 +7241,54 @@ controls.addEventListener( 'end', function ( event ) {
     }
 
     youAreHereUpdate();
+  }
+} );
+dragBugControls.addEventListener('dragend', function ( event ) {
+
+  console.log("END DRAG");
+  raycaster.setFromCamera(mouse, lessonCamera);
+  var intersects = raycaster.intersectObjects(lessonScene.children, true);
+
+  var pos = new THREE.Vector3();
+  event.object.getWorldPosition( pos );
+  console.log(pos);
+
+  if (intersects.length > 0)
+  {
+    console.log(intersects[0]);
+  }
+
+  if(pos.y >= -0.5 && pos.y <= 0.5 
+    && pos.z >= -0.6 && pos.z <= 0.6)
+  {
+    console.log("DRAGGED ON ECHO!");
+      makeAnimSprite();
+      var selectedObject = lessonScene.getObjectByName(event.object.parent.parent.name);
+      console.log(selectedObject);
+
+      //** SOUND PLAYS HERE */
+
+      var rnd = Math.floor(Math.random() * 3);
+      if(rnd == 0)
+      {
+        echoChewSound.play();
+      }
+      else if(rnd == 1)
+      {
+        echoChewSound2.play();
+      }
+      else
+      {
+        echoChewSound3.play();
+      }
+
+      dragabbleObjects.splice(dragabbleObjects.indexOf(selectedObject), 1);
+      lessonScene.remove(selectedObject);
+  }
+  else
+  {
+    console.log("RESET POSITION");
+    event.object.position.set(0, 0, 0);
   }
 } );
 
