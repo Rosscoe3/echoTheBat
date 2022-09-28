@@ -224,6 +224,7 @@ var intersected = false;
 var audioPlaying = true;
 var bugAmount = 0;
 var bugsFound = [];
+var bugsEaten = 0;
 var bugBlue, bugYellow, bugRed, bugGreen;
 var hub_bugBlue, hub_bugYellow, hub_bugRed, hub_bugGreen;
 var bugLocations = [0, 1, -1, 2];
@@ -680,6 +681,7 @@ let hubworldRaycast = new THREE.Group();
 let garminModel = new THREE.Group();
 let garminHover = false;
 let computerScreen;
+var animationSmoothTime = 0.0;
 
 //Load Arizona Map Model
 let arizona = new THREE.Group();
@@ -1497,14 +1499,17 @@ function init() {
       z: 0,
     }
   };
-  gui.add(guiWorld.xPos, "x", -4, 4).onChange(() => {
-    echoBounds.position.set(
-      guiWorld.xPos.x,
-      echoBounds.position.y,
-      echoBounds.position.z
-    );
+  gui.add(guiWorld.xPos, "x", 0, 3).onChange(() => {
+    // echoBounds.position.set(
+    //   guiWorld.xPos.x,
+    //   echoBounds.position.y,
+    //   echoBounds.position.z
+    // );
+
+    animationSmoothTime = guiWorld.xPos.x;
+
     //effectVignette.uniforms[ 'offset' ].value = guiWorld.xPos.x;
-    console.log(echoBounds.position);
+    console.log(animationSmoothTime);
   });
 
   gui.add(guiWorld.xPos, "y", -4, 4).onChange(() => {
@@ -2073,7 +2078,7 @@ function initLessonScene() {
 
     mixer = new THREE.AnimationMixer(model);
     echoActions = gltf.animations;
-    ///console.log(echoActions);
+    console.log(echoActions);
 
     playEchoAnimation(5);
     echoActions.forEach( function ( clip ) {
@@ -2723,19 +2728,21 @@ function makeAnimSprite(x, y, z) {
   
     lessonScene.add(animSpriteMesh);
 
-    playEchoAnimation(5);
     console.log("HEARTS DON'T EXIST");
-
-    setTimeout(function() 
-    {
-      lessonScene.remove(animSpriteMesh);
-    }, 6000);
   }
   else
   {
-    
     console.log("HEARTS DO EXIST");
   }
+
+  playEchoAnimation(4, false, animationSmoothTime);
+  console.log("Un-Wrapping");
+  setTimeout(function() 
+  {
+    lessonScene.remove(animSpriteMesh);
+    playEchoAnimation(5, false, animationSmoothTime);
+    console.log("wrapping");
+  }, 4000);
 }
 
 //** CREATES ECHO's DOTTED LINE PATH, setups up entire path with all positions */
@@ -3367,7 +3374,9 @@ function updateLessonScene(index)
         648,    // scanline count
         false,  // grayscale
       );
-      lessonComposer.addPass(filmPass); 
+      lessonComposer.addPass(filmPass);
+      
+      bugsEaten = 0;
       
       Echo.position.set(-3.75, -0.03, 0.147);
       Echo.rotation.set(-3, 0, 0);
@@ -3382,15 +3391,8 @@ function updateLessonScene(index)
       lessonScene.add(cave);
       filmPass.grayscale = true;
       lessonSubtitleSequenceNumber = 8;
-  
-      // outlineBug.position.set(-2.88, -2.6359, 0);
-      // outlineBug.rotation.set(0, 0, 0);
-      // outlineBug.scale.set(0.75, 0.75, 0.75);
-      // outlineBug.children[0].children[0].material.map = bugTexture_green;
-      // outlineBug.children[0].children[0].material.map.flipY = false;
-      // outlineBug.children[0].children[0].material.map.needsUpdate = true;
-  
-  
+      playEchoAnimation(5);
+
       //** ADDS BUGS DEPENDING ON WHICH ONES YOU HAVE COLLECTED */
       console.log(bugsFound.length);
       for(var i = 0; i < bugsFound.length; i++)
@@ -4697,6 +4699,7 @@ function clickEvent() {
             bugRotTween.stop();
           }
 
+
           clickSound.play();
         }
         //** CLICK ON ECHO */ 
@@ -4718,11 +4721,10 @@ function clickEvent() {
               playEchoAnimation(1, true);
               echoAnimFinal = true;
             }
-            
-            console.log("LOG");
           }
           if(!echoClicked)
           {
+            console.log("Echo Flying animation!!");
             playEchoAnimation(2, true);
             subtitleChange();
           }
@@ -4834,11 +4836,16 @@ function tweenBug(bugNumb)
     }
 }
 
-function playEchoAnimation(index, tween)
+function playEchoAnimation(index, tween, transition)
 {
   //console.log(echoActions);
   mixer.stopAllAction();
   var action = mixer.clipAction(echoActions[index]);
+
+  if(!transition)
+  {
+    transition = 1.0;
+  }
 
   if(index == 3)
   {
@@ -5076,7 +5083,7 @@ function playEchoAnimation(index, tween)
 
   //var action = echoActions[index];
   action.weight = 1;
-  action.fadeIn(1);
+  action.fadeIn(transition);
   action.play();
 }
 
@@ -5745,7 +5752,6 @@ function animate() {
   computerScreenTexture.needsUpdate = true;
   walkieTalkieVideoTexture.needsUpdate = true;
 
-
   //console.log("Lessons Completed: " + lessonsCompleted);
   // console.log("Scene polycount:", renderer.info.render.triangles);
   // console.log("Active Drawcalls:", renderer.info.render.calls);
@@ -5771,7 +5777,7 @@ function animate() {
     mainCamera.position.z >= 10 || mainCamera.position.z <= -10)
     {
       if(!outOfBounds)
-      {
+      { 
         console.log("OUT OF BOUNDS");
         outOfBounds = true;
         const camPos = new THREE.Vector3( 1.64, mainCamera.position.y, 2 );
@@ -5951,7 +5957,7 @@ function TransitionDone() {
       //** ALLOW BACK BUTTON ON LAST SCENE */
       if(currentLessonSceneIndex == 4)
       {
-        console.log(currentLessonSceneIndex);
+        //console.log(currentLessonSceneIndex);
         dragBugControls.activate();
 
         if(!backButton.classList.contains("active"))
@@ -7267,6 +7273,16 @@ dragBugControls.addEventListener('dragend', function ( event ) {
       console.log(selectedObject);
 
       //** SOUND PLAYS HERE */
+
+      if(bugsEaten < bugsFound.length - 1)
+      {
+        bugsEaten++;
+        console.log("Bugs Eaten: " + bugsEaten + " bugsFound: " + bugsFound.length);
+      }
+      else
+      {
+        console.log("ALL BUGS EATEN!!");
+      }
 
       var rnd = Math.floor(Math.random() * 3);
       if(rnd == 0)
