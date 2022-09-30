@@ -236,6 +236,10 @@ var hub_Bug_pos_z = 0.69;
 var bugFlyTween;
 var bugRotTween;
 var echoAnimFinal = false;
+var echoCurrentAnim = 5;
+
+var echoActiveAction;
+var echoFeedTimeout;
 const pingWrldPosTemp = new THREE.Vector3();
 var maxSpriteSize = 0.3;
 var minSpriteSize = 0.2;
@@ -681,7 +685,7 @@ let hubworldRaycast = new THREE.Group();
 let garminModel = new THREE.Group();
 let garminHover = false;
 let computerScreen;
-var animationSmoothTime = 0.0;
+var animationSmoothTime = 1.0;
 
 //Load Arizona Map Model
 let arizona = new THREE.Group();
@@ -691,6 +695,7 @@ let walkieTalkie = new THREE.Group();
 let continueButton = document.getElementById("continueButton");
 let startYoutubeContainer = document.getElementById("startYoutubeVideo");
 let startButton = document.getElementById("startBtn");
+let retryButton = document.getElementById("retryButton");
 const labelContainerElem = document.querySelector("#labels");
 const locationNameElem = document.createElement("div");
 let audioButton = document.getElementById("audioToggle");
@@ -698,7 +703,7 @@ let xButton = document.getElementById("close-btn");
 let xButton2 = document.getElementById("close-btn2");
 let xButton3 = document.getElementById("close-btn3");
 let xButton4 = document.getElementById("close-btn4");
-let xButton5 = document.getElementById("creditsCloseBtn");
+// let xButton5 = document.getElementById("creditsCloseBtn");
 let miniMap = document.getElementById("miniMap");
 let mapPopup = document.getElementById("mapPopup");
 
@@ -2080,7 +2085,13 @@ function initLessonScene() {
     echoActions = gltf.animations;
     console.log(echoActions);
 
-    playEchoAnimation(5);
+    //playEchoAnimation(5);
+    echoActiveAction = mixer.clipAction(echoActions[echoCurrentAnim]);
+    echoActiveAction.reset();
+    echoActiveAction.weight = 1;
+    echoActiveAction.fadeIn(transition);
+    echoActiveAction.play();
+
     echoActions.forEach( function ( clip ) {
       
       //console.log(clip);
@@ -2095,8 +2106,6 @@ function initLessonScene() {
     Echo.name = "Echo";
     Echo.add(model);
     Echo.add(echoBox);
-    //console.log(Echo);
-    //lessonScene.add(Echo.children[0]);
     lessonScene.add(Echo);
 
   });
@@ -2735,14 +2744,27 @@ function makeAnimSprite(x, y, z) {
     console.log("HEARTS DO EXIST");
   }
 
-  playEchoAnimation(4, false, animationSmoothTime);
-  console.log("Un-Wrapping");
-  setTimeout(function() 
+  if(echoFeedTimeout)
   {
-    lessonScene.remove(animSpriteMesh);
-    playEchoAnimation(5, false, animationSmoothTime);
-    console.log("wrapping");
-  }, 4000);
+    clearTimeout(echoFeedTimeout);
+  }
+
+  playEchoAnimation(4);
+  console.log("Un-Wrapping");
+  echoFeedTimeout = setTimeout(function() 
+  {
+    playEchoAnimation(1);
+    console.log("Flailing");
+    setTimeout(function() 
+    {
+      playEchoAnimation(5);
+      console.log("wrapping");
+      setTimeout(function() 
+      {
+        lessonScene.remove(animSpriteMesh);
+      }, 3000);
+    }, 2000);
+  }, 3000);
 }
 
 //** CREATES ECHO's DOTTED LINE PATH, setups up entire path with all positions */
@@ -3720,7 +3742,7 @@ function lessonComplete()
   {
     sceneTransitionSprites[lessonsCompleted].userData.ping = true;
     sceneTransitionSprites[lessonsCompleted].userData.popup = false;
-    document.getElementById("towerMessage").innerHTML = "May or may not be Horseshoe Bend";
+    document.getElementById("towerMessage").innerHTML = "ECHO seen heading north toward the Grand Canyon";
     
     if(!mapScene.getObjectByName("ping"))
     {
@@ -3744,7 +3766,7 @@ function lessonComplete()
   {
     sceneTransitionSprites[lessonsCompleted].userData.ping = true;
     sceneTransitionSprites[lessonsCompleted].userData.popup = false;
-    document.getElementById("towerMessage").innerHTML = "May or may not be the Cathedral Rock";
+    document.getElementById("towerMessage").innerHTML = "ECHO spotted heading south on Route 17";
     
     if(!mapScene.getObjectByName("ping"))
     {
@@ -3758,7 +3780,7 @@ function lessonComplete()
   {
     sceneTransitionSprites[lessonsCompleted].userData.ping = true;
     sceneTransitionSprites[lessonsCompleted].userData.popup = false;
-    document.getElementById("towerMessage").innerHTML = "May or may not be Black Mesa";
+    document.getElementById("towerMessage").innerHTML = "ECHO was seen in the Sonoran desert";
     
     if(!mapScene.getObjectByName("ping"))
     {
@@ -3772,7 +3794,7 @@ function lessonComplete()
   {
     sceneTransitionSprites[lessonsCompleted].userData.ping = true;
     sceneTransitionSprites[lessonsCompleted].userData.popup = false;
-    document.getElementById("towerMessage").innerHTML = "May or may not be Tuscon";
+    document.getElementById("towerMessage").innerHTML = "ECHO seen heading toward the mountains southeast of Tucson";
     
     if(!mapScene.getObjectByName("ping"))
     {
@@ -4838,18 +4860,17 @@ function tweenBug(bugNumb)
 
 function playEchoAnimation(index, tween, transition)
 {
-  //console.log(echoActions);
-  mixer.stopAllAction();
-  var action = mixer.clipAction(echoActions[index]);
-
+  echoActiveAction = mixer.clipAction(echoActions[echoCurrentAnim]);
+  echoCurrentAnim = index;
+  
   if(!transition)
   {
-    transition = 1.0;
+    transition = 0.5;
   }
 
-  if(index == 3)
+  if(echoCurrentAnim == 3)
   {
-    index = 5;
+    echoCurrentAnim = 5;
   }
   
   if(tween)
@@ -5080,11 +5101,23 @@ function playEchoAnimation(index, tween, transition)
     console.log("ECHO TWEENING!: " + currentLessonSceneIndex);
         
   }
+  
+  var endAction = mixer.clipAction(echoActions[index]);
 
-  //var action = echoActions[index];
-  action.weight = 1;
-  action.fadeIn(transition);
-  action.play();
+  setWeight( endAction, 1 );
+  endAction.time = 0;
+  endAction.play();
+
+  // Crossfade with warping - you can also try without warping by setting the third parameter to false
+  echoActiveAction.crossFadeTo( endAction, 1.0, true );
+}
+
+function setWeight( action, weight ) {
+
+  action.enabled = true;
+  action.setEffectiveTimeScale( 1 );
+  action.setEffectiveWeight( weight );
+
 }
 
 function clickOpenURL(intersects, url) {
@@ -6694,6 +6727,12 @@ startButton.addEventListener("click", function (ev) {
   }
   console.log("START BUTTON");
 });
+
+//** RETRY BUTTON EVENT LISTENER */
+retryButton.addEventListener("click", function (ev) {
+  console.log("RETRY BUTTON");
+  location.reload();
+});
 //** SIDE BY SIDE X BUTTON */
 xButton.addEventListener("click", function (ev) {
   ev.stopPropagation(); // prevent event from bubbling up to .container
@@ -6718,11 +6757,11 @@ xButton4.addEventListener("click", function (ev) {
 });
 
 //** CREDITS POPUP X BUTTON*/
-xButton5.addEventListener("click", function (ev) {
-  console.log("CLOSE");
-  creditsContainer.classList.toggle("active");
-  clickSound.play();
-});
+// xButton5.addEventListener("click", function (ev) {
+//   console.log("CLOSE");
+//   creditsContainer.classList.toggle("active");
+//   clickSound.play();
+// });
 
 /** TUTORIAL */
 tutClickImage.addEventListener('click', function(ev){
@@ -7279,8 +7318,23 @@ dragBugControls.addEventListener('dragend', function ( event ) {
         bugsEaten++;
         console.log("Bugs Eaten: " + bugsEaten + " bugsFound: " + bugsFound.length);
       }
+      //** ALL BUGS ARE EATEN, TRIGGER END OF GAME */
       else
       {
+        if(!creditsContainer.classList.contains("active"))
+        {
+          creditsContainer.classList.toggle("active");
+        }
+        if(backButton.classList.contains("active"))
+        {
+          backButton.classList.toggle("active");
+        }
+
+        setTimeout(function() 
+        {
+          retryButton.classList.toggle("active");
+        }, 30000);
+        
         console.log("ALL BUGS EATEN!!");
       }
 

@@ -1250,8 +1250,8 @@ miniMap:hover > .hover {
 /* CREDITS  */
 .creditsContainer {
   position: absolute;
-  transform: translate(-50%, -50%) scale(0);
-  top: 50%;
+  transform: translate(-50%, -50%) scale(1);
+  top: 150%;
   left: 50%;
   opacity: 0%;
   cursor: default;
@@ -1259,7 +1259,8 @@ miniMap:hover > .hover {
   width: 50%;
   height: fit-content;
 
-  background-color: white;
+  background-color: none;
+  color: white;
   
   pointer-events: none;
   
@@ -1279,7 +1280,9 @@ miniMap:hover > .hover {
   transform: translate(-50%, -50%) scale(1);
   pointer-events: auto;
 
-  transition: all .25s ease-in-out;
+  top: -50%;
+
+  transition: transform 10s ease-in-out, top 30s ease-in-out, opacity 1s ease-in-out;
 }
 .creditsContainer .close-btn {
   cursor: pointer;
@@ -1295,6 +1298,55 @@ miniMap:hover > .hover {
   line-height: 30px;
   text-align: center;
   border-radius: 50%;
+}
+.creditsContainer h1{
+  font-size: 8vh;
+}
+
+.retryButton{
+  border: solid white 1vh;
+  padding: 50vh;
+  margin: 20px;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(0);
+  opacity: 0%;
+  width: fit-content;
+  height: fit-content;
+  z-index: 2;
+  text-align: top;
+  padding: 20px;
+  box-sizing: border-box;
+  border-radius: 1rem;
+  cursor: default;
+  pointer-events: none;
+  
+  /* font-size: 2vw; */
+  
+  text-size-adjust: inherit;
+  overflow-wrap: break-word;
+  font-family: roboto-condensed, sans-serif;
+  font-size: 7vh;
+  color: white;
+
+  transition: all 500ms ease-in-out;
+
+}
+.retryButton.active:hover{
+  opacity: 0.5;
+  /* mix-blend-mode: exclusion; */
+  transition: opacity .5s ease-in-out;
+   -moz-transition: opacity .5s ease-in-out;
+   -webkit-transition: opacity .5s ease-in-out;
+}
+.retryButton.active{
+  display: block;
+  transition: all 500ms ease-in-out;
+  transform: translate(-50%, -50%) scale(1);
+  opacity: 100%;
+  cursor: pointer;
+  pointer-events: auto;
 }
 
 /* TUTORIAL */
