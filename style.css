@@ -100,6 +100,7 @@ body {
   width: 100%;
   color: white;
   text-align: center;
+  opacity: 0.75;
 
   font-family: roboto-condensed, sans-serif;
   font-weight: 400;
@@ -109,15 +110,18 @@ body {
 #labels>div {
   position: absolute;  /* let us position them inside the container */
   left: 0;             /* make their default position the top left of the container */
-  top: 0;
-  cursor: pointer;     /* change the cursor to a hand when over us */
+  top: 0;   /* change the cursor to a hand when over us */
   font-size: medium;
   user-select: none;   /* don't let the text get selected */
   text-align: center;
   font-family: roboto-condensed, sans-serif;
+  opacity: 0.0;
+
+  transition: opacity 0.5s ease-in-out;
 }
-#labels>div:hover {
-  color: red;
+#labels>div.active{
+  opacity: 1.0;
+  transition: opacity 0.5s ease-in-out;
 }
 
 /* SCREEN TRANSITION*/
@@ -1682,6 +1686,32 @@ button {
   transition: opacity .25s ease-in-out;
    -moz-transition: opacity .25s ease-in-out;
    -webkit-transition: opacity .25s ease-in-out;
+}
+
+.helpButton{
+  position: absolute;
+  left: 2.5vh;
+  top: 2.5vh;
+  font-size: 3vh;
+  line-height: 2.5vh;
+
+  border-radius: 50%;
+  width: 2.5vh;
+  height: 2.5vh;
+  padding: 10px;
+  border: 3px solid white;
+  color: white;
+  text-align: center;
+
+  font-family: roboto-condensed, sans-serif;
+
+
+}
+
+.helpButton:hover
+{
+  opacity: 50%;
+  transition: all 0.25s;
 }
 
 .mapLink{

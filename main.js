@@ -237,9 +237,9 @@ var bugFlyTween;
 var bugRotTween;
 var echoAnimFinal = false;
 var echoCurrentAnim = 5;
-
-var echoActiveAction;
+var echoActiveAction, echoMomActiveAction;
 var echoFeedTimeout;
+
 const pingWrldPosTemp = new THREE.Vector3();
 var maxSpriteSize = 0.3;
 var minSpriteSize = 0.2;
@@ -509,6 +509,12 @@ const petrifiedForestTexture = new THREE.TextureLoader(manager).load(
 const pinalCountyTexture = new THREE.TextureLoader(manager).load(
   "/resources/images/location/pinalCounty.jpg"
 );
+const chiricahuaMntsTexture = new THREE.TextureLoader(manager).load(
+  "/resources/images/location/chiricahua-mts.jpg"
+);
+const superstitionMntsTexture = new THREE.TextureLoader(manager).load(
+  "/resources/images/location/superstition-mnts.jpg"
+);
 const saguaroNatParkTexture = new THREE.TextureLoader(manager).load(
   "/resources/images/location/saguaroNatPark.jpg"
 );
@@ -588,7 +594,11 @@ const navajoPointMaterial = new THREE.SpriteMaterial({ map: navajoPointTexture})
 const paintedDesertMaterial = new THREE.SpriteMaterial({ map: paintedDesertTexture});
 const peoriaMaterial = new THREE.SpriteMaterial({ map: peoriaTexture});
 const petrifiedForestMaterial = new THREE.SpriteMaterial({ map: petrifiedForestTexture});
+
 const pinalCountyMaterial = new THREE.SpriteMaterial({ map: pinalCountyTexture});
+const chiricahuaMntsMaterial = new THREE.SpriteMaterial({map: chiricahuaMntsTexture});
+
+const superstitionMntsMaterial = new THREE.SpriteMaterial({ map: superstitionMntsTexture});
 const saguaroNatParkMaterial = new THREE.SpriteMaterial({ map: saguaroNatParkTexture});
 const sanSimonRestAreaMaterial = new THREE.SpriteMaterial({ map: sanSimonRestAreaTexture});
 const scaddanWashMaterial = new THREE.SpriteMaterial({ map: scaddanWashTexture});
@@ -635,6 +645,7 @@ var sprite_deathValley,
   sprite_scaddanWash,
   sprite_tanqueVerde,
   sprite_wymola,
+  sprite_chiricahuaMnts,
   lessonLocation_phoenix_sprite,
   lessonLocation_horseshoe_sprite,
   lessonLocation_cathedralRock_sprite,
@@ -664,8 +675,11 @@ let bugTogether = new THREE.Group();
 bugTogether.name = 'bugTogether';
 let Echo = new THREE.Group();
 Echo.name = 'Echo';
-var mixer;
-var echoBox, echoActions;
+let EchoMom = new THREE.Group();
+EchoMom.name = 'EchoMom';
+
+var mixer, momMixer;
+var echoBox, echoActions, echoMomActions;
 var echoClicked = false;
 var echoLocTween, echoRotTween, echoScaleTween;
 
@@ -786,6 +800,16 @@ locationNameElem.textContent = "";
 var echoPingLocation;
 var heartSprite = new THREE.Group();
 
+var hubsceneLabels = [
+  makeTextLabel(-2.25, 0.175, 0.675, "Bug Count"),
+  makeTextLabel(-2.25, 0.175, -0.05, "Follow Echo"),
+  makeTextLabel(-1.9, 0.0, -0.3, "Where is Echo?"),
+  makeTextLabel(-2.25, 0.05, -1.15, "About Landsat"),
+  makeTextLabel(-2.25, 0.08, -1.5, "Camp Landsat"),
+];
+
+console.log(hubsceneLabels[0].cube);
+
 
 init();
 initLessonScene();
@@ -881,7 +905,7 @@ function init() {
   startButton.classList.toggle("disabled");
   audioButton.classList.toggle("disabled");
   miniMap.classList.toggle("disabled");
-  hamburger.classList.toggle("disabled");
+  //hamburger.classList.toggle("disabled");
   backButton.classList.toggle("disabled");
   bugIcon.classList.toggle("disabled");
   bugIcon2.classList.toggle("disabled");
@@ -937,7 +961,6 @@ function init() {
 
   sprite_tempe = new THREE.Sprite(tempeMaterial);
   sprite_tuscon = new THREE.Sprite(tusconMaterial);
-  sprite_tuscon.name = 'tuscon';
 
   sprite_catalinaMountains = new THREE.Sprite(catalinaMountainsMaterial);
   sprite_sonoranDesert = new THREE.Sprite(sonoranDesertMaterial);
@@ -956,12 +979,14 @@ function init() {
   sprite_paintedDesert = new THREE.Sprite(paintedDesertMaterial);
   sprite_peoria = new THREE.Sprite(peoriaMaterial);
   sprite_petrifiedForest = new THREE.Sprite(petrifiedForestMaterial);
-  sprite_superstitionMnts = new THREE.Sprite(pinalCountyMaterial);
+  sprite_superstitionMnts = new THREE.Sprite(superstitionMntsMaterial);
   sprite_saguaroNatPark = new THREE.Sprite(saguaroNatParkMaterial);
   sprite_sanSimon = new THREE.Sprite(sanSimonRestAreaMaterial);
   sprite_scaddanWash = new THREE.Sprite(scaddanWashMaterial);
   sprite_tanqueVerde = new THREE.Sprite(tanqueVerdeMaterial);
   sprite_wymola = new THREE.Sprite(wymolaMaterial);
+  sprite_chiricahuaMnts = new THREE.Sprite(chiricahuaMntsMaterial);
+  sprite_chiricahuaMnts.name = 'chiricahuaMts';
 
   lessonLocation_phoenix_sprite = new THREE.Sprite(lessonLocation_phoenix_material);
   lessonLocation_horseshoe_sprite = new THREE.Sprite(lessonLocation_horseshoe_material);
@@ -998,6 +1023,7 @@ function init() {
     sprite_scaddanWash,
     sprite_tanqueVerde,
     sprite_wymola,
+    sprite_chiricahuaMnts,
   ];
   uiLocationPositions = [
     new THREE.Vector3(3, 1, 4),
@@ -1035,7 +1061,7 @@ function init() {
     sprite_horseshoeBend,
     sprite_cathedralRock,
     sprite_deathValley,
-    sprite_tuscon
+    sprite_chiricahuaMnts
   ];
 
   //** Adds all the sprites with their given positions */
@@ -1077,6 +1103,7 @@ function init() {
   sprite_scaddanWash.position.set(-5.5, sprite_petrifiedForest.position.y, 1.01);
   sprite_tanqueVerde.position.set(2.53, sprite_petrifiedForest.position.y, 5.34);
   sprite_wymola.position.set(0.8, sprite_petrifiedForest.position.y, 4.2);
+  sprite_chiricahuaMnts.position.set(5.56, sprite_petrifiedForest.position.y, 6.65);
 
   glowSprite.position.set(sprite_rooseveltLake.position.x, uiMinheight, sprite_rooseveltLake.position.z);
   //lessonSceneRaycast.add(glowSprite);
@@ -1463,6 +1490,23 @@ function init() {
   sprite_wymola_Label.material.opacity = 0.0;
   mapScene.add(sprite_wymola_Label);
 
+  sprite_chiricahuaMnts
+
+  var sprite_chiricahuaMnts_Label = makeTextSprite("Chiricahua Mts.", {
+    fontsize: 40,
+    fontface: "roboto-condensed",
+    borderColor: { r: 0, g: 0, b: 255, a: 0.0 },
+  });
+  sprite_chiricahuaMnts_Label.scale.set(0.5, 0.25, 0.5);
+  sprite_chiricahuaMnts_Label.position.set(
+    sprite_chiricahuaMnts.position.x,
+    uiMinheight + 0.01,
+    sprite_chiricahuaMnts.position.z + 0.075
+  );
+  sprite_chiricahuaMnts_Label.userData.hover = false;
+  sprite_chiricahuaMnts_Label.material.opacity = 0.0;
+  mapScene.add(sprite_chiricahuaMnts_Label);
+
   labelSprites = [
     sprite_deathValley_Label,
     sprite_grandCanyon_Label,
@@ -1489,8 +1533,8 @@ function init() {
     sprite_scaddanWash_Label,
     sprite_tanqueVerde_Label,
     sprite_wymola_Label,
+    sprite_chiricahuaMnts_Label,
   ];
-
   //** SETUP FOR USING DAT GUI CONTROLS */
   const guiWorld = {
     xPos: {
@@ -1504,37 +1548,34 @@ function init() {
       z: 0,
     }
   };
-  gui.add(guiWorld.xPos, "x", 0, 3).onChange(() => {
-    // echoBounds.position.set(
-    //   guiWorld.xPos.x,
-    //   echoBounds.position.y,
-    //   echoBounds.position.z
-    // );
+  gui.add(guiWorld.xPos, "x", -10, 10).onChange(() => {
+    EchoMom.position.set(
+      guiWorld.xPos.x,
+      EchoMom.position.y,
+      EchoMom.position.z
+    );
 
-    animationSmoothTime = guiWorld.xPos.x;
-
-    //effectVignette.uniforms[ 'offset' ].value = guiWorld.xPos.x;
-    console.log(animationSmoothTime);
+    console.log(EchoMom.position);
   });
 
-  gui.add(guiWorld.xPos, "y", -4, 4).onChange(() => {
-    echoBounds.position.set(
-      echoBounds.position.x,
+  gui.add(guiWorld.xPos, "y", -10, 10).onChange(() => {
+    EchoMom.position.set(
+      EchoMom.position.x,
       guiWorld.xPos.y,
-      echoBounds.position.z
+      EchoMom.position.z
     );
     //effectVignette.uniforms[ 'darkness' ].value = guiWorld.xPos.y;
-    console.log(echoBounds.position);
+    console.log(EchoMom.position);
     
   });
 
-  gui.add(guiWorld.xPos, "z", -4, 4).onChange(() => {
-    echoBounds.position.set(
-      echoBounds.position.x,
-      echoBounds.position.y,
+  gui.add(guiWorld.xPos, "z", -10, 10).onChange(() => {
+    EchoMom.position.set(
+      EchoMom.position.x,
+      EchoMom.position.y,
       guiWorld.xPos.z
     );
-    console.log(echoBounds.position);
+    console.log(EchoMom.position);
   });
 
   //** TOWER ICON INSTANTIATIONS */
@@ -1545,10 +1586,8 @@ function init() {
   focusCube.visible = true;
   //Loads arizona Map
   loader.load("/resources/models/arizona-map-5.glb", function (gltf) {
-    //landsat = gltf.scene;
     arizona.userData.name = "Arizona";
     arizona.scale.setY(1);
-    //arizona.castShadow = true;
     arizona.rotation.y = Math.PI / -2.15;
 
     var model = gltf.scene;
@@ -1612,7 +1651,6 @@ function tutorialSequence()
   
   if(tutorialIndex == 0)
   {
-    // tutorialHighlight.style = "top: 50%";
     tutorialHighlight.style.width = '30vh';
     tutorialHighlight.style.height = '20vh';
     //highlightText.innerHTML = "Click and drag to move around the map";
@@ -1720,6 +1758,8 @@ function tutorialSequence()
       {
         subtitleLines.innerHTML = "Good luck finding Echo!";
         subtitles.classList.toggle("active");
+        tutorialHighlight.style.bottom = "50%";
+        tutorialHighlight.style.right = "50%";
         setTimeout(function() 
         {
           subtitles.classList.toggle("active");
@@ -2049,7 +2089,7 @@ function initLessonScene() {
   bugTogether.position.set(-2.41, -1.01, 1.48);
   bugTogether.scale.set(.5, .5, .5);
 
-  loader.load("/resources/models/echo-tan.glb", function (gltf) 
+  loader.load("/resources/models/echo-tan-1.glb", function (gltf) 
   {
     gltf.animations; // Array<THREE.AnimationClip>
     gltf.scene; // THREE.Group
@@ -2085,23 +2125,12 @@ function initLessonScene() {
     echoActions = gltf.animations;
     console.log(echoActions);
 
-    //playEchoAnimation(5);
+    //playEchoAnimation(4);
     echoActiveAction = mixer.clipAction(echoActions[echoCurrentAnim]);
     echoActiveAction.reset();
     echoActiveAction.weight = 1;
     echoActiveAction.fadeIn(transition);
     echoActiveAction.play();
-
-    echoActions.forEach( function ( clip ) {
-      
-      //console.log(clip);
-      
-      if(clip.name == "Wrapped_Idle")
-      {
-
-      }
-      
-    } );
 
     Echo.name = "Echo";
     Echo.add(model);
@@ -2111,6 +2140,48 @@ function initLessonScene() {
   });
   Echo.scale.set(0.1, 0.1, 0.1);
   Echo.position.set(-1.11, -1.5, -0.251);
+
+  loader.load("/resources/models/echo-mom.glb", function (gltf) 
+  {
+    gltf.animations; // Array<THREE.AnimationClip>
+    gltf.scene; // THREE.Group
+    gltf.scenes; // Array<THREE.Group>
+    gltf.cameras; // Array<THREE.Camera>
+    gltf.asset; // Object
+    
+    var model = gltf.scene;
+    
+    model.traverse((o) => 
+    {
+      if (o.isMesh)
+      { 
+        o.name = "EchoMom";
+        var colorMap = o.material.map;
+        var newMaterial = new THREE.MeshBasicMaterial({transparent: true});
+        o.material = newMaterial;
+        o.material.map = colorMap;
+        o.material.skinning = true;
+        o.material.morphTargets = true;
+        o.scale.set(5, 5, 5);
+      }
+    });
+
+    momMixer = new THREE.AnimationMixer(model);
+    echoMomActions = gltf.animations;
+    console.log(momMixer);
+
+    //playEchoAnimation(4);
+    var action = momMixer.clipAction(echoMomActions[4]);
+    action.play();
+    action.timeScale = 0.75;
+
+    EchoMom.name = "EchoMom";
+    EchoMom.add(model);
+    //lessonScene.add(EchoMom);
+  });
+  EchoMom.position.set(-6.5, 0.364, -0.71);
+  EchoMom.rotation.set(-3, 0, 0);
+  EchoMom.scale.set(0.3, 0.3, 0.3);
 
   //console.log(outlineBug);
 
@@ -2378,6 +2449,24 @@ function makeTextSprite(message, parameters) {
   return sprite;
 }
 
+function makeTextLabel(x, y, z, name) {
+  const material = new THREE.MeshPhongMaterial({});
+ 
+  const cube = new THREE.Mesh(geometry, material);
+  cube.scale.set(0.1, 0.1, 0.1);
+  //hubScene.add(cube);
+ 
+  cube.position.x = x;
+  cube.position.y = y;
+  cube.position.z = z;
+ 
+  const elem = document.createElement('div');
+  elem.textContent = name;
+  labelContainerElem.appendChild(elem);
+ 
+  return {cube, elem};
+}
+
 function roundRect(ctx, x, y, w, h, r) {
   ctx.beginPath();
   ctx.moveTo(x + r, y);
@@ -2420,6 +2509,7 @@ function locationSpriteSetup() {
   sprite_scaddanWash.userData.locName = "Scaddan Wash";
   sprite_tanqueVerde.userData.locName = "Tanque Verde";
   sprite_wymola.userData.locName = "Wymola";
+  sprite_chiricahuaMnts.userData.locName = "Chiricahua Mts."
 
   sprite_deathValley.userData.popup = true;
   sprite_deathValley.userData.popupTitle = "Black Mesa";
@@ -2588,7 +2678,7 @@ function locationSpriteSetup() {
   sprite_superstitionMnts.userData.popupText = "A dam on the Salt River formed Apache Lake.";
   sprite_superstitionMnts.userData.satelliteImage =
     "/resources/images/landsat/superstition-mnts.jpg";
-  sprite_superstitionMnts.userData.img = "/resources/images/location/pinalCounty.jpg";
+  sprite_superstitionMnts.userData.img = "/resources/images/location/superstition-mnts.jpg";
   sprite_superstitionMnts.userData.index = 19;
 
   sprite_saguaroNatPark.userData.popup = true;
@@ -2630,6 +2720,14 @@ function locationSpriteSetup() {
     "/resources/images/landsat/wymola.jpg";
   sprite_wymola.userData.img = "/resources/images/location/wymola.jpg";
   sprite_wymola.userData.index = 24;
+
+  sprite_chiricahuaMnts.userData.popup = true;
+  sprite_chiricahuaMnts.userData.popupTitle = "Chiricahua Mountains";
+  sprite_chiricahuaMnts.userData.popupText = "A dam on the Salt River formed Apache Lake.";
+  sprite_chiricahuaMnts.userData.satelliteImage =
+    "/resources/images/landsat/chiricahua-mts.jpg";
+  sprite_chiricahuaMnts.userData.img = "/resources/images/location/chiricahua-mts.jpg";
+  sprite_chiricahuaMnts.userData.index = 25;
 }
 
 //** TOWER ICON INSTANTIATIONS */
@@ -2934,6 +3032,7 @@ function updateLessonScene(index)
         }
         
         lessonScene.remove(cave);
+        lessonScene.remove(EchoMom);
         lessonScene.add(phoenixModel);
       }
     }
@@ -3029,6 +3128,7 @@ function updateLessonScene(index)
         }
         
         lessonScene.remove(cave);
+        lessonScene.remove(EchoMom);
         lessonScene.add(grandCanyonModel);
       }
     }
@@ -3118,6 +3218,7 @@ function updateLessonScene(index)
         }
         
         lessonScene.remove(cave);
+        lessonScene.remove(EchoMom);
         lessonScene.add(grasshopperModel);
       }
     }
@@ -3201,6 +3302,7 @@ function updateLessonScene(index)
         }
         
         lessonScene.remove(cave);
+        lessonScene.remove(EchoMom);
         lessonScene.add(blackMesaModel);
       }
     }
@@ -3239,6 +3341,7 @@ function updateLessonScene(index)
     else if(lessonScene.getObjectByName('cave'))
     {
       lessonScene.remove(cave);
+      lessonScene.remove(EchoMom);
     }
 
     console.log("blue: " + bugBlue);
@@ -3411,6 +3514,7 @@ function updateLessonScene(index)
       lessonScene.remove(blackMesaModel);
       lessonScene.remove(outlineBug);
       lessonScene.add(cave);
+      lessonScene.add(EchoMom);
       filmPass.grayscale = true;
       lessonSubtitleSequenceNumber = 8;
       playEchoAnimation(5);
@@ -4443,7 +4547,6 @@ function clickEvent() {
     {
       raycaster.setFromCamera(mouse, hubCamera);
       intersects = raycaster.intersectObjects(hubScene.children, true);
-      
       if(intersects[0])
       {
         intersectObject = intersects[0].object;
@@ -4460,6 +4563,16 @@ function clickEvent() {
           {
             subtitles.classList.toggle("active");
           }
+
+          //Used to toggle off Labels if they are active//
+          hubsceneLabels.forEach((cubeInfo) => {
+            const {cube, elem} = cubeInfo;
+        
+            if(elem.classList.contains("active"))
+            {
+              elem.classList.toggle("active");
+            }
+          });
 
           //** TWEEN TO MAP SCREEN */
           if(!hubworldScreenClick && !isTweening)
@@ -4515,6 +4628,15 @@ function clickEvent() {
             isTweening = true;
 
             walkieTalkieView = true;
+
+            hubsceneLabels.forEach((cubeInfo) => {
+              const {cube, elem} = cubeInfo;
+          
+              if(elem.classList.contains("active"))
+              {
+                elem.classList.toggle("active");
+              }
+            });
           }
 
           if(subtitles.classList.contains("active"))
@@ -4554,38 +4676,66 @@ function clickEvent() {
         {
           console.log(intersects[0].object.name);
       
-          if(locationFound && walkieTalkieView && !transitioning)
+          if(locationFound && !transitioning)
           {
-            if(intersects[0].object.name == "sprite_phoenix")
+            if(walkieTalkieView)
             {
-              console.log("Clicked on phoenix");
-              updateLessonScene(0);
-              currentLessonSceneIndex = 0;
-            }
-            else if(intersects[0].object.name == "sprite_horseshoe")
-            {
-              console.log("Clicked on horseshoe");
-              updateLessonScene(1);
-              currentLessonSceneIndex = 1;
-            }
-            else if(intersects[0].object.name == "sprite_cathedralRock")
-            {
-              console.log("Clicked on Cathedral");
-              updateLessonScene(2);
-              currentLessonSceneIndex = 2;
-            }
-            else if(intersects[0].object.name == "sprite_blackMesa")
-            {
-              console.log("Clicked on phoenix");
-              updateLessonScene(3);
-              currentLessonSceneIndex = 3;
-            }
+              if(intersects[0].object.name == "sprite_phoenix")
+              {
+                console.log("Clicked on phoenix");
+                updateLessonScene(0);
+                currentLessonSceneIndex = 0;
+              }
+              else if(intersects[0].object.name == "sprite_horseshoe")
+              {
+                console.log("Clicked on horseshoe");
+                updateLessonScene(1);
+                currentLessonSceneIndex = 1;
+              }
+              else if(intersects[0].object.name == "sprite_cathedralRock")
+              {
+                console.log("Clicked on Cathedral");
+                updateLessonScene(2);
+                currentLessonSceneIndex = 2;
+              }
+              else if(intersects[0].object.name == "sprite_blackMesa")
+              {
+                console.log("Clicked on phoenix");
+                updateLessonScene(3);
+                currentLessonSceneIndex = 3;
+              }
+  
+              transitionParams.transition = 1;
+              new TWEEN.Tween(transitionParams)
+              .to({ transition: 0 }, 2000)
+              .start(TransitionStart())
+              .onComplete(TransitionDone);
 
-            transitionParams.transition = 1;
-            new TWEEN.Tween(transitionParams)
-            .to({ transition: 0 }, 2000)
-            .start(TransitionStart())
-            .onComplete(TransitionDone);
+            }
+            else
+            {
+              new TWEEN.Tween(hubCamera.position).to({
+                x: -1.75, 
+                y: -0.07,
+                z: -0.3 
+              }, 3000)
+              .easing(TWEEN.Easing.Quadratic.InOut)
+              .start()
+              .onComplete(tweenComplete);
+              clickSound.play();
+              isTweening = true;
+  
+              walkieTalkieView = true;
+  
+              hubsceneLabels.forEach((cubeInfo) => {
+                const {cube, elem} = cubeInfo;
+            
+                if(elem.classList.contains("active"))
+                {
+                  elem.classList.toggle("active");
+                }
+              });
+            }
           }  
         }
         else if (intersects[0].object.name == "Jar" && lessonsCompleted == 4)
@@ -4663,7 +4813,7 @@ function clickEvent() {
             {
               currentLessonSceneIndex = 3;
             }
-            else if(intersects[0].object.name == 'tuscon')
+            else if(intersects[0].object.name == 'chiricahuaMts')
             {
               currentLessonSceneIndex = 4;
             }
@@ -5736,10 +5886,16 @@ function animate() {
   lessonCameraMove();
   hubCameraMove();
   
+
+  var delta = clock.getDelta();
+
   if(mixer)
   {
-    mixer.update(clock.getDelta());
-    //console.log(mixer);
+    mixer.update(delta);
+  }
+  if(momMixer)
+  {
+    momMixer.update(delta);
   }
 
   //console.log("TRANSITIONING: " + transitioning);
@@ -5817,6 +5973,30 @@ function animate() {
         cameraTweenTo(undefined, camPos, 2, false, true);
       }
     }
+
+    const tempV = new THREE.Vector3();
+
+    hubsceneLabels.forEach((cubeInfo) => {
+      const {cube, elem} = cubeInfo;
+      
+      // get the position of the center of the cube
+      cube.updateWorldMatrix(true, false);
+      cube.getWorldPosition(tempV);
+      
+      // get the normalized screen coordinate of that position
+      // x and y will be in the -1 to +1 range with x = -1 being
+      // on the left and y = -1 being on the bottom
+      tempV.project(hubCamera);
+      
+      // convert the normalized position to CSS coordinates
+      const x = (tempV.x *  .5 + .5) * canvas.clientWidth;
+      const y = (tempV.y * -.5 + .5) * canvas.clientHeight;
+      
+      // move the elem to that position
+      elem.style.transform = `translate(-50%, -50%) translate(${x}px,${y}px)`;
+    });
+
+
 
   //console.log("Cam Position: x:" + mainCamera.position.x + " z:" + mainCamera.position.z);
   stats.end();
@@ -6702,7 +6882,7 @@ startButton.addEventListener("click", function (ev) {
     gameStarted = true;
     startButton.classList.toggle("active");
     audioButton.classList.toggle("disabled");
-    hamburger.classList.toggle("disabled");
+    //hamburger.classList.toggle("disabled");
     //miniMap.classList.toggle("disabled");
     bugIcon.classList.toggle("disabled");
     bugIcon2.classList.toggle("disabled");
@@ -7038,26 +7218,40 @@ helpButton.addEventListener("click", (e) => {
   {
     if (!transitioning && !isTweening) 
     {
-      if(currentSceneNumber == 1)
+      if(currentSceneNumber == 0)
       {
         console.log("HELP BUTTON");
-        //tutorialSequence();
+        toggleHubSceneLabels();
+      }
+      else if(currentSceneNumber == 1)
+      {
+        console.log("HELP BUTTON");
         tutorialReset();
       }
     }
   }
 });
 
-creditsButton.addEventListener("click", (e) => {
-  if(!tutorial)
-  {
-    if (!transitioning && !isTweening) 
-    {
-      creditsContainer.classList.toggle("active");
-      console.log("CREDITS BUTTON");
-    }
-  }
-});
+function toggleHubSceneLabels()
+{
+  hubsceneLabels.forEach((cubeInfo) => {
+    const {cube, elem} = cubeInfo;
+
+    elem.classList.toggle("active");
+  });
+}
+
+
+// creditsButton.addEventListener("click", (e) => {
+//   if(!tutorial)
+//   {
+//     if (!transitioning && !isTweening) 
+//     {
+//       creditsContainer.classList.toggle("active");
+//       console.log("CREDITS BUTTON");
+//     }
+//   }
+// });
 
 //** EVENT FOR RIGHT LESSON BUTTON */
 lessonButton_right.addEventListener("click", function (ev) {
