@@ -100,7 +100,7 @@ body {
   width: 100%;
   color: white;
   text-align: center;
-  opacity: 0.75;
+  opacity: 1;
 
   font-family: roboto-condensed, sans-serif;
   font-weight: 400;
@@ -111,7 +111,7 @@ body {
   position: absolute;  /* let us position them inside the container */
   left: 0;             /* make their default position the top left of the container */
   top: 0;   /* change the cursor to a hand when over us */
-  font-size: medium;
+  font-size: 2vh;
   user-select: none;   /* don't let the text get selected */
   text-align: center;
   font-family: roboto-condensed, sans-serif;
@@ -122,6 +122,46 @@ body {
 #labels>div.active{
   opacity: 1.0;
   transition: opacity 0.5s ease-in-out;
+}
+#labels>div>img{
+  transform: translate(25%, 5%);
+  width: 1.5vh;
+  height: 1.5vh;
+  
+  opacity: 0.0;
+  transition: opacity 0.5s ease-in-out;
+}
+#labels>div.active>img{
+  opacity: 1.0;
+  transition: opacity 0.5s ease-in-out;
+}
+#labels>div.map {
+  pointer-events: none;
+  position: absolute;
+  left: 0;             
+  top: 0;
+  font-size: 4vh;
+  user-select: none;   /* don't let the text get selected */
+  text-align: center;
+  font-family: roboto-condensed, sans-serif;
+  opacity: 0.0;
+
+  filter: drop-shadow(0 0mm 2mm rgb(0, 0, 0));
+
+  transition: opacity 0.25s ease-in-out;
+}
+
+#labels>div.map.active {
+  pointer-events: auto;
+  opacity: 0.0;
+
+  transition: opacity 0.25s ease-in-out;
+}
+
+#labels>div.map.active:hover {
+  opacity: 1.0;
+
+  transition: opacity 0.25s ease-in-out;
 }
 
 /* SCREEN TRANSITION*/

@@ -111,7 +111,6 @@ let renderer = new THREE.WebGLRenderer({
   alpha: false, 
   powerPreference: "high-performance" });
 
-
 //** RENDER PASSES */
 var filmPass = new FilmPass(
   0.5,   // noise intensity
@@ -506,9 +505,6 @@ const peoriaTexture = new THREE.TextureLoader(manager).load(
 const petrifiedForestTexture = new THREE.TextureLoader(manager).load(
   "/resources/images/location/petrifiedForest.jpg"
 );
-const pinalCountyTexture = new THREE.TextureLoader(manager).load(
-  "/resources/images/location/pinalCounty.jpg"
-);
 const chiricahuaMntsTexture = new THREE.TextureLoader(manager).load(
   "/resources/images/location/chiricahua-mts.jpg"
 );
@@ -594,8 +590,6 @@ const navajoPointMaterial = new THREE.SpriteMaterial({ map: navajoPointTexture})
 const paintedDesertMaterial = new THREE.SpriteMaterial({ map: paintedDesertTexture});
 const peoriaMaterial = new THREE.SpriteMaterial({ map: peoriaTexture});
 const petrifiedForestMaterial = new THREE.SpriteMaterial({ map: petrifiedForestTexture});
-
-const pinalCountyMaterial = new THREE.SpriteMaterial({ map: pinalCountyTexture});
 const chiricahuaMntsMaterial = new THREE.SpriteMaterial({map: chiricahuaMntsTexture});
 
 const superstitionMntsMaterial = new THREE.SpriteMaterial({ map: superstitionMntsTexture});
@@ -736,10 +730,10 @@ let highlightText = document.getElementById("highlightText");
 let mouseIcon = document.getElementById("mouseICON");
 let tutClickImage = document.getElementById("tutClickImage");
 
-let bugIcon = document.getElementById("bugIcon1");
-let bugIcon2 = document.getElementById("bugIcon2");
-let bugIcon3 = document.getElementById("bugIcon3");
-let bugIcon4 = document.getElementById("bugIcon4");
+// let bugIcon = document.getElementById("bugIcon1");
+// let bugIcon2 = document.getElementById("bugIcon2");
+// let bugIcon3 = document.getElementById("bugIcon3");
+// let bugIcon4 = document.getElementById("bugIcon4");
 var bugClicked = false;
 
 let helpButton = document.getElementById("helpButton");
@@ -804,12 +798,13 @@ var hubsceneLabels = [
   makeTextLabel(-2.25, 0.175, 0.675, "Bug Count"),
   makeTextLabel(-2.25, 0.175, -0.05, "Follow Echo"),
   makeTextLabel(-1.9, 0.0, -0.3, "Where is Echo?"),
-  makeTextLabel(-2.25, 0.05, -1.15, "About Landsat"),
-  makeTextLabel(-2.25, 0.08, -1.5, "Camp Landsat"),
+  makeTextLabel(-2.25, 0.05, -1.15, "About Landsat", true),
+  makeTextLabel(-2.25, 0.08, -1.5, "Camp Landsat", true),
 ];
 
-console.log(hubsceneLabels[0].cube);
-
+var mapSceneLables = [
+  makeTextLabel(-0.65, uiMinheight, 1.7, "Phoenix", false, true),
+];
 
 init();
 initLessonScene();
@@ -907,10 +902,10 @@ function init() {
   miniMap.classList.toggle("disabled");
   //hamburger.classList.toggle("disabled");
   backButton.classList.toggle("disabled");
-  bugIcon.classList.toggle("disabled");
-  bugIcon2.classList.toggle("disabled");
-  bugIcon3.classList.toggle("disabled");
-  bugIcon4.classList.toggle("disabled");
+  // bugIcon.classList.toggle("disabled");
+  // bugIcon2.classList.toggle("disabled");
+  // bugIcon3.classList.toggle("disabled");
+  // bugIcon4.classList.toggle("disabled");
 
   mapScene.background = new THREE.Color(0xd4d2d2);
   // mapScene.fog = new THREE.Fog(0xd4d2d2, 0.015, 10);
@@ -2141,7 +2136,7 @@ function initLessonScene() {
   Echo.scale.set(0.1, 0.1, 0.1);
   Echo.position.set(-1.11, -1.5, -0.251);
 
-  loader.load("/resources/models/echo-mom.glb", function (gltf) 
+  loader.load("/resources/models/echo-mom-1.glb", function (gltf) 
   {
     gltf.animations; // Array<THREE.AnimationClip>
     gltf.scene; // THREE.Group
@@ -2246,7 +2241,7 @@ function initHubScene()
       hubScene.enviroment = texture;
   });
 
-  loader.load("/resources/models/Hub-World-new.glb", function (gltf) 
+  loader.load("/resources/models/Hub-World.glb", function (gltf) 
   {
     var model = gltf.scene;
     model.traverse((o) => 
@@ -2449,7 +2444,7 @@ function makeTextSprite(message, parameters) {
   return sprite;
 }
 
-function makeTextLabel(x, y, z, name) {
+function makeTextLabel(x, y, z, name, img, map) {
   const material = new THREE.MeshPhongMaterial({});
  
   const cube = new THREE.Mesh(geometry, material);
@@ -2459,10 +2454,21 @@ function makeTextLabel(x, y, z, name) {
   cube.position.x = x;
   cube.position.y = y;
   cube.position.z = z;
- 
-  const elem = document.createElement('div');
+  
+  let elem = document.createElement('div');
   elem.textContent = name;
   labelContainerElem.appendChild(elem);
+  
+  if(map)
+  {
+    elem.className = "map";
+  }
+  if(img)
+  {
+    const img = document.createElement('img');
+    img.src = "/resources/images/exit-icon.png";
+    elem.appendChild(img);
+  }
  
   return {cube, elem};
 }
@@ -4963,19 +4969,19 @@ function tweenBug(bugNumb)
 
   if(bugAmount == 1)
   {
-    bugIcon.classList.toggle("filled");
+    //bugIcon.classList.toggle("filled");
   }
   else if(bugAmount == 2)
   {
-    bugIcon2.classList.toggle("filled");
+    //bugIcon2.classList.toggle("filled");
   }
   else if(bugAmount == 3)
   {
-    bugIcon3.classList.toggle("filled");
+    //bugIcon3.classList.toggle("filled");
   }
   else if(bugAmount == 4)
   {
-    bugIcon4.classList.toggle("filled");
+    //bugIcon4.classList.toggle("filled");
   }
   
   bugsFound.push(currentLessonSceneIndex);
@@ -5996,10 +6002,29 @@ function animate() {
       elem.style.transform = `translate(-50%, -50%) translate(${x}px,${y}px)`;
     });
 
+    const tempY = new THREE.Vector3();
+    mapSceneLables.forEach((cubeInfo) => {
+      const {cube, elem} = cubeInfo;
+      
+      // get the position of the center of the cube
+      cube.updateWorldMatrix(true, false);
+      cube.getWorldPosition(tempY);
+      
+      // get the normalized screen coordinate of that position
+      // x and y will be in the -1 to +1 range with x = -1 being
+      // on the left and y = -1 being on the bottom
+      tempY.project(mainCamera);
+      
+      // convert the normalized position to CSS coordinates
+      const x = (tempY.x *  .5 + .5) * canvas.clientWidth;
+      const y = (tempY.y * -.5 + .5) * canvas.clientHeight;
+      
+      // move the elem to that position
+      elem.style.transform = `translate(-50%, -50%) translate(${x}px,${y}px)`;
+    });
 
-
-  //console.log("Cam Position: x:" + mainCamera.position.x + " z:" + mainCamera.position.z);
-  stats.end();
+    //console.log("Cam Position: x:" + mainCamera.position.x + " z:" + mainCamera.position.z);
+    stats.end();
 }
 
 function TransitionStart() {
@@ -6054,6 +6079,17 @@ function TransitionDone() {
         // tutorialSequence();
         tutorialReset();
       }
+
+      //** TOGGLE ON MAP SCENE LABELS */
+      mapSceneLables.forEach((cubeInfo) => {
+        const {cube, elem} = cubeInfo;
+    
+        if(!elem.classList.contains("active"))
+        {
+          elem.classList.toggle("active");
+          console.log("THEY'RE ACTIVE");
+        }
+      });
 
       resetHubWorld();
       
@@ -6140,6 +6176,17 @@ function TransitionDone() {
       {
         backButton.classList.toggle("active");
       }
+
+      //** TOGGLE ON MAP SCENE LABELS */
+      mapSceneLables.forEach((cubeInfo) => {
+        const {cube, elem} = cubeInfo;
+    
+        if(elem.classList.contains("active"))
+        {
+          elem.classList.toggle("active");
+          console.log("THEY'RE ACTIVE");
+        }
+      });
 
       //** STOP HUBWORLD SOUND */
       if(hubworldSound.isPlaying)
@@ -6871,6 +6918,9 @@ continueButton.addEventListener("click", function (ev) {
     continueButton.classList.toggle("disabled");
     startYoutubeContainer.classList.toggle("disabled");
     startButton.classList.toggle("active");
+
+    var iframe = document.getElementsByTagName("iframe")[0].contentWindow;
+    iframe.postMessage('{"event":"command","func":"pauseVideo","args":""}',"*");
   }
 
   clickSound.play();
@@ -6879,15 +6929,16 @@ continueButton.addEventListener("click", function (ev) {
 startButton.addEventListener("click", function (ev) {
   ev.stopPropagation();
   if (RESOURCES_LOADED && !gameStarted) {
+
     gameStarted = true;
     startButton.classList.toggle("active");
     audioButton.classList.toggle("disabled");
     //hamburger.classList.toggle("disabled");
     //miniMap.classList.toggle("disabled");
-    bugIcon.classList.toggle("disabled");
-    bugIcon2.classList.toggle("disabled");
-    bugIcon3.classList.toggle("disabled");
-    bugIcon4.classList.toggle("disabled");
+    // bugIcon.classList.toggle("disabled");
+    // bugIcon2.classList.toggle("disabled");
+    // bugIcon3.classList.toggle("disabled");
+    // bugIcon4.classList.toggle("disabled");
     startScreenCover.classList.toggle("disabled");
     music.play();
     hubworldSound.play();
