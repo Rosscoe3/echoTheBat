@@ -96,7 +96,7 @@ const lessonCamera = new THREE.PerspectiveCamera(
   75,
   window.innerWidth / window.innerHeight,
   0.1,
-  250
+  600
 );
 const hubCamera = new THREE.PerspectiveCamera(
   50,
@@ -138,6 +138,7 @@ const effectFXAA = new ShaderPass(shaderFXAA);
 const pixelRatio = renderer.getPixelRatio();
 effectFXAA.material.uniforms[ 'resolution' ].value.x = 1 / ( container.offsetWidth * pixelRatio );
 effectFXAA.material.uniforms[ 'resolution' ].value.y = 1 / ( container.offsetHeight * pixelRatio );
+const bloomPass = new UnrealBloomPass({x: 1024, y: 1024}, 1.0, 0.0, 0.75);
 
 let lessonComposer = new EffectComposer(renderer);
 lessonComposer.setSize(window.innerWidth, window.innerHeight);
@@ -147,7 +148,7 @@ let hubComposer = new EffectComposer(renderer)
 hubComposer.setSize(window.innerWidth, window.innerHeight);
 
 lessonComposer.addPass(new RenderPass(lessonScene, lessonCamera));
-lessonComposer.addPass(new UnrealBloomPass({x: 1024, y: 1024}, 1.0, 0.0, 0.75));
+lessonComposer.addPass(bloomPass);
 lessonComposer.addPass(filmPass);
 lessonComposer.addPass(effectVignette);
 lessonComposer.addPass(effectPixel);
@@ -804,6 +805,31 @@ var hubsceneLabels = [
 
 var mapSceneLables = [
   makeTextLabel(-0.65, uiMinheight, 1.7, "Phoenix", false, true),
+  makeTextLabel(-1.56, uiMinheight, -6.27, "Colorado River", false, true),
+  makeTextLabel(-0.2, uiMinheight, -5.66, "Grand Canyon", false, true),
+  makeTextLabel(-4.68, uiMinheight, -0.65, "Black Mesa", false, true),
+  makeTextLabel(-0.04, uiMinheight, 2.07, "Tempe", false, true),
+  makeTextLabel(1.772, uiMinheight, 5.41, "Tuscon", false, true),
+  makeTextLabel(2.227, uiMinheight, 5.26, "Catalina Mts.", false, true),
+  makeTextLabel(-2.02, uiMinheight, 5.07, "Sonoran Desert", false, true),
+  makeTextLabel(1.77, uiMinheight, 1.16, "Roosevelt Lake", false, true),
+  makeTextLabel(-5.207, uiMinheight, 3.44, "Gila River", false, true),
+  makeTextLabel(1.2, uiMinheight, 1.46, "Salt River", false, true),
+  makeTextLabel(0.29, uiMinheight, -1.9, "Cathedral Rock", false, true),
+  makeTextLabel(0.72, uiMinheight, -3.1, "Fatman's Loop", false, true),
+  makeTextLabel(1.25, uiMinheight, -7.65, "Horseshoe Bend", false, true),
+  makeTextLabel(2.45, uiMinheight, 5.65, "Mica View Trail", false, true),
+  makeTextLabel(0.45, uiMinheight, -5.35, "Navajo Point", false, true),
+  makeTextLabel(4.3, uiMinheight, -3.8, "Painted Desert", false, true),
+  makeTextLabel(-1, uiMinheight, 0.79, "Peoria", false, true),
+  makeTextLabel(4.95, uiMinheight, -2.45, "Petrified Forest", false, true),
+  makeTextLabel(1.45, uiMinheight, 1.88, "Superstition Mts.", false, true),
+  makeTextLabel(1.26, uiMinheight, 5.2, "Saguaro Nat Park", false, true),
+  makeTextLabel(6.3, uiMinheight, 5.56, "San Simon", false, true),
+  makeTextLabel(-5.5, uiMinheight, 1.01, "Scaddan Wash", false, true),
+  makeTextLabel(2.53, uiMinheight, 5.34, "Tanque Verde", false, true),
+  makeTextLabel(0.8, uiMinheight, 4.2, "Wymola", false, true),
+  makeTextLabel(5.56, uiMinheight, 6.65, "Chiricahua Mts.", false, true),
 ];
 
 init();
@@ -947,7 +973,6 @@ function init() {
   glowSprite = new THREE.Sprite(glowMaterial);
 
   sprite_deathValley = new THREE.Sprite(deathValleyMaterial);
-  sprite_deathValley.name = 'blackMesa';
 
   sprite_grandCanyon = new THREE.Sprite(grandCanyonMaterial);
   sprite_coloradoRiver = new THREE.Sprite(coloradoRiverMaterial);
@@ -961,6 +986,8 @@ function init() {
   sprite_sonoranDesert = new THREE.Sprite(sonoranDesertMaterial);
   sprite_rooseveltLake = new THREE.Sprite(rooseveltLakeMaterial);
   sprite_gilaRiver = new THREE.Sprite(yumaMaterial);
+  sprite_gilaRiver.name = 'gilaRiver';
+
   sprite_saltRiver = new THREE.Sprite(saltRiverMaterial);
   sprite_cathedralRock = new THREE.Sprite(cathedralRockMaterial);
   sprite_cathedralRock.name = 'cathedralRock';
@@ -1055,7 +1082,7 @@ function init() {
     sprite_phoenix,
     sprite_horseshoeBend,
     sprite_cathedralRock,
-    sprite_deathValley,
+    sprite_gilaRiver,
     sprite_chiricahuaMnts
   ];
 
@@ -1108,428 +1135,6 @@ function init() {
   elem.textContent = "";
   labelContainerElem.appendChild(elem);
 
-  //** LABEL INSTANTIATION */
-
-  var sprite_deathValley_Label = makeTextSprite("Black Mesa", {
-    fontsize: 40,
-    fontface: "roboto-condensed",
-    borderColor: { r: 0, g: 0, b: 255, a: 0.0 },
-  });
-  sprite_deathValley_Label.scale.set(0.4, 0.2, 0.4);
-  sprite_deathValley_Label.position.set(
-    sprite_deathValley.position.x + 0.065,
-    uiMinheight + 0.01,
-    sprite_deathValley.position.z + 0.07
-  );
-  sprite_deathValley_Label.userData.hover = false;
-  sprite_deathValley_Label.material.opacity = 0.0;
-  mapScene.add(sprite_deathValley_Label);
-
-  var sprite_grandCanyon_Label = makeTextSprite("  Grand Canyon", {
-    fontsize: 40,
-    fontface: "roboto-condensed",
-    borderColor: { r: 0, g: 0, b: 255, a: 0.0 },
-  });
-  sprite_grandCanyon_Label.scale.set(0.5, 0.25, 0.5);
-  sprite_grandCanyon_Label.position.set(
-    sprite_grandCanyon.position.x + 0.01,
-    uiMinheight + 0.01,
-    sprite_grandCanyon.position.z + 0.075
-  );
-  sprite_grandCanyon_Label.userData.hover = false;
-  sprite_grandCanyon_Label.material.opacity = 0.0;
-  mapScene.add(sprite_grandCanyon_Label);
-
-  var sprite_coloradoRiver_Label = makeTextSprite("  Colorado River", {
-    fontsize: 40,
-    fontface: "roboto-condensed",
-    borderColor: { r: 0, g: 0, b: 255, a: 0.0 },
-  });
-  sprite_coloradoRiver_Label.scale.set(0.5, 0.25, 0.5);
-  sprite_coloradoRiver_Label.position.set(
-    sprite_coloradoRiver.position.x + 0.01,
-    uiMinheight + 0.01,
-    sprite_coloradoRiver.position.z + 0.075
-  );
-  sprite_coloradoRiver_Label.userData.hover = false;
-  sprite_coloradoRiver_Label.material.opacity = 0.0;
-  mapScene.add(sprite_coloradoRiver_Label);
-
-  var sprite_phoenix_Label = makeTextSprite("  Phoenix", {
-    fontsize: 40,
-    fontface: "roboto-condensed",
-    borderColor: { r: 0, g: 0, b: 255, a: 0.0 },
-  });
-  sprite_phoenix_Label.scale.set(0.5, 0.25, 0.5);
-  sprite_phoenix_Label.position.set(
-    sprite_phoenix.position.x + 0.1,
-    uiMinheight + 0.01,
-    sprite_phoenix.position.z + 0.075
-  );
-  sprite_phoenix_Label.userData.hover = false;
-  sprite_phoenix_Label.material.opacity = 0.0;
-  mapScene.add(sprite_phoenix_Label);
-
-  var sprite_tempe_Label = makeTextSprite("  Tempe", {
-    fontsize: 40,
-    fontface: "roboto-condensed",
-    borderColor: { r: 0, g: 0, b: 255, a: 0.0 },
-  });
-  sprite_tempe_Label.scale.set(0.5, 0.25, 0.5);
-  sprite_tempe_Label.position.set(
-    sprite_tempe.position.x + 0.12,
-    uiMinheight + 0.01,
-    sprite_tempe.position.z + 0.075
-  );
-  sprite_tempe_Label.userData.hover = false;
-  sprite_tempe_Label.material.opacity = 0.0;
-  mapScene.add(sprite_tempe_Label);
-
-  var sprite_tuscon_Label = makeTextSprite("Tuscon", {
-    fontsize: 40,
-    fontface: "roboto-condensed",
-    borderColor: { r: 0, g: 0, b: 255, a: 0.0 },
-  });
-  sprite_tuscon_Label.scale.set(0.5, 0.25, 0.5);
-  sprite_tuscon_Label.position.set(
-    sprite_tuscon.position.x + 0.1425,
-    uiMinheight + 0.01,
-    sprite_tuscon.position.z + 0.075
-  );
-  sprite_tuscon_Label.userData.hover = false;
-  sprite_tuscon_Label.material.opacity = 0.0;
-  mapScene.add(sprite_tuscon_Label);
-
-  var sprite_catalinaMountains_Label = makeTextSprite("Catalina Mts.", {
-    fontsize: 40,
-    fontface: "roboto-condensed",
-    borderColor: { r: 0, g: 0, b: 255, a: 0.0 },
-  });
-  sprite_catalinaMountains_Label.scale.set(0.5, 0.25, 0.5);
-  sprite_catalinaMountains_Label.position.set(
-    sprite_catalinaMountains.position.x + 0.075,
-    uiMinheight + 0.01,
-    sprite_catalinaMountains.position.z + 0.075
-  );
-  sprite_catalinaMountains_Label.userData.hover = false;
-  sprite_catalinaMountains_Label.material.opacity = 0.0;
-  mapScene.add(sprite_catalinaMountains_Label);
-
-  var sprite_sonoranDesert_Label = makeTextSprite("Sonoran Desert", {
-    fontsize: 40,
-    fontface: "roboto-condensed",
-    borderColor: { r: 0, g: 0, b: 255, a: 0.0 },
-  });
-  sprite_sonoranDesert_Label.scale.set(0.5, 0.25, 0.5);
-  sprite_sonoranDesert_Label.position.set(
-    sprite_sonoranDesert.position.x + 0.035,
-    uiMinheight + 0.01,
-    sprite_sonoranDesert.position.z + 0.075
-  );
-  sprite_sonoranDesert_Label.userData.hover = false;
-  sprite_sonoranDesert_Label.material.opacity = 0.0;
-  mapScene.add(sprite_sonoranDesert_Label);
-
-  var sprite_rooseveltLake_Label = makeTextSprite("Roosevelt Lake", {
-    fontsize: 40,
-    fontface: "roboto-condensed",
-    borderColor: { r: 0, g: 0, b: 255, a: 0.0 },
-  });
-  sprite_rooseveltLake_Label.scale.set(0.5, 0.25, 0.5);
-  sprite_rooseveltLake_Label.position.set(
-    sprite_rooseveltLake.position.x + 0.04,
-    uiMinheight + 0.01,
-    sprite_rooseveltLake.position.z + 0.075
-  );
-  sprite_rooseveltLake_Label.userData.hover = false;
-  sprite_rooseveltLake_Label.material.opacity = 0.0;
-  mapScene.add(sprite_rooseveltLake_Label);
-
-  var sprite_gilaRiver_Label = makeTextSprite("Gila River", {
-    fontsize: 40,
-    fontface: "roboto-condensed",
-    borderColor: { r: 0, g: 0, b: 255, a: 0.0 },
-  });
-  sprite_gilaRiver_Label.scale.set(0.5, 0.25, 0.5);
-  sprite_gilaRiver_Label.position.set(
-    sprite_gilaRiver.position.x + 0.12,
-    uiMinheight + 0.01,
-    sprite_gilaRiver.position.z + 0.075
-  );
-  sprite_gilaRiver_Label.userData.hover = false;
-  sprite_gilaRiver_Label.material.opacity = 0.0;
-  mapScene.add(sprite_gilaRiver_Label);
-
-  var sprite_saltRiver_Label = makeTextSprite("Salt River", {
-    fontsize: 40,
-    fontface: "roboto-condensed",
-    borderColor: { r: 0, g: 0, b: 255, a: 0.0 },
-  });
-  sprite_saltRiver_Label.scale.set(0.5, 0.25, 0.5);
-  sprite_saltRiver_Label.position.set(
-    sprite_saltRiver.position.x + 0.12,
-    uiMinheight + 0.01,
-    sprite_saltRiver.position.z + 0.075
-  );
-  sprite_saltRiver_Label.userData.hover = false;
-  sprite_saltRiver_Label.material.opacity = 0.0;
-  mapScene.add(sprite_saltRiver_Label);
-
-  var sprite_cathedralRock_Label = makeTextSprite("Cathedral Rock", {
-    fontsize: 40,
-    fontface: "roboto-condensed",
-    borderColor: { r: 0, g: 0, b: 255, a: 0.0 },
-  });
-  sprite_cathedralRock_Label.scale.set(0.5, 0.25, 0.5);
-  sprite_cathedralRock_Label.position.set(
-    sprite_cathedralRock.position.x + 0.05,
-    uiMinheight + 0.01,
-    sprite_cathedralRock.position.z + 0.075
-  );
-  sprite_cathedralRock_Label.userData.hover = false;
-  sprite_cathedralRock_Label.material.opacity = 0.0;
-  mapScene.add(sprite_cathedralRock_Label);
-
-  var sprite_fatmansLoop_Label = makeTextSprite("Fatman's Loop", {
-    fontsize: 40,
-    fontface: "roboto-condensed",
-    borderColor: { r: 0, g: 0, b: 255, a: 0.0 },
-  });
-  sprite_fatmansLoop_Label.scale.set(0.5, 0.25, 0.5);
-  sprite_fatmansLoop_Label.position.set(
-    sprite_fatmansLoop.position.x + 0.05,
-    uiMinheight + 0.01,
-    sprite_fatmansLoop.position.z + 0.075
-  );
-  sprite_fatmansLoop_Label.userData.hover = false;
-  sprite_fatmansLoop_Label.material.opacity = 0.0;
-  mapScene.add(sprite_fatmansLoop_Label);
-
-  var sprite_horseshoeBend_Label = makeTextSprite("Horseshoe Bend", {
-    fontsize: 40,
-    fontface: "roboto-condensed",
-    borderColor: { r: 0, g: 0, b: 255, a: 0.0 },
-  });
-  sprite_horseshoeBend_Label.scale.set(0.5, 0.25, 0.5);
-  sprite_horseshoeBend_Label.position.set(
-    sprite_horseshoeBend.position.x + 0.05,
-    uiMinheight + 0.01,
-    sprite_horseshoeBend.position.z + 0.075
-  );
-  sprite_horseshoeBend_Label.userData.hover = false;
-  sprite_horseshoeBend_Label.material.opacity = 0.0;
-  mapScene.add(sprite_horseshoeBend_Label);
-
-  var sprite_micaViewTrail_Label = makeTextSprite("Mica View Trail", {
-    fontsize: 40,
-    fontface: "roboto-condensed",
-    borderColor: { r: 0, g: 0, b: 255, a: 0.0 },
-  });
-  sprite_micaViewTrail_Label.scale.set(0.5, 0.25, 0.5);
-  sprite_micaViewTrail_Label.position.set(
-    sprite_micaViewTrail.position.x + 0.05,
-    uiMinheight + 0.01,
-    sprite_micaViewTrail.position.z + 0.075
-  );
-  sprite_micaViewTrail_Label.userData.hover = false;
-  sprite_micaViewTrail_Label.material.opacity = 0.0;
-  mapScene.add(sprite_micaViewTrail_Label);
-
-  var sprite_navajoPoint_Label = makeTextSprite("Navajo Point", {
-    fontsize: 40,
-    fontface: "roboto-condensed",
-    borderColor: { r: 0, g: 0, b: 255, a: 0.0 },
-  });
-  sprite_navajoPoint_Label.scale.set(0.5, 0.25, 0.5);
-  sprite_navajoPoint_Label.position.set(
-    sprite_navajoPoint.position.x + 0.075,
-    uiMinheight + 0.01,
-    sprite_navajoPoint.position.z + 0.075
-  );
-  sprite_navajoPoint_Label.userData.hover = false;
-  sprite_navajoPoint_Label.material.opacity = 0.0;
-  mapScene.add(sprite_navajoPoint_Label);
-
-  var sprite_paintedDesert_Label = makeTextSprite("Painted Desert", {
-    fontsize: 40,
-    fontface: "roboto-condensed",
-    borderColor: { r: 0, g: 0, b: 255, a: 0.0 },
-  });
-  sprite_paintedDesert_Label.scale.set(0.5, 0.25, 0.5);
-  sprite_paintedDesert_Label.position.set(
-    sprite_paintedDesert.position.x + 0.05,
-    uiMinheight + 0.01,
-    sprite_paintedDesert.position.z + 0.075
-  );
-  sprite_paintedDesert_Label.userData.hover = false;
-  sprite_paintedDesert_Label.material.opacity = 0.0;
-  mapScene.add(sprite_paintedDesert_Label);
-
-  var sprite_peoria_Label = makeTextSprite("Peoria", {
-    fontsize: 40,
-    fontface: "roboto-condensed",
-    borderColor: { r: 0, g: 0, b: 255, a: 0.0 },
-  });
-  sprite_peoria_Label.scale.set(0.5, 0.25, 0.5);
-  sprite_peoria_Label.position.set(
-    sprite_peoria.position.x + 0.16,
-    uiMinheight + 0.01,
-    sprite_peoria.position.z + 0.075
-  );
-  sprite_peoria_Label.userData.hover = false;
-  sprite_peoria_Label.material.opacity = 0.0;
-  mapScene.add(sprite_peoria_Label);
-
-  var sprite_petrifiedForest_Label = makeTextSprite("Petrified Forest", {
-    fontsize: 40,
-    fontface: "roboto-condensed",
-    borderColor: { r: 0, g: 0, b: 255, a: 0.0 },
-  });
-  sprite_petrifiedForest_Label.scale.set(0.5, 0.25, 0.5);
-  sprite_petrifiedForest_Label.position.set(
-    sprite_petrifiedForest.position.x + 0.05,
-    uiMinheight + 0.01,
-    sprite_petrifiedForest.position.z + 0.075
-  );
-  sprite_petrifiedForest_Label.userData.hover = false;
-  sprite_petrifiedForest_Label.material.opacity = 0.0;
-  mapScene.add(sprite_petrifiedForest_Label);
-
-  var sprite_superstitionMnts_Label = makeTextSprite("Superstition Mts.", {
-    fontsize: 40,
-    fontface: "roboto-condensed",
-    borderColor: { r: 0, g: 0, b: 255, a: 0.0 },
-  });
-  sprite_superstitionMnts_Label.scale.set(0.5, 0.25, 0.5);
-  sprite_superstitionMnts_Label.position.set(
-    sprite_superstitionMnts.position.x + 0.025,
-    uiMinheight + 0.01,
-    sprite_superstitionMnts.position.z + 0.075
-  );
-  sprite_superstitionMnts_Label.userData.hover = false;
-  sprite_superstitionMnts_Label.material.opacity = 0.0;
-  mapScene.add(sprite_superstitionMnts_Label);
-
-  var sprite_saguaroNatPark_Label = makeTextSprite("Saguaro Nat Park", {
-    fontsize: 40,
-    fontface: "roboto-condensed",
-    borderColor: { r: 0, g: 0, b: 255, a: 0.0 },
-  });
-  sprite_saguaroNatPark_Label.scale.set(0.5, 0.25, 0.5);
-  sprite_saguaroNatPark_Label.position.set(
-    sprite_saguaroNatPark.position.x + 0.035,
-    uiMinheight + 0.01,
-    sprite_saguaroNatPark.position.z + 0.075
-  );
-  sprite_saguaroNatPark_Label.userData.hover = false;
-  sprite_saguaroNatPark_Label.material.opacity = 0.0;
-  mapScene.add(sprite_saguaroNatPark_Label);
-
-  var sprite_sanSimon_Label = makeTextSprite("San Simon", {
-    fontsize: 40,
-    fontface: "roboto-condensed",
-    borderColor: { r: 0, g: 0, b: 255, a: 0.0 },
-  });
-  sprite_sanSimon_Label.scale.set(0.5, 0.25, 0.5);
-  sprite_sanSimon_Label.position.set(
-    sprite_sanSimon.position.x + 0.1,
-    uiMinheight + 0.01,
-    sprite_sanSimon.position.z + 0.075
-  );
-  sprite_sanSimon_Label.userData.hover = false;
-  sprite_sanSimon_Label.material.opacity = 0.0;
-  mapScene.add(sprite_sanSimon_Label);
-
-  var sprite_scaddanWash_Label = makeTextSprite("Scaddan Wash", {
-    fontsize: 40,
-    fontface: "roboto-condensed",
-    borderColor: { r: 0, g: 0, b: 255, a: 0.0 },
-  });
-  sprite_scaddanWash_Label.scale.set(0.5, 0.25, 0.5);
-  sprite_scaddanWash_Label.position.set(
-    sprite_scaddanWash.position.x + 0.05,
-    uiMinheight + 0.01,
-    sprite_scaddanWash.position.z + 0.075
-  );
-  sprite_scaddanWash_Label.userData.hover = false;
-  sprite_scaddanWash_Label.material.opacity = 0.0;
-  mapScene.add(sprite_scaddanWash_Label);
-
-  var sprite_tanqueVerde_Label = makeTextSprite("Tanque Verde", {
-    fontsize: 40,
-    fontface: "roboto-condensed",
-    borderColor: { r: 0, g: 0, b: 255, a: 0.0 },
-  });
-  sprite_tanqueVerde_Label.scale.set(0.5, 0.25, 0.5);
-  sprite_tanqueVerde_Label.position.set(
-    sprite_tanqueVerde.position.x + 0.05,
-    uiMinheight + 0.01,
-    sprite_tanqueVerde.position.z + 0.075
-  );
-  sprite_tanqueVerde_Label.userData.hover = false;
-  sprite_tanqueVerde_Label.material.opacity = 0.0;
-  mapScene.add(sprite_tanqueVerde_Label);
-
-  var sprite_wymola_Label = makeTextSprite("Wymola", {
-    fontsize: 40,
-    fontface: "roboto-condensed",
-    borderColor: { r: 0, g: 0, b: 255, a: 0.0 },
-  });
-  sprite_wymola_Label.scale.set(0.5, 0.25, 0.5);
-  sprite_wymola_Label.position.set(
-    sprite_wymola.position.x + 0.14,
-    uiMinheight + 0.01,
-    sprite_wymola.position.z + 0.075
-  );
-  sprite_wymola_Label.userData.hover = false;
-  sprite_wymola_Label.material.opacity = 0.0;
-  mapScene.add(sprite_wymola_Label);
-
-  sprite_chiricahuaMnts
-
-  var sprite_chiricahuaMnts_Label = makeTextSprite("Chiricahua Mts.", {
-    fontsize: 40,
-    fontface: "roboto-condensed",
-    borderColor: { r: 0, g: 0, b: 255, a: 0.0 },
-  });
-  sprite_chiricahuaMnts_Label.scale.set(0.5, 0.25, 0.5);
-  sprite_chiricahuaMnts_Label.position.set(
-    sprite_chiricahuaMnts.position.x,
-    uiMinheight + 0.01,
-    sprite_chiricahuaMnts.position.z + 0.075
-  );
-  sprite_chiricahuaMnts_Label.userData.hover = false;
-  sprite_chiricahuaMnts_Label.material.opacity = 0.0;
-  mapScene.add(sprite_chiricahuaMnts_Label);
-
-  labelSprites = [
-    sprite_deathValley_Label,
-    sprite_grandCanyon_Label,
-    sprite_coloradoRiver_Label,
-    sprite_phoenix_Label,
-    sprite_tempe_Label,
-    sprite_tuscon_Label,
-    sprite_catalinaMountains_Label,
-    sprite_sonoranDesert_Label,
-    sprite_rooseveltLake_Label,
-    sprite_gilaRiver_Label,
-    sprite_saltRiver_Label,
-    sprite_cathedralRock_Label,
-    sprite_fatmansLoop_Label,
-    sprite_horseshoeBend_Label,
-    sprite_micaViewTrail_Label,
-    sprite_navajoPoint_Label,
-    sprite_paintedDesert_Label,
-    sprite_peoria_Label,
-    sprite_petrifiedForest_Label,
-    sprite_superstitionMnts_Label,
-    sprite_saguaroNatPark_Label,
-    sprite_sanSimon_Label,
-    sprite_scaddanWash_Label,
-    sprite_tanqueVerde_Label,
-    sprite_wymola_Label,
-    sprite_chiricahuaMnts_Label,
-  ];
   //** SETUP FOR USING DAT GUI CONTROLS */
   const guiWorld = {
     xPos: {
@@ -1543,34 +1148,34 @@ function init() {
       z: 0,
     }
   };
-  gui.add(guiWorld.xPos, "x", -10, 10).onChange(() => {
-    EchoMom.position.set(
+  gui.add(guiWorld.xPos, "x", -20, 20).onChange(() => {
+    towerIcon4.position.set(
       guiWorld.xPos.x,
-      EchoMom.position.y,
-      EchoMom.position.z
+      towerIcon4.position.y,
+      towerIcon4.position.z
     );
 
-    console.log(EchoMom.position);
+    console.log(towerIcon4.position);
   });
 
-  gui.add(guiWorld.xPos, "y", -10, 10).onChange(() => {
-    EchoMom.position.set(
-      EchoMom.position.x,
+  gui.add(guiWorld.xPos, "y", -100, 100).onChange(() => {
+    blackMesaModel.position.set(
+      blackMesaModel.position.x,
       guiWorld.xPos.y,
-      EchoMom.position.z
+      blackMesaModel.position.z
     );
     //effectVignette.uniforms[ 'darkness' ].value = guiWorld.xPos.y;
-    console.log(EchoMom.position);
+    console.log(blackMesaModel.position);
     
   });
 
-  gui.add(guiWorld.xPos, "z", -10, 10).onChange(() => {
-    EchoMom.position.set(
-      EchoMom.position.x,
-      EchoMom.position.y,
+  gui.add(guiWorld.xPos, "z", -20, 20).onChange(() => {
+    towerIcon4.position.set(
+      towerIcon4.position.x,
+      towerIcon4.position.y,
       guiWorld.xPos.z
     );
-    console.log(EchoMom.position);
+    console.log(towerIcon4.position);
   });
 
   //** TOWER ICON INSTANTIATIONS */
@@ -1984,7 +1589,7 @@ function initLessonScene() {
   grasshopperModel.position.set(-133, -18.17, 41.96);
 
   //BlackMesa Model
-  loader.load("/resources/models/blackMesa.glb", function (gltf) 
+  loader.load("/resources/models/yuma.glb", function (gltf) 
   {
     var model = gltf.scene;
     model.traverse((o) => 
@@ -2004,8 +1609,8 @@ function initLessonScene() {
   });
 
   blackMesaModel.scale.set(0.5, 0.5, 0.5);
-  blackMesaModel.rotation.set(0, 38.6, 0);
-  blackMesaModel.position.set(-50, -4.68, 0.73);
+  blackMesaModel.rotation.set(0, 0.9, 0);
+  blackMesaModel.position.set(-50.55, -4.68, 0.69);
 
   //Bug Model
   loader.load("/resources/models/Bug.glb", function (gltf) 
@@ -2753,10 +2358,10 @@ function towerSpriteSetup() {
   }
 
   towerIcon.position.set(3, uiMinheight, 2);
-  towerIcon2.position.set(-2.88, uiMinheight, 2.96);
-  towerIcon3.position.set(-0.5, uiMinheight, -2.67);
-  towerIcon4.position.set(3.83, uiMinheight, -3.53);
-  towerIcon5.position.set(-2.23, uiMinheight, 0.12);
+  towerIcon2.position.set(-2.3, uiMinheight, 0.2);
+  towerIcon3.position.set(4.1, uiMinheight, -6.2);
+  towerIcon4.position.set(2.46, uiMinheight, -1.43);
+  towerIcon5.position.set(-2.74, uiMinheight, 3.3);
 }
 
 //** SETUP FOR LESSON SEQUENCES */
@@ -2791,12 +2396,12 @@ function lessonSequenceSetup()
 function makeEchoPing(x, z) {
   //****PING LOCATION SPRITE */
   var pingLocationTexture = new THREE.TextureLoader().load(
-    "/resources/sprites/LocationPing-sheet-4x7-white.png"
+    "/resources/sprites/LocationPing-sheet-new.png"
   );
   var pingLocationSprite = new TextureAnimator(
     pingLocationTexture,
-    4,
-    7,
+    17,
+    2,
     28,
     70
   );
@@ -3461,7 +3066,7 @@ function updateLessonScene(index)
         0.1,  // scanline intensity
         648,    // scanline count
         false,  // grayscale
-      );
+        );
       lessonComposer.addPass(filmPass); 
       
       Echo.position.set(0.29, -1.11, -0.05);
@@ -3480,7 +3085,7 @@ function updateLessonScene(index)
       lessonScene.add(blackMesaModel);
   
       lessonScene.fog.near = 0.015;
-      lessonScene.fog.far = 150;
+      lessonScene.fog.far = 2000;
       lessonScene.fog.color.set("#ffffff");
   
       outlineBug.position.set(-3.85, -1.89, -8.21);
@@ -3505,6 +3110,7 @@ function updateLessonScene(index)
         648,    // scanline count
         false,  // grayscale
       );
+      lessonComposer.addPass(bloomPass); 
       lessonComposer.addPass(filmPass);
       
       bugsEaten = 0;
@@ -3958,26 +3564,13 @@ function makeCameraControls() {
   controls.enableDamping = true;
   controls.dampingFactor = 0.1;
   controls.screenSpacePanning = false;
-
-  //controls.autoRotate = true;
-  //controls.autoRotateSpeed = 0.25;
   controls.enableZoom = true;
   controls.enableRotate = false;
   controls.zoomSpeed = 0.5;
   controls.zoom0 = 1;
   controls.minDistance = 1.5;
-  //controls.maxDistance = 15;
   controls.maxDistance = 2.5;
-
   controls.target.set(mainCamera.position.x, 0, mainCamera.position.z);
-
-  //controls.maxPolarAngle = Math.PI / 8;
-  // var minPan = new THREE.Vector3( - 1, - 1, - 1 );
-  // var maxPan = new THREE.Vector3( 1, 1, 1);
-
-  // controls.target.clamp(minPan, maxPan);
-  //camera.rotation.set(0, 0, Math.PI / 8)
-  //controls.maxPolarAngle = 0;
 }
 
 //** GETS THE MOUSE POSITION WHEN MOVING, factors for screen resizing */
@@ -4105,8 +3698,6 @@ function hoverObject() {
       intersectObject = intersects[0].object;
       intersected = true;
 
-      //console.log(intersectObject);
-
       if(locationFound)
       {
         intersectObject.material.opacity = 0;
@@ -4175,8 +3766,6 @@ function hoverObject() {
     {
       if (intersected) 
       {
-        //console.log(intersectObject);
-        
         intersectObject.userData.scaling = false;
         intersected = false;
 
@@ -4214,8 +3803,6 @@ function hoverObject() {
           intersectObject.material.opacity = 1;
         }
 
-
-        //iconScalingTween(intersectObject, false);
         intersectObject = null;
         document.body.style.cursor = 'default';
       }
@@ -4247,27 +3834,8 @@ function hoverObject() {
         iconScalingTween(intersects[0].object, true);
 
         console.log("On Object");
-        //console.log("name: " + intersects[0].object.userData.locName);
-        //console.log("spriteIndex: " + intersects[0].object.userData.index);
-
-        // if(!labelSprites[intersects[0].object.userData.index].userData.hover)
-        // {
-        //   //labelSprites[intersects[0].object.userData.index].material.opacity = 0.0;
-        //   labelSprites[intersects[0].object.userData.index].material.opacity = 0.0;
-        // }
-
-        try {
-          textFadeTween(
-            labelSprites[intersects[0].object.userData.index],
-            true
-          );
-          //labelSprites[intersectObject.userData.index].material.opacity = 1.0;
-          console.log(labelSprites[intersects[0].object.userData.index]);
-        } catch (e) {}
-
         uiHoverOnSound.play();
-        //document.getElementById("title").innerHTML = intersects[0].object.userData.locName;
-        
+
         //** IF IT IS THE TUTORIAL, HOVER WILL ACTIVE INDEX */
         if(tutorial)
         {
@@ -4292,21 +3860,7 @@ function hoverObject() {
     {
       if (intersected) 
       {
-        //console.log("Off Object");
-        //console.log("name: " + intersectObject.userData.name);
-        //console.log("index: " + intersectObject.userData.index);
-        //document.body.style.cursor = 'grab';
-
-        try 
-        {
-          //labelSprites[intersectObject.userData.index].material.opacity = 0.0;
-          textFadeTween(labelSprites[intersectObject.userData.index], false);
-          console.log("CHANGED OFF");
-        } catch (e) {}
-
-        
         uiHoverOffSound.play();
-        // document.getElementById("title").innerHTML = "ECHO";
         intersectObject.userData.scaling = false;
         intersected = false;
 
@@ -4815,7 +4369,7 @@ function clickEvent() {
             {
               currentLessonSceneIndex = 2;
             }
-            else if(intersects[0].object.name == 'blackMesa')
+            else if(intersects[0].object.name == 'gilaRiver')
             {
               currentLessonSceneIndex = 3;
             }
@@ -6083,11 +5637,9 @@ function TransitionDone() {
       //** TOGGLE ON MAP SCENE LABELS */
       mapSceneLables.forEach((cubeInfo) => {
         const {cube, elem} = cubeInfo;
-    
         if(!elem.classList.contains("active"))
         {
           elem.classList.toggle("active");
-          console.log("THEY'RE ACTIVE");
         }
       });
 
@@ -6103,6 +5655,19 @@ function TransitionDone() {
       walkieTalkieView = false;
 
       console.log("TRANSITIONED TO HUB SCENE");
+      
+      //** TOGGLE ON MAP SCENE LABELS */
+      mapSceneLables.forEach((cubeInfo) => {
+        const {cube, elem} = cubeInfo;
+
+        if(elem.classList.contains("active"))
+        {
+          elem.classList.toggle("active");
+          console.log("THEY'RE ACTIVE");
+        }
+      });
+
+
       controls.enabled = false;
       renderer.render(currentScene, currentCamera);
 
@@ -6276,6 +5841,15 @@ function TransitionDone() {
       {
         caveSound.stop();
       }
+
+      //** TOGGLE ON MAP SCENE LABELS */
+      mapSceneLables.forEach((cubeInfo) => {
+        const {cube, elem} = cubeInfo;
+        if(!elem.classList.contains("active"))
+        {
+          elem.classList.toggle("active");
+        }
+      });
 
       console.log(currentLessonSceneIndex);
 
@@ -6867,12 +6441,12 @@ function resetLesson1()
     document.getElementById("lesson1Activity").appendChild(draggableElements[i]);
     if(i == 0)
     {
-      draggableElements[i].style.top = "10%";
+      draggableElements[i].style.top = "38%";
       draggableElements[i].style.left = "15%";
     }
     else if(i == 1)
     {
-      draggableElements[i].style.top = "38%";
+      draggableElements[i].style.top = "10%";
       draggableElements[i].style.left = "15%";
     }
     else

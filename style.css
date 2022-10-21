@@ -140,7 +140,8 @@ body {
   position: absolute;
   left: 0;             
   top: 0;
-  font-size: 4vh;
+  height: 17.5vh;
+  font-size: 3vh;
   user-select: none;   /* don't let the text get selected */
   text-align: center;
   font-family: roboto-condensed, sans-serif;
