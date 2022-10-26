@@ -221,8 +221,6 @@ body {
   max-height: 100%;
 
   /* aspect-ratio: 1/1; */
-
-  background-image: url("/resources/images/echobook.jpg");
   background-repeat: no-repeat;
 
   background-size: cover; /* <-- background size */
@@ -247,8 +245,6 @@ body {
   background-position: center; /* <-- background position */
 
   /* aspect-ratio: 1/1; */
-
-  background-image: url("/resources/images/echobook.jpg");
   background-repeat: no-repeat;
   /* background-image: fill; */
 
@@ -403,7 +399,7 @@ body {
   white-space: nowrap; /* Keeps the content on a single line */
   margin: 0 auto; /* Gives that scrolling effect as the typing happens */
   letter-spacing: .15em; /* Adjust as needed */
-  font-size: 2vw;
+  font-size: 1.5vw;
 }
 .iconPopup.active .typewriter h1 {
   animation: 
@@ -2021,20 +2017,16 @@ button {
 .back{
   position: absolute; bottom: 0px;
   pointer-events: none; 
-  left: 2vh;
-  bottom: 2vh;
-  height: 5vh;
-  width: 5vh;
+  left: 1.5vh;
+  bottom: 2.5vh;
+  height: 7vh;
+  width: 7vh;
   opacity: 0%;
   font-size: 5vh;
 
-  background-image: url("/resources/images/exit-icon.png");
-  /* background-color: rgb(119, 0, 255); */
+  background-image: url("/resources/images/hubIcon-2.png");
   background-repeat: no-repeat;
-  /* mix-blend-mode: saturation; */
   background-size: 100%;
-
-  /* color: white; */
 }
 .back.active{
   pointer-events: auto;

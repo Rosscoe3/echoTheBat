@@ -537,7 +537,7 @@ const lessonLocation_cathedralRock_texture = new THREE.TextureLoader(manager).lo
   "/resources/images/UI/icon-cathedralRock.jpg"
 ); 
 const lessonLocation_blackMesa_texture = new THREE.TextureLoader(manager).load(
-  "/resources/images/UI/icon-blackMesa.jpg"
+  "/resources/images/UI/icon-yuma.jpg"
 );
 
 const arizona_road_texture = new THREE.TextureLoader(manager).load(
@@ -605,6 +605,19 @@ const lessonLocation_horseshoe_material = new THREE.SpriteMaterial({ map: lesson
 const lessonLocation_cathedralRock_material = new THREE.SpriteMaterial({ map: lessonLocation_cathedralRock_texture});
 const lessonLocation_blackMesa_material = new THREE.SpriteMaterial({ map: lessonLocation_blackMesa_texture});
 
+let towerHints = ["ECHO spotted catching bugs around the streetlights in Phoenix!", 
+"ECHO seen heading north toward the Grand Canyon", 
+"ECHO spotted heading south on Route 17", 
+"ECHO was seen in the Sonoran desert", 
+"ECHO seen heading toward the mountains southeast of Tucson"];
+
+let towerHints2 = ["ECHO spotted catching bugs around the streetlights in Phoenix! \n Look at the maps to find the city of Phoenix.", 
+"ECHO seen heading toward the Grand Canyon. Look at the maps to find the Grand Canyon.", 
+"ECHO spotted heading south on Route 17. Look at the road map to find Route 17.", 
+"ECHO was seen in the Sonoran desert. Look at a physical map of Arizona.", 
+"ECHO seen heading toward the mountains southeast of Tucson. Look at the road map to find Tucson. And the physical map to find the mountains."];
+
+let towerClicked = false;
 
 const towerIcon = new THREE.Sprite(towerIconMaterial);
 const towerIcon2 = new THREE.Sprite(towerIconMaterial);
@@ -1244,7 +1257,7 @@ function tutorialSequence()
     walkieTalkie3.stop();
   }
 
-  if(tutorialIndex != 5)
+  if(tutorialIndex != 6)
   {
     tutorialIndex++;
   }
@@ -1253,27 +1266,26 @@ function tutorialSequence()
   {
     tutorialHighlight.style.width = '30vh';
     tutorialHighlight.style.height = '20vh';
-    //highlightText.innerHTML = "Click and drag to move around the map";
     mouseIcon.classList.toggle("init");
     
     if(!subtitles.classList.contains("active"))
     {
       subtitles.classList.toggle("active");
+      
+      //** SET TO THE SECOND HINT AFTER WAITING SOME TIME AFTER CLICKING CLOSE */
       setTimeout(function() 
       {
         subtitleLines.innerHTML = tutorialSubtitles[tutorialIndex];
         subtitles.classList.toggle("active");
       }, 500);
     }
-  
-    //tutorialIndex++;
   }
   else if(tutorialIndex == 1)
   {
     tutorialHighlight.style.width = '15vh';
     tutorialHighlight.style.height = '15vh';
-    //highlightText.innerHTML = "Look for Echo by clicking each map icon";
-    //lessonSceneRaycast.add(glowSprite);
+    controls.enabled = false;
+    
     mouseIcon.classList.toggle("active");
     mouseIcon.classList.toggle("init");
     walkieTalkieSounds[Math.floor(Math.random() * 3)].play();
@@ -1290,13 +1302,11 @@ function tutorialSequence()
 
     tutClickImage.classList.toggle("active");
     tutClickImage.style = "background-image: url('/resources/images/location/horseshoeBend.jpg');";
-    
-    //tutorialIndex++;
   }
   else if(tutorialIndex == 2)
   {
     glowSprite.position.set(towerIcon.position.x, uiMinheight - 0.01, towerIcon.position.z);
-    //highlightText.innerHTML = "Clicking towers will give you hints to Echo's location";
+    highlightText.innerHTML = "Clicking towers will give you hints to Echo's location";
     tutClickImage.style = "background-image: url('/resources/images/towericon.png');";
     walkieTalkieSounds[Math.floor(Math.random() * 3)].play();
 
@@ -1309,17 +1319,30 @@ function tutorialSequence()
         subtitles.classList.toggle("active");
       }, 500);
     }
-    
-    //tutorialIndex++;
   }
   else if(tutorialIndex == 3)
+  {
+    glowSprite.position.set(towerIcon.position.x, uiMinheight - 0.01, towerIcon.position.z);
+    tutClickImage.style = "background-image: url('/resources/images/UI/BugImage.png');";
+    walkieTalkieSounds[Math.floor(Math.random() * 3)].play();
+
+    if(subtitles.classList.contains("active"))
+    {
+      subtitles.classList.toggle("active");
+      setTimeout(function() 
+      {
+        subtitleLines.innerHTML = tutorialSubtitles[tutorialIndex];
+        subtitles.classList.toggle("active");
+      }, 500);
+    }
+  }
+  else if(tutorialIndex == 4)
   {
     tutorialHighlight.style.bottom = "6vh";
     tutorialHighlight.style.right = "5.5vh";
     tutorialHighlight.style.width = '8vh';
     tutorialHighlight.style.height = '10vh';
     lessonSceneRaycast.remove(glowSprite);
-    //highlightText.innerHTML = "Use the map to get your bearings";
     
     mouseIcon.classList.toggle("active");
     mouseIcon.classList.toggle("mapClick");
@@ -1332,18 +1355,19 @@ function tutorialSequence()
       subtitles.classList.toggle("active");
       setTimeout(function() 
       {
-        subtitleLines.innerHTML = "Use the map to get your bearings";
+        subtitleLines.innerHTML = tutorialSubtitles[tutorialIndex];
         subtitles.classList.toggle("active");
       }, 500);
     }
-    //tutorialIndex++;
   }
-  else if(tutorialIndex == 4)
+  else if(tutorialIndex == 5)
   {
+    controls.enabled = true;
+    toggleMapSceneLabels();
     tutorialIndex = 0;
     tutorial = false;
     tutorialHighlight.classList.toggle("active");
-    console.log("TUTORIAL INDEX IS 4");
+    console.log("TUTORIAL INDEX IS 5");
     //highlightText.classList.toggle("active");
 
     mouseIcon.classList.toggle("mapClick");
@@ -1357,9 +1381,9 @@ function tutorialSequence()
       setTimeout(function() 
       {
         subtitleLines.innerHTML = "Good luck finding Echo!";
-        subtitles.classList.toggle("active");
         tutorialHighlight.style.bottom = "50%";
         tutorialHighlight.style.right = "50%";
+        subtitles.classList.toggle("active");
         setTimeout(function() 
         {
           subtitles.classList.toggle("active");
@@ -1376,8 +1400,12 @@ function tutorialReset()
 {
   tutorialHighlight.style.width = '30vh';
   tutorialHighlight.style.height = '20vh';
-  highlightText.innerHTML = "Click and drag to move around the map";
-  
+  tutorialHighlight.style.bottom = "50%";
+  tutorialHighlight.style.right = "50%";
+  highlightText.innerHTML = "PRESS and drag to move around the map";
+  console.log("TOGGLE OFF MAP LABELS, at TUTORIAL RESET");
+  toggleMapSceneLabels();
+
   if(walkieTalkie1.isPlaying)
   {
     walkieTalkie1.stop();
@@ -1405,7 +1433,7 @@ function tutorialReset()
   }
   tutorialHighlight.classList.toggle("active");
   //highlightText.classList.toggle("active");
-  subtitleLines.innerHTML = "Click and drag to move around the map";
+  subtitleLines.innerHTML = "PRESS and drag to move around the map";
   subtitles.classList.toggle("active");
 }
 
@@ -1963,9 +1991,10 @@ function initSubtitles()
    "*PSHHH*... We need your help locating <i>ECHO</i>! ...*PSHHH*",
     "*PSHHH*... We've just gotten word he's been spotted, sending you the ping now ...*PSHHH*",
      "*PSHHH*... Click on your <i>computer</i>, and let's get started! ...*PSHHH*"];
-  tutorialSubtitles = ["Click and drag to move around the map",
+  tutorialSubtitles = ["PRESS and drag to move around the map",
    "Look for Echo by clicking each map icon",
   "Clicking towers will give you hints to Echo's location",
+  "Collect Bugs to feed to Echo",
   "Use the map to get your bearings" ];
   lessonSubtitles = ["*PSHHH*...You found Echo! Hope you can get a good view through this trail cam...*PSHHH*", 
   "*PSHHH*...There he goes... Lets do some research and find out where he's headed next!...*PSHHH*", 
@@ -3453,12 +3482,13 @@ function lessonComplete()
 
   console.log("Lesson Scene Index: " + currentLessonSceneIndex);
   console.log("Lesson's completed " + lessonsCompleted);
+  towerClicked = false;
 
   if(lessonsCompleted == 1)
   {
     sceneTransitionSprites[lessonsCompleted].userData.ping = true;
     sceneTransitionSprites[lessonsCompleted].userData.popup = false;
-    document.getElementById("towerMessage").innerHTML = "ECHO seen heading north toward the Grand Canyon";
+    document.getElementById("towerMessage").innerHTML = towerHints[1];
     
     if(!mapScene.getObjectByName("ping"))
     {
@@ -3482,7 +3512,7 @@ function lessonComplete()
   {
     sceneTransitionSprites[lessonsCompleted].userData.ping = true;
     sceneTransitionSprites[lessonsCompleted].userData.popup = false;
-    document.getElementById("towerMessage").innerHTML = "ECHO spotted heading south on Route 17";
+    document.getElementById("towerMessage").innerHTML = towerHints[2];
     
     if(!mapScene.getObjectByName("ping"))
     {
@@ -3496,7 +3526,7 @@ function lessonComplete()
   {
     sceneTransitionSprites[lessonsCompleted].userData.ping = true;
     sceneTransitionSprites[lessonsCompleted].userData.popup = false;
-    document.getElementById("towerMessage").innerHTML = "ECHO was seen in the Sonoran desert";
+    document.getElementById("towerMessage").innerHTML = towerHints[3];
     
     if(!mapScene.getObjectByName("ping"))
     {
@@ -3510,7 +3540,7 @@ function lessonComplete()
   {
     sceneTransitionSprites[lessonsCompleted].userData.ping = true;
     sceneTransitionSprites[lessonsCompleted].userData.popup = false;
-    document.getElementById("towerMessage").innerHTML = "ECHO seen heading toward the mountains southeast of Tucson";
+    document.getElementById("towerMessage").innerHTML = towerHints[4];
     
     if(!mapScene.getObjectByName("ping"))
     {
@@ -3824,56 +3854,57 @@ function hoverObject() {
     intersects = raycaster.intersectObjects(lessonSceneRaycast.children);
 
     //*****CHECK FOR LOCATION UI
-    if (intersects.length > 0 && intersects[0].object.userData.name == "locationUI") {
-      if (intersects[0].object != intersectObject) 
-      {
-        intersectObject = intersects[0].object;
-        intersected = true;
-        intersectObject.userData.scaling = true;
-
-        iconScalingTween(intersects[0].object, true);
-
-        console.log("On Object");
-        uiHoverOnSound.play();
-
-        //** IF IT IS THE TUTORIAL, HOVER WILL ACTIVE INDEX */
-        if(tutorial)
+    if(!tutorial)
+    {
+      if (intersects.length > 0 && intersects[0].object.userData.name == "locationUI") {
+        if (intersects[0].object != intersectObject) 
         {
-          if(!intersects[0].object.userData.tower && tutorialIndex == 2)
+          intersectObject = intersects[0].object;
+          intersected = true;
+          intersectObject.userData.scaling = true;
+  
+          iconScalingTween(intersects[0].object, true);
+  
+          console.log("On Object");
+          uiHoverOnSound.play();
+  
+          //** IF IT IS THE TUTORIAL, HOVER WILL ACTIVE INDEX */
+          if(tutorial)
           {
-            //tutorialSequence();
-          }
-          if(intersects[0].object.userData.tower && tutorialIndex == 3)
-          {
-            //tutorialSequence();
+            if(!intersects[0].object.userData.tower && tutorialIndex == 2)
+            {
+              //tutorialSequence();
+            }
+            if(intersects[0].object.userData.tower && tutorialIndex == 3)
+            {
+              //tutorialSequence();
+            }
           }
         }
+        else 
+        {
+          //console.log('same object');
+        }
+  
+        document.body.style.cursor = 'pointer';
       }
       else 
       {
-        //console.log('same object');
-      }
-
-      document.body.style.cursor = 'pointer';
-    }
-    else 
-    {
-      if (intersected) 
-      {
-        uiHoverOffSound.play();
-        intersectObject.userData.scaling = false;
-        intersected = false;
-
-        if(intersectObject.userData.name == "locationUI")
+        if (intersected) 
         {
-          iconScalingTween(intersectObject, false);
+          uiHoverOffSound.play();
+          intersectObject.userData.scaling = false;
+          intersected = false;
+  
+          if(intersectObject.userData.name == "locationUI")
+          {
+            iconScalingTween(intersectObject, false);
+          }
+  
+          intersectObject = null;
         }
-
-        intersectObject = null;
       }
     }
-
-    //console.log(intersects[0]);
   }
   //** LESSON SCENE */
   else if (currentSceneNumber == 2) 
@@ -3935,8 +3966,6 @@ function hoverObject() {
     }
 
   }
-
-  //console.log(intersects[0].object.userData.name);
 }
 
 //** UPDATE THE SUBTITLES FOR DIALOGUE */
@@ -4051,7 +4080,8 @@ function togglePopup() {
 
 //Opens the 'popup' class in html and dispalys the content based on the object it clicked
 function toggleTowerPopup() {
-  if (!toggleTowerPopupOpen) {
+  if (!toggleTowerPopupOpen) 
+  {
     //ICON POPUP
     document.getElementById("iconPopup-1").classList.toggle("active");
 
@@ -4061,10 +4091,22 @@ function toggleTowerPopup() {
     controls.enabled = false;
     toggleTowerPopupOpen = true;
     console.log("TOWER POPUP ON");
-  } else {
+  } 
+  else 
+  {
     document.getElementById("iconPopup-1").classList.toggle("active");
     controls.enabled = true;
     toggleTowerPopupOpen = false;
+
+    if(towerClicked)
+    {
+      setTimeout(function() 
+      {
+        document.getElementById("towerMessage").innerHTML = towerHints2[lessonsCompleted];
+      }, 1000);
+      
+    }
+
     console.log("TOWER POPUP OFF");
   }
 }
@@ -4343,12 +4385,17 @@ function clickEvent() {
           if (intersects[0].object.userData.tower) {
             console.log("CLICK TOWER");
     
-            if (typeof echoPingLocation == "undefined") {
-              //echoPingLocation = makeEchoPing();
-              //console.log("MAKE PING!");
+            if (typeof echoPingLocation == "undefined") 
+            {
               cameraTweenTo(intersects, false);
-            } else {
+            } 
+            else 
+            {
               cameraTweenTo(intersects, false);
+            }
+            if(!towerClicked)
+            {
+              towerClicked = true;
             }
     
             toggleTowerPopup(intersects[0].object);
@@ -4508,10 +4555,6 @@ function clickEvent() {
       {
         console.log("tutorial click: " + tutorialIndex);
         tutorialSequence();
-      }
-      else if(tutorialIndex == 3)
-      {
-        //tutorialSequence();
       }
     }
   }
@@ -5626,14 +5669,7 @@ function TransitionDone() {
         hubworldSound.setVolume(0.025);
       }
 
-      //** TUTORIAL FOR THE FIRST TIME YOU PLAY */
-      if(introHubSequence)
-      {
-        introHubSequence = false;
-        // tutorialSequence();
-        tutorialReset();
-      }
-
+      
       //** TOGGLE ON MAP SCENE LABELS */
       mapSceneLables.forEach((cubeInfo) => {
         const {cube, elem} = cubeInfo;
@@ -5642,6 +5678,13 @@ function TransitionDone() {
           elem.classList.toggle("active");
         }
       });
+      
+      //** TUTORIAL FOR THE FIRST TIME YOU PLAY */
+      if(introHubSequence)
+      {
+        introHubSequence = false;
+        tutorialReset();
+      }
 
       resetHubWorld();
       
@@ -5922,8 +5965,8 @@ function youAreHereUpdate() {
   youAreHereIconPopup.style.top = posZ + "%";
   youAreHereIconPopup.style.left = posX + "%";
 
-  console.log("You are here cam: " + camX + ", Z: " + camZ);
-  console.log("You are here update X: " + posX + ", Y: " + posZ);
+  // console.log("You are here cam: " + camX + ", Z: " + camZ);
+  // console.log("You are here update X: " + posX + ", Y: " + posZ);
 }
 
 function FXScene(scene, camera) {
@@ -5978,9 +6021,9 @@ function Transition(sceneA, sceneB) {
 
   //** LOADS TRANSITION TEXTURES */
   for (let i = 0; i < 6; i++) {
-    textures[i] = loader.load(
-      "/resources/images/transition/transition" + 2 + ".png"
-    );
+    // textures[i] = loader.load(
+    //   "/resources/images/transition/transition" + 2 + ".png"
+    // );
     //"/resources/images/transition/transition" + (i + 1) + ".png"
   }
 
@@ -6456,17 +6499,8 @@ function resetLesson1()
     }
   }
 }
-function updateLesson2()
-{
-
-}
-
 
 //** LESSON 1 ACTIVITY */
-
-//xButton.addEventListener('click', togglePopup, false);
-//window.addEventListener('mousemove', onMouseMove, false);
-//window.addEventListener('click', clickEvent, false);
 audioButton.addEventListener("click", function (ev) {
   ev.stopPropagation();
   if (audioPlaying) {
@@ -6575,7 +6609,7 @@ tutClickImage.addEventListener('click', function(ev){
     
     
     
-    if(tutorialIndex <= 2)
+    if(tutorialIndex <= 3)
     {
       tutorialSequence();
       console.log("Tutorial Image Click: " + tutorialIndex);
@@ -6592,7 +6626,7 @@ miniMap.addEventListener('click', function(ev) {
   {
     if(tutorial)
     {
-      if(tutorialIndex == 3)
+      if(tutorialIndex == 4)
       {
         tutorialSequence();
         document.getElementById("mapPopup").classList.toggle("open");
@@ -6624,7 +6658,7 @@ roadButton.addEventListener('click', function(ev) {
     {
       if(tutorial)
       {
-        if(tutorialIndex == 3)
+        if(tutorialIndex == 4)
         {
           tutorialSequence();
         }
@@ -6654,7 +6688,7 @@ mosaicButton.addEventListener('click', function(ev) {
     {
       if(tutorial)
       {
-        if(tutorialIndex == 3)
+        if(tutorialIndex == 4)
         {
           tutorialSequence();
         }
@@ -6687,7 +6721,7 @@ geographyButton.addEventListener('click', function(ev) {
 
     if(tutorial)
     {
-      if(tutorialIndex == 3)
+      if(tutorialIndex == 4)
       {
         tutorialSequence();
       }
@@ -6865,6 +6899,14 @@ function toggleHubSceneLabels()
     elem.classList.toggle("active");
   });
 }
+function toggleMapSceneLabels()
+{
+  mapSceneLables.forEach((cubeInfo) => {
+    const {cube, elem} = cubeInfo;
+
+    elem.classList.toggle("active");
+  });
+}
 
 
 // creditsButton.addEventListener("click", (e) => {
@@ -7014,7 +7056,7 @@ miniMap.addEventListener("mouseover", function (ev) {
   {
     if(tutorial)
     {
-      if(tutorialIndex == 3)
+      if(tutorialIndex == 4)
       {
         //tutorialSequence();
         if(!document.getElementById("toggleMapPopup").classList.contains("active"))
@@ -7080,19 +7122,16 @@ controls.addEventListener( 'start', function ( event ) {
 	if(currentSceneNumber == 1)
   {
     mouseIsDragging = true;
-    //console.log("IS DRAGGING: " + mouseIsDragging);
     document.body.style.cursor = 'grabbing';
   }
 } );
 controls.addEventListener( 'end', function ( event ) {
   if(currentSceneNumber == 1)
   {
-    //console.log("END DRAGGING");
     document.body.style.cursor = 'grab';
 
     setTimeout(function() {
       mouseIsDragging = false;
-      //console.log("END DRAGGING " + mouseIsDragging);
     }, 1000);
 
     if(tutorial)
@@ -7103,7 +7142,6 @@ controls.addEventListener( 'end', function ( event ) {
         tutorialSequence();
       }
     }
-
     youAreHereUpdate();
   }
 } );
