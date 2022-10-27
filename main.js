@@ -958,8 +958,8 @@ function init() {
   renderer.toneMappingExposure = 1;
 
   mainCamera.rotation.x = Math.PI / -2;
-  mainCamera.position.setX(1.64);
-  mainCamera.position.setZ(2);
+  mainCamera.position.setX(1.4);
+  mainCamera.position.setZ(3.12);
   mainCamera.position.setY(cameraPos.y);
   currentCamera = mainCamera;
 
@@ -1301,13 +1301,12 @@ function tutorialSequence()
     }
 
     tutClickImage.classList.toggle("active");
-    tutClickImage.style = "background-image: url('/resources/images/location/horseshoeBend.jpg');";
+    tutClickImage.style = "background-image: url('/resources/images/UI/BugImage.png');";
   }
   else if(tutorialIndex == 2)
   {
     glowSprite.position.set(towerIcon.position.x, uiMinheight - 0.01, towerIcon.position.z);
-    highlightText.innerHTML = "Clicking towers will give you hints to Echo's location";
-    tutClickImage.style = "background-image: url('/resources/images/towericon.png');";
+    tutClickImage.style = "background-image: url('/resources/images/location/horseshoeBend.jpg');";
     walkieTalkieSounds[Math.floor(Math.random() * 3)].play();
 
     if(subtitles.classList.contains("active"))
@@ -1323,7 +1322,7 @@ function tutorialSequence()
   else if(tutorialIndex == 3)
   {
     glowSprite.position.set(towerIcon.position.x, uiMinheight - 0.01, towerIcon.position.z);
-    tutClickImage.style = "background-image: url('/resources/images/UI/BugImage.png');";
+    tutClickImage.style = "background-image: url('/resources/images/towericon.png');";
     walkieTalkieSounds[Math.floor(Math.random() * 3)].play();
 
     if(subtitles.classList.contains("active"))
@@ -1987,15 +1986,15 @@ function initHubScene()
 function initSubtitles()
 {
   startingSubtitles = 
-  ["*PSHHH*... Bravo to tower ...*PSHHH*",
-   "*PSHHH*... We need your help locating <i>ECHO</i>! ...*PSHHH*",
-    "*PSHHH*... We've just gotten word he's been spotted, sending you the ping now ...*PSHHH*",
-     "*PSHHH*... Click on your <i>computer</i>, and let's get started! ...*PSHHH*"];
+  ["Bravo to tower",
+   "We need your help locating <i>ECHO</i>!",
+    "We've just gotten word he's been spotted, sending you the ping now",
+     "Click on your <i>computer</i>, and let's get started!"];
   tutorialSubtitles = ["PRESS and drag to move around the map",
-   "Look for Echo by clicking each map icon",
-  "Clicking towers will give you hints to Echo's location",
   "Collect Bugs to feed to Echo",
-  "Use the map to get your bearings" ];
+  "Look for Echo by clicking on the photos",
+  "Click on the towers for a report on Echo’s location",
+  "Use the maps to help find the places mentioned in the tower report" ];
   lessonSubtitles = ["*PSHHH*...You found Echo! Hope you can get a good view through this trail cam...*PSHHH*", 
   "*PSHHH*...There he goes... Lets do some research and find out where he's headed next!...*PSHHH*", 
   "*PSHHH*...You found Echo! Wow, what a beautiful view...*PSHHH*", "*PSHHH*...And he's off! Pulling up your device now...*PSHHH*", 
@@ -3972,6 +3971,12 @@ function hoverObject() {
 function subtitleChange()
 {
   //** IF ITS NOT ACTIVE, ACTIVATE IT */
+
+  if(startingSequenceNumb == 0)
+  {
+    subtitleLines.innerHTML = startingSubtitles[startingSequenceNumb];
+  }
+
   if(!subtitles.classList.contains("active"))
   {
     //console.log("ACTIVATED");
@@ -5560,9 +5565,6 @@ function animate() {
   // mainCamera.position.z.clamp(-12, 12);
   // mainCamera.position.x.clamp(-12, 12);
   // controls.target.set(mainCamera.position.x,0, mainCamera.position.z);
-  
-  //Right limit x: 12, -12
-  //Down limit z: 12, -12
 
   //** MOVE CAMERA BACK IF ITS OUT OF BOUNDS */
   if(mainCamera.position.x >= 10 || mainCamera.position.x <= -10 ||
@@ -6877,10 +6879,14 @@ helpButton.addEventListener("click", (e) => {
   {
     if (!transitioning && !isTweening) 
     {
+      //** HUBSCENE LABELS */
       if(currentSceneNumber == 0)
       {
         console.log("HELP BUTTON");
         toggleHubSceneLabels();
+        startingSequence = true;
+        startingSequenceNumb = 0;
+        subtitleChange();
       }
       else if(currentSceneNumber == 1)
       {
