@@ -74,7 +74,6 @@ manager.onError = function (url) {
 
 //** CONTROLS AND SCENE SETUP */
 const loader = new GLTFLoader(manager);
-//dracoLoader.setDecoderPath( 'js/libs/draco/gltf/' );
 const dracoLoader = new DRACOLoader();
 dracoLoader.setDecoderConfig({ type: 'js' });
 dracoLoader.setDecoderPath( 'https://www.gstatic.com/draco/v1/decoders/' );
@@ -158,7 +157,6 @@ mapComposer.addPass(effectVignette);
 mapComposer.addPass(gammaCorrection);
 
 hubComposer.addPass(new RenderPass(hubScene, hubCamera));
-//hubComposer.addPass(effectFXAA);
 
 const maxAnisotropy = renderer.capabilities.getMaxAnisotropy();
 let labelRenderer;
@@ -334,14 +332,12 @@ audioLoader.load("/resources/sounds/fx/woosh-deep.wav", function (buffer) {
   uiHoverOffSound.setBuffer(buffer);
   uiHoverOffSound.setLoop(false);
   uiHoverOffSound.setVolume(0.25);
-  //uiHoverOffSound.stop();
 });
 //CLICK SOUND
 audioLoader.load("/resources/sounds/fx/lightClick.wav", function (buffer) {
   clickSound.setBuffer(buffer);
   clickSound.setLoop(false);
   clickSound.setVolume(0.75);
-  //clickSound.stop();
 });
 
 //** ECHO CHEWING SOUNDS */
@@ -447,7 +443,6 @@ const towerIconTexture = new THREE.TextureLoader(manager).load(
 const glowTexture = new THREE.TextureLoader(manager).load(
   "/resources/images/yellow-glow.png"
 );
-
 
 const deathValleyTexture = new THREE.TextureLoader(manager).load(
   "/resources/images/location/death-valley.jpg"
@@ -628,8 +623,7 @@ const towerIcon5 = new THREE.Sprite(towerIconMaterial);
 const towerIcons = [towerIcon, towerIcon2, towerIcon3, towerIcon4, towerIcon5];
 
 //const mapImages = [sprite, sprite2, towerIcon];
-var sprite_deathValley,
-  sprite_grandCanyon,
+var sprite_grandCanyon,
   sprite_coloradoRiver,
   sprite_phoenix,
   sprite_tempe,
@@ -809,7 +803,7 @@ var echoPingLocation;
 var heartSprite = new THREE.Group();
 
 var hubsceneLabels = [
-  makeTextLabel(-2.25, 0.175, 0.675, "Bug Count"),
+  makeTextLabel(-2.25, 0.175, 0.675, "Collect bugs for Echo"),
   makeTextLabel(-2.25, 0.175, -0.05, "Follow Echo"),
   makeTextLabel(-1.9, 0.0, -0.3, "Where is Echo?"),
   makeTextLabel(-2.25, 0.05, -1.15, "About Landsat", true),
@@ -820,7 +814,6 @@ var mapSceneLables = [
   makeTextLabel(-0.65, uiMinheight, 1.7, "Phoenix", false, true),
   makeTextLabel(-1.56, uiMinheight, -6.27, "Colorado River", false, true),
   makeTextLabel(-0.2, uiMinheight, -5.66, "Grand Canyon", false, true),
-  makeTextLabel(-4.68, uiMinheight, -0.65, "Black Mesa", false, true),
   makeTextLabel(-0.04, uiMinheight, 2.07, "Tempe", false, true),
   makeTextLabel(1.772, uiMinheight, 5.41, "Tuscon", false, true),
   makeTextLabel(2.227, uiMinheight, 5.26, "Catalina Mts.", false, true),
@@ -985,7 +978,7 @@ function init() {
   /** SPRITE INSTANTIATION */
   glowSprite = new THREE.Sprite(glowMaterial);
 
-  sprite_deathValley = new THREE.Sprite(deathValleyMaterial);
+  //sprite_deathValley = new THREE.Sprite(deathValleyMaterial);
 
   sprite_grandCanyon = new THREE.Sprite(grandCanyonMaterial);
   sprite_coloradoRiver = new THREE.Sprite(coloradoRiverMaterial);
@@ -1033,7 +1026,6 @@ function init() {
   youAreHereUpdate();
 
   uiLocationSprites = [
-    sprite_deathValley,
     sprite_grandCanyon,
     sprite_coloradoRiver,
     sprite_phoenix,
@@ -1113,7 +1105,7 @@ function init() {
     //console.log("CURRENT INDEX: " + i);
   }
 
-  sprite_deathValley.position.set(-4.68, sprite_deathValley.position.y, -0.65);
+  // sprite_deathValley.position.set(-4.68, sprite_deathValley.position.y, -0.65);
   sprite_grandCanyon.position.set(-0.2, sprite_grandCanyon.position.y, -5.66);
   sprite_coloradoRiver.position.set(-1.56, sprite_coloradoRiver.position.y, -6.2697);
   sprite_phoenix.position.set(-0.65, sprite_phoenix.position.y, 1.7);
@@ -1244,6 +1236,11 @@ function tutorialSequence()
   console.log("TUTORIAL: " + tutorialIndex);
   tutorial = true;
 
+  if(!subtitles.classList.contains("active"))
+  {
+    subtitles.classList.toggle("active");
+  }
+
   if(walkieTalkie1.isPlaying)
   {
     walkieTalkie1.stop();
@@ -1268,7 +1265,7 @@ function tutorialSequence()
     tutorialHighlight.style.height = '20vh';
     mouseIcon.classList.toggle("init");
     
-    if(!subtitles.classList.contains("active"))
+    if(subtitles.classList.contains("active"))
     {
       subtitles.classList.toggle("active");
       
@@ -2123,7 +2120,7 @@ function roundRect(ctx, x, y, w, h, r) {
 }
 
 function locationSpriteSetup() {
-  sprite_deathValley.userData.locName = "Black Mesa";
+  // sprite_deathValley.userData.locName = "Black Mesa";
   sprite_grandCanyon.userData.locName = "Grand Canyon";
   sprite_coloradoRiver.userData.locName = "Colorado River";
   sprite_phoenix.userData.locName = "Phoenix";
@@ -2150,14 +2147,14 @@ function locationSpriteSetup() {
   sprite_wymola.userData.locName = "Wymola";
   sprite_chiricahuaMnts.userData.locName = "Chiricahua Mts."
 
-  sprite_deathValley.userData.popup = true;
-  sprite_deathValley.userData.popupTitle = "Black Mesa";
-  sprite_deathValley.userData.popupText =
-    "Death Valley is a vast national park with over 3 million acres of designated wilderness and hundreds of miles of backcountry roads.";
-  sprite_deathValley.userData.satelliteImage =
-    "/resources/images/landsat/algodones-dunes.jpg";
-  sprite_deathValley.userData.img = "/resources/images/location/death-valley.jpg";
-  sprite_deathValley.userData.index = 0;
+  // sprite_deathValley.userData.popup = true;
+  // sprite_deathValley.userData.popupTitle = "Black Mesa";
+  // sprite_deathValley.userData.popupText =
+  //   "Death Valley is a vast national park with over 3 million acres of designated wilderness and hundreds of miles of backcountry roads.";
+  // sprite_deathValley.userData.satelliteImage =
+  //   "/resources/images/landsat/algodones-dunes.jpg";
+  // sprite_deathValley.userData.img = "/resources/images/location/death-valley.jpg";
+  // sprite_deathValley.userData.index = 0;
 
   sprite_grandCanyon.userData.popup = true;
   sprite_grandCanyon.userData.popupTitle = "Grand Canyon";
@@ -2308,7 +2305,7 @@ function locationSpriteSetup() {
   sprite_petrifiedForest.userData.popupTitle = "Petrified Forest";
   sprite_petrifiedForest.userData.popupText = "A dam on the Salt River formed Apache Lake.";
   sprite_petrifiedForest.userData.satelliteImage =
-    "/resources/images/landsat/salt-river.jpg";
+    "/resources/images/landsat/petrified-forest.jpg";
   sprite_petrifiedForest.userData.img = "/resources/images/location/petrifiedForest.jpg";
   sprite_petrifiedForest.userData.index = 18;
 
@@ -3984,6 +3981,9 @@ function subtitleChange()
   }
   if(startingSequenceNumb < startingSubtitles.length - 1 && startingSequence)
   {
+    clearTimeout(timeoutID1);
+    clearTimeout(timeoutID2);
+    
     //** FIRST WAIT FOR TIME OUT */
     timeoutID1 = setTimeout(function() 
     {
@@ -4109,9 +4109,8 @@ function toggleTowerPopup() {
       {
         document.getElementById("towerMessage").innerHTML = towerHints2[lessonsCompleted];
       }, 1000);
-      
     }
-
+    
     console.log("TOWER POPUP OFF");
   }
 }

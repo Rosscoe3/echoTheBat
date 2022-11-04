@@ -193,8 +193,7 @@ body {
 }
 
 /* POPUP FOR SIDE BY SIDE COMPARISON*/
-.popup {
-}
+
 /* row 1 */
 .popup .content .item1 {
   grid-area: header;
@@ -202,8 +201,6 @@ body {
   border-radius: 10px;
   background-color: rgb(243, 243, 243);
   border-width: 10%;
-
-  /* justify-content: center; */
   font-family: roboto-condensed, sans-serif;
   font-style: italic;
   font-size: 2.5vw;
@@ -212,44 +209,33 @@ body {
 .popup .content .item2 {
   grid-area: img;
 
-  /* display: block; */
-  /* width: 100%;
-  height: 100%; */
-
   object-fit: cover;
   width: 100%;
   max-height: 100%;
 
-  /* aspect-ratio: 1/1; */
+  aspect-ratio: 1/1;
+
   background-repeat: no-repeat;
 
   background-size: cover; /* <-- background size */
   background-position: center; /* <-- background position */
-  /* background-image: fill; */
-
-  /* object-fit: cover; */
+  border-radius: 1.5vh;
+  
 }
 /* row 3 */
 .popup .content .item3 {
   grid-area: img2;
 
-  /* display: block; */
-  /* width: 100%;
-  height: 100%; */
-
   object-fit: cover;
   width: 100%;
   max-height: 100%;
 
+  aspect-ratio: 1/1;
+
   background-size: cover; /* <-- background size */
   background-position: center; /* <-- background position */
-
-  /* aspect-ratio: 1/1; */
   background-repeat: no-repeat;
-  /* background-image: fill; */
-
-  /* object-fit: fill; */
-  /* object-fit: cover; */
+  border-radius: 1.5vh;
 }
 /* row 4 */
 .popup .content .item4 {
@@ -1427,9 +1413,26 @@ miniMap:hover > .hover {
 }
 .highlight.active{
   opacity: 100%;
+  animation-name: highlightFlicker;
+  animation-duration: 3s;
+  animation-iteration-count: infinite;
   transition: all .25s ease-in-out;
    -moz-transition: all .25s ease-in-out;
    -webkit-transition: all .25s ease-in-out;
+}
+@keyframes highlightFlicker {
+  0% {
+    opacity: 0%;
+  }
+  25% {
+    opacity: 100%;
+  }
+  75% {
+    opacity: 100%;
+  }
+  100% {
+    opacity: 0%;
+  }
 }
 .highlightText{
   position: absolute;
@@ -1497,15 +1500,15 @@ miniMap:hover > .hover {
 
   opacity: 0%;
 
-  width: 4vh;
-  height: 10vh;
+  width: 6vh;
+  height: 12vh;
 
   color: white;
   /* background-color: white; */
 
   transform: translate(-50%, -50%) scale(1);
 
-  background-image: url("/resources/images/UI/Mouse.png");
+  background-image: url("/resources/images/UI/mouseHand.png");
   background-size: contain;
   background-repeat: no-repeat;
   background-position: center center;
@@ -1519,7 +1522,7 @@ miniMap:hover > .hover {
 }
 .mouseIcon.active.init{
   animation-name: mouseIconInit;
-  animation-duration: 3s;
+  animation-duration: 5s;
   animation-iteration-count: infinite;
 }
 .mouseIcon.active.mapClick{
@@ -1533,10 +1536,17 @@ miniMap:hover > .hover {
     left: 40%;
   }
   25% {
+    background-image: url("/resources/images/UI/mouseHand.png");
+    opacity: 100%;
+    left: 45%;
+  }
+  50% {
+    background-image: url("/resources/images/UI/mouseGrab.png");
     opacity: 100%;
     left: 45%;
   }
   100% {
+    background-image: url("/resources/images/UI/mouseGrab.png");
     opacity: 0%;
     left: 70%;
   }
