@@ -440,13 +440,6 @@ var maxPan = new THREE.Vector3(4.15, 3, 5.5);
 const towerIconTexture = new THREE.TextureLoader(manager).load(
   "/resources/images/towericon.png"
 );
-const glowTexture = new THREE.TextureLoader(manager).load(
-  "/resources/images/yellow-glow.png"
-);
-
-const deathValleyTexture = new THREE.TextureLoader(manager).load(
-  "/resources/images/location/death-valley.jpg"
-);
 const grandCanyonTexture = new THREE.TextureLoader(manager).load(
   "/resources/images/location/grandCanyon.jpg"
 );
@@ -552,11 +545,6 @@ const bugTexture_red = new THREE.TextureLoader().load(
 let bugTexture_green;
 
 const towerIconMaterial = new THREE.SpriteMaterial({ map: towerIconTexture });
-const glowMaterial = new THREE.SpriteMaterial({map: glowTexture});
-
-const deathValleyMaterial = new THREE.SpriteMaterial({
-  map: deathValleyTexture,
-});
 const grandCanyonMaterial = new THREE.SpriteMaterial({
   map: grandCanyonTexture,
 });
@@ -651,9 +639,7 @@ var sprite_grandCanyon,
   lessonLocation_phoenix_sprite,
   lessonLocation_horseshoe_sprite,
   lessonLocation_cathedralRock_sprite,
-  lessonLocation_blackMesa_sprite,
-  lessonLocation_tuscon_sprite, 
-  glowSprite;
+  lessonLocation_blackMesa_sprite;
 var uiLocationSprites, labelSprites, uiLocationPositions, sceneTransitionSprites;
 
 /** 3D OBJECTS */
@@ -759,6 +745,7 @@ let youtubePlayer = document.getElementById("youtubePlayer");
 let lesson1ResetBtn = document.getElementById("lesson1Reset");
 let lesson1Container = document.getElementById("lesson1Activity");
 let lesson2Container = document.getElementById("lesson2Activity");
+let lessonClickImage = document.getElementById("lessonClickImage");
 let lessonDoneBtn = document.getElementById("doneButton");
 let combinationText = document.getElementById("comboText");
 //** LESSON 2 */
@@ -801,6 +788,8 @@ var walkieTalkieScreenModel;
 locationNameElem.textContent = "";
 var echoPingLocation;
 var heartSprite = new THREE.Group();
+var smokeSprite = new THREE.Group();
+var smokeSpriteMesh;
 
 var hubsceneLabels = [
   makeTextLabel(-2.25, 0.175, 0.675, "Collect bugs for Echo"),
@@ -976,10 +965,6 @@ function init() {
   //mapScene.add(ambientLight);
 
   /** SPRITE INSTANTIATION */
-  glowSprite = new THREE.Sprite(glowMaterial);
-
-  //sprite_deathValley = new THREE.Sprite(deathValleyMaterial);
-
   sprite_grandCanyon = new THREE.Sprite(grandCanyonMaterial);
   sprite_coloradoRiver = new THREE.Sprite(coloradoRiverMaterial);
   sprite_phoenix = new THREE.Sprite(phoenixMaterial);
@@ -1132,9 +1117,6 @@ function init() {
   sprite_wymola.position.set(0.8, sprite_petrifiedForest.position.y, 4.2);
   sprite_chiricahuaMnts.position.set(5.56, sprite_petrifiedForest.position.y, 6.65);
 
-  glowSprite.position.set(sprite_rooseveltLake.position.x, uiMinheight, sprite_rooseveltLake.position.z);
-  //lessonSceneRaycast.add(glowSprite);
-
   //** HTML LABEL CONTENT */
   elem = locationNameElem;
   elem.textContent = "";
@@ -1154,33 +1136,33 @@ function init() {
     }
   };
   gui.add(guiWorld.xPos, "x", -20, 20).onChange(() => {
-    towerIcon4.position.set(
+    smokeSpriteMesh.position.set(
       guiWorld.xPos.x,
-      towerIcon4.position.y,
-      towerIcon4.position.z
+      smokeSpriteMesh.position.y,
+      smokeSpriteMesh.position.z
     );
 
-    console.log(towerIcon4.position);
+    console.log(smokeSpriteMesh.position);
   });
 
   gui.add(guiWorld.xPos, "y", -100, 100).onChange(() => {
-    blackMesaModel.position.set(
-      blackMesaModel.position.x,
+    smokeSpriteMesh.position.set(
+      smokeSpriteMesh.position.x,
       guiWorld.xPos.y,
-      blackMesaModel.position.z
+      smokeSpriteMesh.position.z
     );
     //effectVignette.uniforms[ 'darkness' ].value = guiWorld.xPos.y;
-    console.log(blackMesaModel.position);
+    console.log(smokeSpriteMesh.position);
     
   });
 
   gui.add(guiWorld.xPos, "z", -20, 20).onChange(() => {
-    towerIcon4.position.set(
-      towerIcon4.position.x,
-      towerIcon4.position.y,
+    smokeSpriteMesh.position.set(
+      smokeSpriteMesh.position.x,
+      smokeSpriteMesh.position.y,
       guiWorld.xPos.z
     );
-    console.log(towerIcon4.position);
+    console.log(smokeSpriteMesh.position);
   });
 
   //** TOWER ICON INSTANTIATIONS */
@@ -1302,7 +1284,6 @@ function tutorialSequence()
   }
   else if(tutorialIndex == 2)
   {
-    glowSprite.position.set(towerIcon.position.x, uiMinheight - 0.01, towerIcon.position.z);
     tutClickImage.style = "background-image: url('/resources/images/location/horseshoeBend.jpg');";
     walkieTalkieSounds[Math.floor(Math.random() * 3)].play();
 
@@ -1318,7 +1299,6 @@ function tutorialSequence()
   }
   else if(tutorialIndex == 3)
   {
-    glowSprite.position.set(towerIcon.position.x, uiMinheight - 0.01, towerIcon.position.z);
     tutClickImage.style = "background-image: url('/resources/images/towericon.png');";
     walkieTalkieSounds[Math.floor(Math.random() * 3)].play();
 
@@ -1338,7 +1318,6 @@ function tutorialSequence()
     tutorialHighlight.style.right = "5.5vh";
     tutorialHighlight.style.width = '8vh';
     tutorialHighlight.style.height = '10vh';
-    lessonSceneRaycast.remove(glowSprite);
     
     mouseIcon.classList.toggle("active");
     mouseIcon.classList.toggle("mapClick");
@@ -1416,8 +1395,6 @@ function tutorialReset()
   }
   walkieTalkieSounds[Math.floor(Math.random() * 3)].play();
   clickSound.play();
-
-  glowSprite.position.set(sprite_rooseveltLake.position.x, uiMinheight - 0.01, sprite_rooseveltLake.position.z);
 
   tutorialIndex = 0;
   tutorial = true;
@@ -1976,6 +1953,23 @@ function initHubScene()
   // garminModel.add(lessonLocation_blackMesa_sprite);
   //hubScene.add(lessonLocation_phoenix_sprite);
 
+
+  var smokeSpriteTexture = new THREE.ImageUtils.loadTexture( '/resources/sprites/SmokePuff_7x7.png' );
+  smokeSprite = new TextureAnimator( smokeSpriteTexture, 7, 7, 640, 20 ); // texture, #horiz, #vert, #total, duration.
+  var smokeSpriteMaterial = new THREE.MeshBasicMaterial( { map: smokeSpriteTexture, side:THREE.DoubleSide, transparent: true, opacity: 1 } );
+  //smokeSpriteMaterial.blending = THREE.MultiplyBlending;
+  smokeSpriteMaterial.opacity = 0.5;
+  
+  var smokeSpriteGeometry = new THREE.PlaneGeometry(50, 50, 1, 1);
+  smokeSpriteMesh = new THREE.Mesh(smokeSpriteGeometry, smokeSpriteMaterial);
+  smokeSpriteMesh.position.set(-25, 1.1, -7.94);
+  smokeSpriteMesh.scale.set(-0.05, 0.05, 0.05);
+  smokeSpriteMesh.rotation.y = Math.PI / -2;
+  smokeSpriteMesh.name = "hearts";
+  smokeSpriteMesh.renderOrder = 3;
+  
+  hubScene.add(smokeSpriteMesh);
+
   computerScreenVideo.play();
   walkieTalkieVideo.play();
 }
@@ -2403,7 +2397,7 @@ function lessonSequenceSetup()
     "done"];
 
   lesson3Sequence = ["https://www.youtube.com/embed/yrs9IkbkfQE?enablejsapi=1&rel=0",
-  "",
+  "url('resources/images/lesson3/bandCombo.jpg",
    "https://www.youtube.com/embed/DGE-N8_LQBo?enablejsapi=1&rel=0",
     "done"];
    
@@ -4877,10 +4871,8 @@ function setWeight( action, weight ) {
 
 }
 
-function clickOpenURL(intersects, url) {
+function clickOpenURL(intersects, url, nonIntersect) {
   //*****CHECK FOR LOCATION UI
-  
-  
   if (intersects.length > 0) 
   {
     //console.log("CLICK OPEN");
@@ -4900,6 +4892,14 @@ function clickOpenURL(intersects, url) {
     console.log("Clicked: " + intersects[0].object.userData.name);
     cameraPos = intersects[0].object.position;
     cameraMoving = true;
+  }
+
+  if(nonIntersect)
+  {
+    if (url) 
+    {
+      window.open(url,'_blank');
+    } 
   }
 }
 
@@ -5155,8 +5155,25 @@ function navigateLesson(forward)
             console.log("lesson 2 off");
             lesson2Container.classList.toggle("active");
           }
+          if(lessonClickImage.classList.contains('active'))
+          {
+            lessonClickImage.classList.toggle('active');
+          }
           
           youtubePlayer.src = lessonSequences[currentLessonSceneIndex][currentLessonIndex];
+        }
+        else if(lessonSequences[currentLessonSceneIndex][currentLessonIndex].startsWith("url"))
+        {
+          document.getElementById("lessonClickImage").backgroundImage = lessonSequences[currentLessonSceneIndex][currentLessonIndex];
+          if(!lessonClickImage.classList.contains('active'))
+          {
+            lessonClickImage.classList.toggle('active');
+          }
+          
+          if(!document.getElementById("youtube-player").classList.contains("disabled"))
+          {
+            document.getElementById("youtube-player").classList.toggle("disabled");
+          }
         }
 
         else if(lessonSequences[currentLessonSceneIndex][currentLessonIndex] == "done")
@@ -5254,9 +5271,25 @@ function navigateLesson(forward)
             console.log("lesson 2 off");
             lesson2Container.classList.toggle("active");
           }
-          
-
+          if(lessonClickImage.classList.contains('active'))
+          {
+            lessonClickImage.classList.toggle('active');
+          }
+        
           youtubePlayer.src = lessonSequences[currentLessonSceneIndex][currentLessonIndex];
+        }
+        else if(lessonSequences[currentLessonSceneIndex][currentLessonIndex].startsWith("url"))
+        {
+          lessonClickImage.src = lessonSequences[currentLessonSceneIndex][currentLessonIndex];
+          if(!lessonClickImage.classList.contains('active'))
+          {
+            lessonClickImage.classList.toggle('active');
+          }
+          if(!document.getElementById("youtube-player").classList.contains("disabled"))
+          {
+            document.getElementById("youtube-player").classList.toggle("disabled");
+          }
+          console.log(lessonSequences[currentLessonSceneIndex][currentLessonIndex]);
         }
 
         else if(lessonSequences[currentLessonSceneIndex][currentLessonIndex] == "done")
@@ -7051,6 +7084,14 @@ lessonDoneBtn.addEventListener("click", function (ev) {
   }
 
   clickSound.play();
+});
+
+lessonClickImage.addEventListener("click", function (ev) {
+  if(currentLessonSceneIndex == 2)
+  {
+    window.open("https://landsat.gsfc.nasa.gov/apps/bandcombination/",'_blank');
+  }
+  console.log("clickImage" + currentLessonSceneIndex);
 });
 
 //** MINI MAP FUNCTIONALITY **//

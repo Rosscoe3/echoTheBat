@@ -656,6 +656,49 @@ body {
   font-size: 50%;
 }
 
+.lessonClickImage
+{
+  position: absolute;
+  pointer-events: none;
+  opacity: 100%;
+  z-index: 2;
+
+  transform: translate(-50%, -50%) scale(0);
+  top: 52%;
+  left: 48%;
+
+  background-image: url('resources/images/lesson3/bandCombo.jpg');
+  background-size: cover;
+
+  /* height: 46.75%; */
+  width: 83%;
+  aspect-ratio: 16 / 9;
+
+  background-color: white;
+
+  transition: opacity .1s ease-in-out;
+   -moz-transition: opacity .1s ease-in-out;
+   -webkit-transition: opacity .1s ease-in-out;
+}
+
+.lessonClickImage.active{
+  pointer-events: auto;
+  transform: translate(-50%, -50%) scale(1);
+  opacity: 100%;
+  transition: opacity .1s ease-in-out;
+   -moz-transition: opacity .1s ease-in-out;
+   -webkit-transition: opacity .1s ease-in-out;
+}
+
+.lessonClickImage:hover
+{
+  opacity: 75%;
+  cursor: pointer;
+  transition: opacity .1s ease-in-out;
+   -moz-transition: opacity .1s ease-in-out;
+   -webkit-transition: opacity .1s ease-in-out;
+}
+
 .lesson1Container{
   position: absolute;
   pointer-events: auto;
