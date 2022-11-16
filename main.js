@@ -151,16 +151,10 @@ lessonComposer.addPass(bloomPass);
 lessonComposer.addPass(filmPass);
 lessonComposer.addPass(effectVignette);
 lessonComposer.addPass(effectPixel);
-
 mapComposer.addPass(new RenderPass(mapScene, mainCamera));
 mapComposer.addPass(effectVignette);
 mapComposer.addPass(gammaCorrection);
-
 hubComposer.addPass(new RenderPass(hubScene, hubCamera));
-
-const maxAnisotropy = renderer.capabilities.getMaxAnisotropy();
-let labelRenderer;
-let allFilled;
 
 //** MAP CONTROLS */
 const controls = new MapControls(mainCamera, renderer.domElement);
@@ -178,26 +172,17 @@ const pointLight = new THREE.PointLight("#ff8400", 10);
 const pointLight2 = new THREE.PointLight("#ffffff", 1);
 const pointLight3 = new THREE.PointLight("#ff2a00", 10);
 const pointLight4 = new THREE.PointLight("#ffffff", 2);
-const hemisphereLight = new THREE.HemisphereLight("#ff4000", "#ff7300", 1);
 const dirLight = new THREE.DirectionalLight(0xffffff, 5);
-const ambientLight = new THREE.AmbientLight(0xffffff, 5);
 const dirLightLesson = new THREE.DirectionalLight(0xffffff, 1);
-const shadowOffset = 50;
+
 //Used to automatically scale the screen when resized
 const sizes = {
   width: window.innerWidth,
   height: window.innerHeight,
 };
 
-const sceneA = new FXScene(mapScene, mainCamera);
-const sceneB = new FXScene(lessonScene, lessonCamera);
-const sceneC = new FXScene(hubScene, hubCamera);
-//const sceneC = new FXScene(loadingScreen.scene, loadingScreen.camera);
-
-//transition = new Transition( mapScene, lessonScene );
-var clock;
-
 //** MISC GLOBAL VARIABLES */
+var RESOURCES_LOADED = false;
 let line;
 let pathIndex = 1;
 let points;
@@ -206,11 +191,11 @@ let toggleTowerPopupOpen = false;
 let toggleLessonPopupOpen = false;
 let hoverMapToggle = false;
 let cameraPos = new THREE.Vector3(0, 5, 0);
-let transition, transition2;
 let transitioning = false;
 let hubTransitioning = false;
 let hubworldScreenClick = false;
 let walkieTalkieView = false;
+var clock;
 
 let isTweening = false;
 let cameraMoving = false;
@@ -230,12 +215,13 @@ var hub_bugLocations = [-0.12, -0.06, 0, 0.06];
 var hub_scale = 0.125;
 var hub_Bug_pos_x = -2.27;
 var hub_Bug_pos_z = 0.69;
+var bugClicked = false;
 
 var bugFlyTween;
 var bugRotTween;
 var echoAnimFinal = false;
 var echoCurrentAnim = 5;
-var echoActiveAction, echoMomActiveAction;
+var echoActiveAction;
 var echoFeedTimeout;
 
 const pingWrldPosTemp = new THREE.Vector3();
@@ -251,7 +237,6 @@ var videoPlaying = false;
 var currentLessonSceneIndex = 0;
 var lessonsCompleted = 0;
 var currentLessonIndex = 0;
-const delta = 0.01;
 
 var lessonSequences;
 var lesson1Sequence, lesson2Sequence, lesson3Sequence, lesson4Sequence;
@@ -280,7 +265,6 @@ const blackMesaSound = new THREE.Audio(listener);
 const caveSound = new THREE.Audio(listener);
 const hubworldSound = new THREE.Audio(listener);
 
-
 var walkieTalkieSounds;
 const uiHoverOffSound = new THREE.Audio(listener);
 const clickSound = new THREE.Audio(listener);
@@ -289,9 +273,6 @@ const transitionSound = new THREE.Audio(listener);
 const echoChewSound = new THREE.Audio(listener);
 const echoChewSound2 = new THREE.Audio(listener);
 const echoChewSound3 = new THREE.Audio(listener);
-
-const music_volume = 1.0;
-const sfx_volume = 1.0;
 
 //MUSIC
 audioLoader.load(
@@ -366,7 +347,6 @@ audioLoader.load(
     //transitionSound.stop();
   }
 );
-
 //** HUBWORLD SOUND */
 audioLoader.load(
   "/resources/sounds/fx/hubworld.mp3",
@@ -432,9 +412,6 @@ const transitionParams = {
   animate: true,
   threshold: 0.3,
 };
-//** MAIN CAMERA VIEW BOUNDS */
-var minPan = new THREE.Vector3(-4.25, 1, -5.5);
-var maxPan = new THREE.Vector3(4.15, 3, 5.5);
 
 /** SPRITES */
 const towerIconTexture = new THREE.TextureLoader(manager).load(
@@ -527,11 +504,6 @@ const lessonLocation_cathedralRock_texture = new THREE.TextureLoader(manager).lo
 const lessonLocation_blackMesa_texture = new THREE.TextureLoader(manager).load(
   "/resources/images/UI/icon-yuma.jpg"
 );
-
-const arizona_road_texture = new THREE.TextureLoader(manager).load(
-  "/resources/images/arizona-road.png"
-);
-let arizona_mosaic_texture;
 
 const bugTexture_yellow = new THREE.TextureLoader().load(
   "/resources/models/textures/bug-yellow.png"
@@ -640,19 +612,10 @@ var sprite_grandCanyon,
   lessonLocation_horseshoe_sprite,
   lessonLocation_cathedralRock_sprite,
   lessonLocation_blackMesa_sprite;
-var uiLocationSprites, labelSprites, uiLocationPositions, sceneTransitionSprites;
+var uiLocationSprites, uiLocationPositions, sceneTransitionSprites;
 
 /** 3D OBJECTS */
 const geometry = new THREE.BoxGeometry();
-const focusCube = new THREE.Mesh(
-  geometry,
-  new THREE.MeshBasicMaterial({
-    color: 0x00ff00,
-    wireframe: false,
-    transparent: true,
-  })
-);
-
 const cubeGeometry = new THREE.BoxGeometry( 1, 1, 1 );
 const cubeMaterial = new THREE.MeshBasicMaterial( { color: 0x00ff00, transparent: true } );
 const cube = new THREE.Mesh( cubeGeometry, cubeMaterial );
@@ -682,16 +645,10 @@ cave.name = 'cave';
 let grandCanyonModel = new THREE.Group();
 grandCanyonModel.name = "grandCanyonModel";
 
+let arizona = new THREE.Group();
 let hubworldModel = new THREE.Group();
-let hubworldRaycast = new THREE.Group();
 let garminModel = new THREE.Group();
 let garminHover = false;
-let computerScreen;
-var animationSmoothTime = 1.0;
-
-//Load Arizona Map Model
-let arizona = new THREE.Group();
-let walkieTalkie = new THREE.Group();
 
 /** HTML ELEMENTS */
 let continueButton = document.getElementById("continueButton");
@@ -703,17 +660,11 @@ const locationNameElem = document.createElement("div");
 let audioButton = document.getElementById("audioToggle");
 let xButton = document.getElementById("close-btn");
 let xButton2 = document.getElementById("close-btn2");
-let xButton3 = document.getElementById("close-btn3");
 let xButton4 = document.getElementById("close-btn4");
-// let xButton5 = document.getElementById("creditsCloseBtn");
 let miniMap = document.getElementById("miniMap");
 let mapPopup = document.getElementById("mapPopup");
 
-let mapMoveIcon = document.getElementById("mapImage");
-let youAreHere = document.getElementById("youAreHere");
-
 let toggleMapPopup = document.getElementById("toggleMapPopup");
-let hamburger = document.getElementById("dropdown");
 let roadButton = document.getElementById("roadBtn");
 let mosaicButton = document.getElementById("mosaicBtn");
 let geographyButton = document.getElementById("geographyBtn");
@@ -728,20 +679,15 @@ let tutClickImage = document.getElementById("tutClickImage");
 // let bugIcon2 = document.getElementById("bugIcon2");
 // let bugIcon3 = document.getElementById("bugIcon3");
 // let bugIcon4 = document.getElementById("bugIcon4");
-var bugClicked = false;
 
 let helpButton = document.getElementById("helpButton");
-let creditsButton = document.getElementById("creditsButton");
 let creditsContainer = document.getElementById("creditsContainer");
-
 let youAreHereIcon = document.getElementById("youAreHere");
 let youAreHereIconPopup = document.getElementById("youAreHere2");
-
 let lessonButton_right = document.getElementById("talkie-button-right");
 let lessonButton_left = document.getElementById("talkie-button-left");
 let lessonButton_middle = document.getElementById("talkie-button-middle");
 let youtubePlayer = document.getElementById("youtubePlayer");
-
 let lesson1ResetBtn = document.getElementById("lesson1Reset");
 let lesson1Container = document.getElementById("lesson1Activity");
 let lesson2Container = document.getElementById("lesson2Activity");
@@ -749,8 +695,6 @@ let lessonClickImage = document.getElementById("lessonClickImage");
 let lessonDoneBtn = document.getElementById("doneButton");
 let combinationText = document.getElementById("comboText");
 //** LESSON 2 */
-//let lesson2Container = document.getElementById("lesson2Image");
-
 let draggableElements = document.querySelectorAll(".drag");
 let draggable2Elements = document.querySelectorAll(".drag2");
 let droppableElements = document.querySelectorAll(".droppable");
@@ -798,7 +742,6 @@ var hubsceneLabels = [
   makeTextLabel(-2.25, 0.05, -1.15, "About Landsat", true),
   makeTextLabel(-2.25, 0.08, -1.5, "Camp Landsat", true),
 ];
-
 var mapSceneLables = [
   makeTextLabel(-0.65, uiMinheight, 1.7, "Phoenix", false, true),
   makeTextLabel(-1.56, uiMinheight, -6.27, "Colorado River", false, true),
@@ -834,8 +777,6 @@ initSubtitles();
 
 //** USED FOR LOADING YOUTUBE VIDEO AND API */
 function loadVideo() {
-  //console.info(`loadVideo called`);
-
   (function loadYoutubeIFrameApiScript() {
     const tag = document.createElement("script");
     tag.src = "https://www.youtube.com/iframe_api";
@@ -847,26 +788,8 @@ function loadVideo() {
   })();
 
   let player = null;
+  //** SETS UP YOUTUBE PLAYER */
   function setupPlayer() {
-    /**
-     * THIS FAILS!!!!!
-     */
-    // player = new YT.Player("player", {
-    //   height: "390",
-    //   width: "640",
-    //   videoId: "M7lc1UVf-VE",
-    //   events: {
-    //     onReady: onPlayerReady,
-    //     onStateChange: onPlayerStateChange
-    //   }
-    // });
-
-    /**
-     * Need to wait until Youtube Player is ready!
-     *
-     * YT.ready is not documented in https://developers.google.com/youtube/iframe_api_reference
-     * but found from https://codesandbox.io/s/youtube-iframe-api-tpjwj
-     */
     window.YT.ready(function () {
       player = new window.YT.Player("youtubePlayer", {
         height: "390",
@@ -881,7 +804,6 @@ function loadVideo() {
   }
 
   function onPlayerReady(event) {
-    //event.target.playVideo();
     //console.log("PLAYER READY");
   }
 
@@ -891,7 +813,6 @@ function loadVideo() {
   }
 }
 if (document.readyState !== "loading") {
-  //console.info(`document.readyState ==>`, document.readyState);
   loadVideo();
 } else {
   document.addEventListener("DOMContentLoaded", function () {
@@ -900,36 +821,13 @@ if (document.readyState !== "loading") {
   });
 }
 
-var RESOURCES_LOADED = false;
-var loadingScreen = {
-  scene: new THREE.Scene(),
-  camera: new THREE.PerspectiveCamera(
-    75,
-    window.innerWidth / window.innerHeight,
-    0.1,
-    1000
-  ),
-  box: new THREE.Mesh(
-    new THREE.BoxGeometry(0.5, 0.5, 0.5),
-    new THREE.MeshBasicMaterial({ color: 0x444ff })
-  ),
-};
-
 function init() {
   //** LOADING SCREEN STUFF */
-  //startButton.classList.toggle("active");
   startButton.classList.toggle("disabled");
   audioButton.classList.toggle("disabled");
   miniMap.classList.toggle("disabled");
-  //hamburger.classList.toggle("disabled");
   backButton.classList.toggle("disabled");
-  // bugIcon.classList.toggle("disabled");
-  // bugIcon2.classList.toggle("disabled");
-  // bugIcon3.classList.toggle("disabled");
-  // bugIcon4.classList.toggle("disabled");
-
   mapScene.background = new THREE.Color(0xd4d2d2);
-  // mapScene.fog = new THREE.Fog(0xd4d2d2, 0.015, 10);
 
   /** RENDERER & CAMERA SETUP */
   renderer.setPixelRatio(window.devicePixelRatio);
@@ -952,17 +850,7 @@ function init() {
   dirLight.color.setHSL(0.1, 1, 0.95);
   dirLight.position.set(-1, 1.75, 1);
   dirLight.position.multiplyScalar(30);
-  // dirLight.castShadow = true;
-  // dirLight.shadow.mapSize.width = 2048;
-  // dirLight.shadow.mapSize.height = 2048;
-  // dirLight.shadow.camera.left = -shadowOffset;
-  // dirLight.shadow.camera.right = shadowOffset;
-  // dirLight.shadow.camera.top = shadowOffset;
-  // dirLight.shadow.camera.bottom = -shadowOffset;
-  // dirLight.shadow.camera.far = 3500;
-  // dirLight.shadow.bias = -0.0001;
   mapScene.add(dirLight);
-  //mapScene.add(ambientLight);
 
   /** SPRITE INSTANTIATION */
   sprite_grandCanyon = new THREE.Sprite(grandCanyonMaterial);
@@ -1090,7 +978,7 @@ function init() {
     //console.log("CURRENT INDEX: " + i);
   }
 
-  // sprite_deathValley.position.set(-4.68, sprite_deathValley.position.y, -0.65);
+  //** SPRITE SPECIFIC POSITIONS */
   sprite_grandCanyon.position.set(-0.2, sprite_grandCanyon.position.y, -5.66);
   sprite_coloradoRiver.position.set(-1.56, sprite_coloradoRiver.position.y, -6.2697);
   sprite_phoenix.position.set(-0.65, sprite_phoenix.position.y, 1.7);
@@ -1151,9 +1039,7 @@ function init() {
       guiWorld.xPos.y,
       smokeSpriteMesh.position.z
     );
-    //effectVignette.uniforms[ 'darkness' ].value = guiWorld.xPos.y;
     console.log(smokeSpriteMesh.position);
-    
   });
 
   gui.add(guiWorld.xPos, "z", -20, 20).onChange(() => {
@@ -1169,39 +1055,24 @@ function init() {
   towerSpriteSetup();
 
   //** 3D Objects Instantiation */
-  focusCube.scale.set(0.1, 0.1, 0.1);
-  focusCube.visible = true;
-  //Loads arizona Map
   loader.load("/resources/models/arizona-map-5.glb", function (gltf) {
     arizona.userData.name = "Arizona";
     arizona.scale.setY(1);
     arizona.rotation.y = Math.PI / -2.15;
-
     var model = gltf.scene;
-    var newMaterial = new THREE.MeshStandardMaterial({ color: 0xff0000 });
 
     model.traverse((o) => {
       if (o.isMesh) {
         o.material.normalScale = { x: 0.000001, y: 0.000001 };
         o.material.bumpscale = 0.1;
         o.material.normalMapType = 0;
-        //console.log(o.material);
         o.material.map.anisotropy = 10;
-        // o.material.map = arizona_height_texture;
-        // o.material.map.flipY = false;
-        // console.log( o.material );
-
-        //o.material.needsUpdate = true;
       }
     });
 
     arizona.add(gltf.scene);
     lessonSceneRaycast.add(arizona);
-    arizona_mosaic_texture = arizona.children[0].children[0].material.map;
   });
-
-  transition = new Transition(sceneB, sceneA);
-  transition2 = new Transition(sceneA, sceneC);
 
   //** INITIALIZING FUNCTIONS */
   makeCameraControls();
@@ -1730,7 +1601,7 @@ function initLessonScene() {
     echoActiveAction = mixer.clipAction(echoActions[echoCurrentAnim]);
     echoActiveAction.reset();
     echoActiveAction.weight = 1;
-    echoActiveAction.fadeIn(transition);
+    //echoActiveAction.fadeIn(transition);
     echoActiveAction.play();
 
     Echo.name = "Echo";
@@ -1965,7 +1836,7 @@ function initHubScene()
   smokeSpriteMesh.position.set(-25, 1.1, -7.94);
   smokeSpriteMesh.scale.set(-0.05, 0.05, 0.05);
   smokeSpriteMesh.rotation.y = Math.PI / -2;
-  smokeSpriteMesh.name = "hearts";
+  smokeSpriteMesh.name = "smoke";
   smokeSpriteMesh.renderOrder = 3;
   
   hubScene.add(smokeSpriteMesh);
@@ -5335,90 +5206,7 @@ function navigateLesson(forward)
   }
 }
 
-//*** LERP For scaling the map Icons, based on their userdata 'scaling' */
-function lerpMapIconScaling() {
-  for (let i = 0; i < mapImages.length; i++) {
-    if (mapImages[i].userData.scaling) {
-      mapImages[i].scale.lerp(new THREE.Vector3(0.5, 0.5, 0.5), 0.1);
-    } else {
-      mapImages[i].scale.lerp(new THREE.Vector3(0.3, 0.3, 0.3), 0.1);
-    }
-  }
-}
-
-//Lerps the Cameras position based on its current movement state
-function lerpCameraMovement(intersectPoint) {
-  if (cameraMoving) {
-    if (intersectPoint != focusCube.position) {
-      focusCube.position.lerpVectors(
-        new THREE.Vector3(mainCamera.position.x, 0, mainCamera.position.z),
-        new THREE.Vector3(cameraPos.x, 0, cameraPos.z),
-        0.05
-      );
-
-      // var cubeTWEEN = new TWEEN.Tween({x: camera.position.x, y: 0, z: camera.position.z})
-      // .to({
-      //     x: cameraPos.x,
-      //     y: cameraPos.y,
-      //     z: cameraPos.z
-      // }, 5000)
-      // //.delay (1000)
-      // cubeTWEEN.easing(TWEEN.Easing.Quadratic.InOut)
-      // //.onUpdate(() => render())
-      // cubeTWEEN.start()
-
-      // focusCube.position.set(cubeTWEEN);
-
-      mainCamera.position.set(
-        focusCube.position.x,
-        mainCamera.position.y,
-        focusCube.position.z
-      );
-      mainCamera.rotation.set(mainCamera.rotation);
-      controls.target.set(mainCamera.position.x, 0, mainCamera.position.z);
-      //console.log("LERPING");
-    }
-  }
-}
-
-function htmlTrack3d() {
-  if (currentScene != 0) {
-    return;
-  }
-
-  if (typeof echoPingLocation != "undefined") {
-    //Create a popup object at echoLocation
-    echoPingLocation.pingLocationMesh.updateWorldMatrix(true, false);
-    echoPingLocation.pingLocationMesh.getWorldPosition(pingWrldPosTemp);
-    pingWrldPosTemp.project(mainCamera);
-
-    const x = (pingWrldPosTemp.x * 0.5 + 0.5) * canvas.clientWidth;
-    const y = (pingWrldPosTemp.y * -0.5 + 0.5) * canvas.clientHeight;
-
-    echoPingLocation.elem.style.transform = `translate(-50%, -50%) translate(${x}px,${y}px)`;
-  }
-
-  for (var i = 0; i < uiLocationSprites.length; i++) {}
-}
-
-function createCityLabels() {
-  var positionHelper = new THREE.Object3D();
-  positionHelper.position.z = 1;
-  const labelParentElem = document.querySelector("#labels");
-
-  for (var i = 0; i < uiLocationSprites.length; i++) {
-    positionHelper.updateWorldMatrix(true, false);
-    var position = new THREE.Vector3();
-    positionHelper.getWorldPosition(position);
-    position = uiLocationSprites[i].position;
-
-    const elem = document.createElement("div");
-    elem.textContent = "name";
-    labelParentElem.appendChild(elem);
-    countryInfo.elem = elem;
-  }
-}
-
+//** USED FOR ANIMATING THE SPRITESHEETS */
 function TextureAnimator(texture, tilesHoriz, tilesVert, tileDispDuration) {
   let obj = {};
 
@@ -5456,34 +5244,7 @@ function TextureAnimator(texture, tilesHoriz, tilesVert, tileDispDuration) {
   obj.start();
   return obj;
 }
-
-function renderTransition() {
-  let clockdelta;
-
-  if(hubTransitioning)
-  {
-    console.log("TRANSITION 2");
-    transition2.render(clock.getDelta());
-  }
-  else
-  {
-    console.log("TRANSITION 1");
-    transition.render(clock.getDelta());
-  }
-
-
-  //RENDER TRANSITION 2
-  //transition2.render(clock.getDelta());
-
-  // new TWEEN.Tween( clockdelta )
-  //   .to( { transition: 1 }, 5000 )
-  //   //.repeat( Infinity )
-  //   // .delay( 2000 )
-  //   //.yoyo( true )
-  //   .start()
-  //   .onComplete(console("LERP DONE"));
-}
-
+//** CONTROLS SLIGHT CAMERA MOVEMENT IN THE LESSON SCENE */
 function lessonCameraMove() {
   lessonCamera.rotation.y = THREE.MathUtils.lerp(
     lessonCamera.rotation.y,
@@ -5496,7 +5257,7 @@ function lessonCameraMove() {
     0.1
   );
 }
-
+//** CONTROLS SLIGHT CAMERA MOVEMENT IN THE HUB SCENE */
 function hubCameraMove() {
   hubCamera.rotation.y = THREE.MathUtils.lerp(
     hubCamera.rotation.y,
@@ -5509,8 +5270,7 @@ function hubCameraMove() {
     0.1
   );
 }
-//** ANIMATION LOOP, ADD THINGS THAT MOVE HERE */
-
+//** ANIMATION LOOP, RUNS EVERY FRAME */
 function animate() {
   if (gameStarted == false) {
     requestAnimationFrame(animate);
@@ -5657,21 +5417,17 @@ function animate() {
     //console.log("Cam Position: x:" + mainCamera.position.x + " z:" + mainCamera.position.z);
     stats.end();
 }
-
+//** USED TO SET VARIABLES AT THE BEGINNING OF A SCENE TRANSITION */
 function TransitionStart() {
   console.log("TRANSITION HAS STARTED");
   transitioning = true;
   transitionSound.play();
   transitionCover.classList.toggle("active");
-  //controls.enabled = false;
 }
-
+//** USED TO SET VARIABLES AT THE END OF A SCENE TRANSITION */
 function TransitionDone() {
   console.log("TRANSITION IS DONE");
   transitioning = false;
-  //controls.enabled = true;
-  //console.log(string);
-
   transitionCover.classList.toggle("active");
 
   //**HUB TO MAP**//
@@ -5935,23 +5691,15 @@ function TransitionDone() {
       cameraTweenTo(undefined, false, 3, false);
   
       //Toggle UI When scene Transitions
-      //hamburger.classList.toggle("disabled");
       controls.enabled = true;
       renderer.render(currentScene, currentCamera);
       //lessonSceneControls.enabled = false;
     }
   }
 }
-
+//** AFTER PING LOCATION HAS BEEN LERPED TOO */
 function pingLocationReached() {
   console.log("PING LOCATION REACHED");
-  var rndTextureIndex = Math.floor(Math.random() * 5);
-
-  console.log("TEXTURE INDEX: " + rndTextureIndex);
-  transition.setTexture(rndTextureIndex);
-
-  //Toggle UI When scene Transitions
-  //hamburger.classList.toggle("disabled");
   miniMap.classList.toggle("disabled");
 
   transitionParams.transition = 0;
@@ -5962,7 +5710,7 @@ function pingLocationReached() {
     .start(TransitionStart())
     .onComplete(TransitionDone);
 }
-
+//** SETS VARIABLES AFTER TRANSITIONING FROM HUB TO MAP SCENE */
 function hubToMapTransition()
 {
   console.log("HUB TO MAP!");
@@ -5970,21 +5718,16 @@ function hubToMapTransition()
   hubTransitioning = true;
   isTweening = false;
   mainCamera.position.set(mainCamera.position.x, 3, mainCamera.position.z);
-  
-  // new TWEEN.Tween(hubCamera.position).to({x: -1.65},2000)
-  //   .easing(TWEEN.Easing.Quadratic.InOut)
-  //   .start(console.log("HELP!"));
 
   transitionParams.transition = 0;
   new TWEEN.Tween(transitionParams).to({ transition: 1 }, 2000)
   .start(TransitionStart())
   .onComplete(TransitionDone);
 }
-
+//** UPDATES YOUR LOCATION ON THE MAP UI */
 function youAreHereUpdate() {
   var camX = mainCamera.position.x;
   var camZ = mainCamera.position.z;
-  
 
   var posX = mapLinear(camX, -7.27, 6.78, 7, 93);
   var posZ = mapLinear(camZ, -8.49, 8.25, 5, 95);
@@ -6003,211 +5746,15 @@ function youAreHereUpdate() {
   // console.log("You are here update X: " + posX + ", Y: " + posZ);
 }
 
-function FXScene(scene, camera) {
-  const cam = camera;
-
-  // Setup scene
-  //const scene = new THREE.Scene();
-  //scene.add( new THREE.AmbientLight( 0x555555 ) );
-
-  // const light = new THREE.SpotLight( 0xffffff, 1.5 );
-  // light.position.set( 0, 500, 2000 );
-  // scene.add( light );
-
-  // const color = geometry.type === 'BoxGeometry' ? 0x0000ff : 0xff0000;
-  // const material = new THREE.MeshPhongMaterial( { color: color, flatShading: true } );
-  // const mesh = generateInstancedMesh( geometry, material, 500 );
-  // scene.add( mesh );
-
-  this.fbo = new THREE.WebGLRenderTarget(window.innerWidth, window.innerHeight);
-
-  this.render = function (rtt) {
-    if (rtt) {
-      renderer.setRenderTarget(this.fbo);
-      renderer.clear();
-      renderer.render(scene, cam);
-    } else {
-      renderer.setRenderTarget(null);
-      renderer.render(scene, cam);
-    }
-  };
-}
-
-//** A FUNCTION THAT CREATES A TRANSITION OBJECT BY USING A BUFFER IMAGE AND LERPING WITH A GLSL SHADER */
-function Transition(sceneA, sceneB) {
-  const scene = new THREE.Scene();
-
-  const width = window.innerWidth;
-  const height = window.innerHeight;
-
-  const camera = new THREE.OrthographicCamera(
-    width / -2,
-    width / 2,
-    height / 2,
-    height / -2,
-    -10,
-    10
-  );
-
-  const textures = [];
-
-  const loader = new THREE.TextureLoader();
-
-  //** LOADS TRANSITION TEXTURES */
-  for (let i = 0; i < 6; i++) {
-    // textures[i] = loader.load(
-    //   "/resources/images/transition/transition" + 2 + ".png"
-    // );
-    //"/resources/images/transition/transition" + (i + 1) + ".png"
-  }
-
-  //Shader code -- material
-  const material = new THREE.ShaderMaterial({
-    uniforms: {
-      tDiffuse1: {
-        value: null,
-      },
-      tDiffuse2: {
-        value: null,
-      },
-      mixRatio: {
-        value: 0.0,
-      },
-      threshold: {
-        value: 0.1,
-      },
-      useTexture: {
-        value: 1,
-      },
-      tMixTexture: {
-        value: textures[0],
-      },
-    },
-    vertexShader: [
-      "varying vec2 vUv;",
-
-      "void main() {",
-
-      "vUv = vec2( uv.x, uv.y );",
-      "gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );",
-
-      "}",
-    ].join("\n"),
-    fragmentShader: [
-      "uniform float mixRatio;",
-
-      "uniform sampler2D tDiffuse1;",
-      "uniform sampler2D tDiffuse2;",
-      "uniform sampler2D tMixTexture;",
-
-      "uniform int useTexture;",
-      "uniform float threshold;",
-
-      "varying vec2 vUv;",
-
-      "void main() {",
-
-      "	vec4 texel1 = texture2D( tDiffuse1, vUv );",
-      "	vec4 texel2 = texture2D( tDiffuse2, vUv );",
-
-      "	if (useTexture==1) {",
-
-      "		vec4 transitionTexel = texture2D( tMixTexture, vUv );",
-      "		float r = mixRatio * (1.0 + threshold * 2.0) - threshold;",
-      "		float mixf=clamp((transitionTexel.r - r)*(1.0/threshold), 0.0, 1.0);",
-
-      "		gl_FragColor = mix( texel1, texel2, mixf );",
-
-      "	} else {",
-
-      "		gl_FragColor = mix( texel2, texel1, mixRatio );",
-
-      "	}",
-
-      "}",
-    ].join("\n"),
-  });
-
-  const geometry = new THREE.PlaneGeometry(
-    window.innerWidth,
-    window.innerHeight
-  );
-  const mesh = new THREE.Mesh(geometry, material);
-  scene.add(mesh);
-
-  material.uniforms.tDiffuse1.value = sceneA.fbo.texture;
-  material.uniforms.tDiffuse2.value = sceneB.fbo.texture;
-
-  this.needsTextureChange = false;
-
-  this.setTextureThreshold = function (value) {
-    material.uniforms.threshold.value = value;
-  };
-
-  this.useTexture = function (value) {
-    material.uniforms.useTexture.value = value ? 1 : 0;
-  };
-
-  this.setTexture = function (i) {
-    material.uniforms.tMixTexture.value = textures[i];
-  };
-
-  this.render = function (delta) {
-    // Transition animation
-    if (transitionParams.animate) {
-      TWEEN.update();
-
-      // Change the current alpha texture after each transition
-      if (transitionParams.cycle) {
-        if (
-          transitionParams.transition == 0 ||
-          transitionParams.transition == 1
-        ) {
-          if (this.needsTextureChange) {
-            transitionParams.texture =
-              (transitionParams.texture + 1) % textures.length;
-            material.uniforms.tMixTexture.value =
-              textures[transitionParams.texture];
-            this.needsTextureChange = false;
-          }
-        } else {
-          this.needsTextureChange = true;
-        }
-      } else {
-        this.needsTextureChange = true;
-      }
-    }
-
-    material.uniforms.mixRatio.value = transitionParams.transition;
-
-    // Prevent render both scenes when it's not necessary
-    if (transitionParams.transition == 0) {
-      sceneB.render(delta, false);
-    } else if (transitionParams.transition == 1) {
-      sceneA.render(delta, false);
-    } else {
-      // When 0<transition<1 render transition between two scenes
-      sceneA.render(delta, true);
-      sceneB.render(delta, true);
-
-      renderer.setRenderTarget(null);
-      renderer.clear();
-      renderer.render(scene, camera);
-    }
-  };
-}
-
-//** EVENT LISTENERS */
+//** EVENT LISTENERS FOR LESSONS */
 
 //** LESSON 1 ACTIVITY */
 draggableElements.forEach(elem =>{
   elem.addEventListener("dragstart", dragStart);
 });
-
 draggable2Elements.forEach(elem =>{
   elem.addEventListener("dragstart", dragStart);
 });
-
 droppableElements.forEach(elem =>{
   elem.addEventListener("dragenter", dragEnter);
   elem.addEventListener("dragover", dragOver);
@@ -6215,7 +5762,6 @@ droppableElements.forEach(elem =>{
   //elem.addEventListener("dragleave", dragLeave);
   elem.addEventListener("drop", drop);
 });
-
 droppable2Elements.forEach(elem =>{
   elem.addEventListener("dragenter", dragEnter);
   elem.addEventListener("dragover", dragOver);
@@ -6223,7 +5769,7 @@ droppable2Elements.forEach(elem =>{
   //elem.addEventListener("dragleave", dragLeave);
   elem.addEventListener("drop", drop);
 });
-
+//** FUNCTIONS FOR LESSONS DRAG AND DROPS */
 function dragStart(event)
 {
   console.log(event.target);
@@ -6282,6 +5828,7 @@ function dragLeave(event)
   }
 }
 
+//** DROP FUNCTION FOR LESSONS */
 var r, g, b;
 function drop(event)
 {
@@ -6355,7 +5902,6 @@ function drop(event)
             }
             if(count == 3)
             {
-              allFilled = true;
               console.log("ALL FILLED");
               imagesFilled(r, g, b);
             }
@@ -6450,10 +5996,8 @@ function drop(event)
     }
   }
 }
-function updateLesson2Activity()
-{
-  
-}
+
+//** FUNCTION USED FOR GENERATING FINISHED IMAGE IN LESSON 1 */
 function imagesFilled(r, g, b)
 {
   var bandCombo = r.charAt(0) + g.charAt(0) + b.charAt(0);
@@ -6489,6 +6033,7 @@ function imagesFilled(r, g, b)
   }
 
 }
+//** RESETS HTML ELEMENTS FOR LESSON 1 */
 function resetLesson1()
 {
   draggableElements.forEach(elem =>
@@ -6504,7 +6049,6 @@ function resetLesson1()
   r = null;
   g = null;
   b = null;
-  allFilled = false;
 
   if(combinationText.classList.contains('active'))
   {
@@ -6575,7 +6119,6 @@ startButton.addEventListener("click", function (ev) {
     gameStarted = true;
     startButton.classList.toggle("active");
     audioButton.classList.toggle("disabled");
-    //hamburger.classList.toggle("disabled");
     //miniMap.classList.toggle("disabled");
     // bugIcon.classList.toggle("disabled");
     // bugIcon2.classList.toggle("disabled");
@@ -6629,20 +6172,10 @@ xButton4.addEventListener("click", function (ev) {
   clickSound.play();
 });
 
-//** CREDITS POPUP X BUTTON*/
-// xButton5.addEventListener("click", function (ev) {
-//   console.log("CLOSE");
-//   creditsContainer.classList.toggle("active");
-//   clickSound.play();
-// });
-
 /** TUTORIAL */
 tutClickImage.addEventListener('click', function(ev){
   if(!transitioning && !isTweening && tutorial)
   {
-    
-    
-    
     if(tutorialIndex <= 3)
     {
       tutorialSequence();
@@ -6881,6 +6414,7 @@ window.addEventListener("resize", () => {
     lessonComposer.setSize(window.innerWidth, window.innerHeight);
   }
 });
+
 //** USED TO CONTROL HAMBURGER CLICK */
 document.addEventListener("click", (e) => {
   const isDropdownButton = e.target.matches("[data-dropdown-button]");
@@ -6945,18 +6479,6 @@ function toggleMapSceneLabels()
     elem.classList.toggle("active");
   });
 }
-
-
-// creditsButton.addEventListener("click", (e) => {
-//   if(!tutorial)
-//   {
-//     if (!transitioning && !isTweening) 
-//     {
-//       creditsContainer.classList.toggle("active");
-//       console.log("CREDITS BUTTON");
-//     }
-//   }
-// });
 
 //** EVENT FOR RIGHT LESSON BUTTON */
 lessonButton_right.addEventListener("click", function (ev) {
@@ -7160,8 +6682,6 @@ toggleMapPopup.addEventListener("mouseleave", function (ev) {
   }
   hoverMapToggle = false;
 });
-
-var initialBugPos;
 
 //**EVENT TO CHANGE MOUSE CURSOR TO 'GRABBING'**//
 controls.addEventListener( 'start', function ( event ) {
