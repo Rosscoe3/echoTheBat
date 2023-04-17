@@ -23,7 +23,7 @@ import { mapLinear } from "https://cdn.jsdelivr.net/npm/three@0.139.0/src/math/M
 import Stats from 'https://cdn.skypack.dev/stats.js';
 
 const stats = new Stats();
-stats.showPanel(0) // 0: fps, 1: ms, 2: mb, 3+: custom
+stats.showPanel(0); // 0: fps, 1: ms, 2: mb, 3+: custom
 //document.body.appendChild(stats.dom);
 
 //** LOAD MANAGER */
@@ -733,6 +733,7 @@ locationNameElem.textContent = "";
 var echoPingLocation;
 var heartSprite = new THREE.Group();
 var smokeSprite = new THREE.Group();
+var pingLocationSprite = new THREE.Group();
 var smokeSpriteMesh;
 
 var hubsceneLabels = [
@@ -2288,7 +2289,7 @@ function makeEchoPing(x, z) {
   var pingLocationTexture = new THREE.TextureLoader().load(
     "/resources/sprites/LocationPing-sheet-new.png"
   );
-  var pingLocationSprite = new TextureAnimator(
+  pingLocationSprite = new TextureAnimator(
     pingLocationTexture,
     17,
     2,
