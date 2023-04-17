@@ -2287,7 +2287,7 @@ function lessonSequenceSetup()
 function makeEchoPing(x, z) {
   //****PING LOCATION SPRITE */
   var pingLocationTexture = new THREE.TextureLoader().load(
-    "/resources/sprites/LocationPing-sheet-new.png"
+    "/resources/sprites/locationPingsheet.png"
   );
   pingLocationSprite = new TextureAnimator(
     pingLocationTexture,
