@@ -680,6 +680,10 @@ let tutClickImage = document.getElementById("tutClickImage");
 // let bugIcon3 = document.getElementById("bugIcon3");
 // let bugIcon4 = document.getElementById("bugIcon4");
 
+//** PROGRESS BAR */
+let progressBar = document.getElementById("progress-bar");
+var lessonProgress = 0;
+
 let helpButton = document.getElementById("helpButton");
 let creditsContainer = document.getElementById("creditsContainer");
 let youAreHereIcon = document.getElementById("youAreHere");
@@ -3340,6 +3344,14 @@ function lessonComplete()
   if(currentLessonSceneIndex >= lessonsCompleted)
   {
     lessonsCompleted++;
+    console.log("LESSON COMPLETE");
+
+    console.log(parseInt(progressBar.style.width));
+    lessonProgress += 25;
+    
+    setTimeout(() => {
+      progressBar.style.width = lessonProgress + "%";
+    }, 1500);
   }
 
   console.log("Lesson Scene Index: " + currentLessonSceneIndex);
