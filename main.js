@@ -21,6 +21,7 @@ import { GammaCorrectionShader } from 'https://cdn.skypack.dev/three@0.127.0/exa
 import * as dat from "dat.gui";
 import { mapLinear } from "https://cdn.jsdelivr.net/npm/three@0.139.0/src/math/MathUtils.js";
 import Stats from 'https://cdn.skypack.dev/stats.js';
+import { Vector3 } from "three";
 
 const stats = new Stats();
 stats.showPanel(0); // 0: fps, 1: ms, 2: mb, 3+: custom
@@ -167,6 +168,10 @@ var dragabbleObjects = [];
 const dragBugControls = new DragControls(dragabbleObjects, lessonCamera, renderer.domElement);
 dragBugControls.deactivate();
 
+//** DISTANCE TO LOCATION VARIABLES */
+let distance;
+let playbackSpeed = 500;
+
 //**LIGHTS */
 const pointLight = new THREE.PointLight("#ff8400", 10);
 const pointLight2 = new THREE.PointLight("#ffffff", 1);
@@ -268,6 +273,7 @@ const hubworldSound = new THREE.Audio(listener);
 var walkieTalkieSounds;
 const uiHoverOffSound = new THREE.Audio(listener);
 const clickSound = new THREE.Audio(listener);
+const locationIndicatorSound = new THREE.Audio(listener);
 const transitionSound = new THREE.Audio(listener);
 
 const echoChewSound = new THREE.Audio(listener);
@@ -319,6 +325,13 @@ audioLoader.load("/resources/sounds/fx/lightClick.wav", function (buffer) {
   clickSound.setBuffer(buffer);
   clickSound.setLoop(false);
   clickSound.setVolume(0.75);
+});
+
+//LOCATION UI SOUND
+audioLoader.load("/resources/sounds/fx/location-ui-2.mp3", function (buffer) {
+  locationIndicatorSound.setBuffer(buffer);
+  locationIndicatorSound.setLoop(false);
+  locationIndicatorSound.setVolume(0.1);
 });
 
 //** ECHO CHEWING SOUNDS */
@@ -662,6 +675,7 @@ let xButton = document.getElementById("close-btn");
 let xButton2 = document.getElementById("close-btn2");
 let xButton4 = document.getElementById("close-btn4");
 let miniMap = document.getElementById("miniMap");
+let locationIndicator = document.getElementById("locationIndicator");
 let mapPopup = document.getElementById("mapPopup");
 
 let toggleMapPopup = document.getElementById("toggleMapPopup");
@@ -682,6 +696,11 @@ let tutClickImage = document.getElementById("tutClickImage");
 
 //** PROGRESS BAR */
 let progressBar = document.getElementById("progress-bar");
+let progress = document.getElementById("progress");
+let step1 = document.getElementById("step-1");
+let step2 = document.getElementById("step-2");
+let step3 = document.getElementById("step-3");
+let step4 = document.getElementById("step-4");
 var lessonProgress = 0;
 
 let helpButton = document.getElementById("helpButton");
@@ -831,6 +850,8 @@ function init() {
   startButton.classList.toggle("disabled");
   audioButton.classList.toggle("disabled");
   miniMap.classList.toggle("disabled");
+  locationIndicator.classList.toggle("disabled");
+  progress.classList.toggle("disabled");
   backButton.classList.toggle("disabled");
   mapScene.background = new THREE.Color(0xd4d2d2);
 
@@ -3349,8 +3370,33 @@ function lessonComplete()
     console.log(parseInt(progressBar.style.width));
     lessonProgress += 25;
     
+    //** WAIT FOR SCENE TRANSITION BEFORE FILLING PROGRESS BAR */
     setTimeout(() => {
       progressBar.style.width = lessonProgress + "%";
+      console.log(lessonProgress);
+
+      //** WAIT FOR BAR TO BE FILLED TO FILL IN STEP ICON */
+      setTimeout(() => {
+        console.log("SECOND TIMEOUT")
+        if(lessonProgress == 25)
+        {
+          step1.classList.toggle("active");
+        }
+        else if(lessonProgress == 50)
+        {
+          step2.classList.toggle("active");
+        }
+        else if(lessonProgress == 75)
+        {
+          step3.classList.toggle("active");
+        }
+        else if(lessonProgress == 100)
+        {
+          step4.classList.toggle("active");
+        }
+        
+      }, 2000);
+
     }, 1500);
   }
 
@@ -4790,6 +4836,7 @@ function clickOpenURL(intersects, url, nonIntersect) {
 function clickPingLocation(intersects) {
   if (intersects.length > 0 && intersects[0].object.userData.ping) {
     console.log("Click Ping");
+    console.log(intersects[0].object);
     cameraPos = intersects[0].object.position;
     cameraMoving = true;
 
@@ -5292,13 +5339,15 @@ function animate() {
     return;
   }
 
+
+  //console.log(mainCamera.position.distanceTo(lessonLocation_horseshoe_sprite.position));
+
   stats.begin();
 
   requestAnimationFrame(animate);
   hoverObject();
   lessonCameraMove();
   hubCameraMove();
-  
 
   var delta = clock.getDelta();
 
@@ -5430,6 +5479,95 @@ function animate() {
     //console.log("Cam Position: x:" + mainCamera.position.x + " z:" + mainCamera.position.z);
     stats.end();
 }
+
+
+//** TIMEOUT TO FIND LOCATION */
+checkLocationDistance();
+function checkLocationDistance()
+{
+  setTimeout(() => {
+    //** IF IT IS THE MAP SCENE */
+    if (currentSceneNumber == 1)
+    {
+      let targetDistance;
+
+      //** FIRST GAUGE DISTANCE DEPENDING ON WHICH ICON IS THE LESSON LOCATION */
+      if(lessonsCompleted == 0)
+      {
+        targetDistance = new Vector3(sprite_phoenix.position.x, mainCamera.position.y, sprite_phoenix.position.z);
+        distance = mainCamera.position.distanceTo(targetDistance);
+      }
+      else if(lessonsCompleted == 1)
+      {
+        targetDistance = new Vector3(sprite_phoenix.position.x, mainCamera.position.y, sprite_horseshoeBend.position.z);
+        distance = mainCamera.position.distanceTo(sprite_horseshoeBend.position);
+      }
+      else if(lessonsCompleted == 2)
+      {
+        targetDistance = new Vector3(sprite_phoenix.position.x, mainCamera.position.y, sprite_cathedralRock.position.z);
+        distance = mainCamera.position.distanceTo(sprite_cathedralRock.position);
+      }
+      else if(lessonsCompleted == 3)
+      {
+        targetDistance = new Vector3(sprite_phoenix.position.x, mainCamera.position.y, sprite_gilaRiver.position.z);
+        distance = mainCamera.position.distanceTo(sprite_gilaRiver.position);
+      }
+      else if(lessonsCompleted == 4)
+      {
+        targetDistance = new Vector3(sprite_phoenix.position.x, mainCamera.position.y, sprite_chiricahuaMnts.position.z);
+        distance = mainCamera.position.distanceTo(sprite_chiricahuaMnts.position);
+      }
+      console.log("PING:" + distance + ", lessons Completed: " + lessonsCompleted);
+    }
+    checkLocationDistance();
+  }, 500);
+}
+
+playDistanceSound();
+function playDistanceSound()
+{
+  setTimeout(() => {
+    if (currentSceneNumber == 1 && !tutorial)
+    {
+      
+      playbackSpeed = scale(distance, 0, 5, 500, 1500);
+      locationIndicator.style.animationDuration = playbackSpeed + "ms";
+
+      if(distance < 5)
+      {
+        if(!locationIndicator.classList.contains("ping"))
+        {
+          locationIndicator.classList.toggle("ping");
+        }
+        //clickSound.play();
+        locationIndicatorSound.play();
+      }
+      else
+      {
+        if(locationIndicator.classList.contains("ping"))
+        {
+          locationIndicator.classList.toggle("ping");
+        }
+      }
+  
+      console.log("PLAY LOCATION SOUND")
+    }
+    else
+    {
+      playbackSpeed = 1000;
+      if(locationIndicator.classList.contains("ping"))
+      {
+        locationIndicator.classList.toggle("ping");
+      }
+    }
+    playDistanceSound();
+  }, playbackSpeed);
+}
+
+//** USED TO REMAP A NUMBER BETWEEN TWO RANGES */
+function scale (number, inMin, inMax, outMin, outMax) {
+  return (number - inMin) * (outMax - outMin) / (inMax - inMin) + outMin;
+}
 //** USED TO SET VARIABLES AT THE BEGINNING OF A SCENE TRANSITION */
 function TransitionStart() {
   console.log("TRANSITION HAS STARTED");
@@ -5455,6 +5593,14 @@ function TransitionDone() {
       if(miniMap.classList.contains("disabled"))
       {
         miniMap.classList.toggle("disabled");
+      }
+      if(progress.classList.contains("disabled"))
+      {
+        progress.classList.toggle("disabled");
+      }
+      if(locationIndicator.classList.contains("disabled"))
+      {
+        locationIndicator.classList.toggle("disabled");
       }
       if(mapPopup.classList.contains("open"))
       {
@@ -5521,6 +5667,14 @@ function TransitionDone() {
       {
         miniMap.classList.toggle("disabled");
       }
+      if(!progress.classList.contains("disabled"))
+      {
+        progress.classList.toggle("disabled");
+      }
+      if(!locationIndicator.classList.contains("disabled"))
+      {
+        locationIndicator.classList.toggle("disabled");
+      }
       if(backButton.classList.contains("active"))
       {
         backButton.classList.toggle("active");
@@ -5540,6 +5694,14 @@ function TransitionDone() {
       if(!miniMap.classList.contains("disabled"))
       {
         miniMap.classList.toggle("disabled");
+      }
+      if(!progress.classList.contains("disabled"))
+      {
+        progress.classList.toggle("disabled");
+      }
+      if(!locationIndicator.classList.contains("disabled"))
+      {
+        locationIndicator.classList.toggle("disabled");
       }
       if(backButton.classList.contains("active"))
       {
@@ -5582,6 +5744,14 @@ function TransitionDone() {
       if(!miniMap.classList.contains("disabled"))
       {
         miniMap.classList.toggle("disabled");
+      }
+      if(!progress.classList.contains("disabled"))
+      {
+        progress.classList.toggle("disabled");
+      }
+      if(!locationIndicator.classList.contains("disabled"))
+      {
+        locationIndicator.classList.toggle("disabled");
       }
       if(backButton.classList.contains("active"))
       {
@@ -5654,6 +5824,14 @@ function TransitionDone() {
       {
         miniMap.classList.toggle("disabled");
       }
+      if(progress.classList.contains("disabled"))
+      {
+        progress.classList.toggle("disabled");
+      }
+      if(locationIndicator.classList.contains("disabled"))
+      {
+        locationIndicator.classList.toggle("disabled");
+      }
       if(mapPopup.classList.contains("open"))
       {
         mapPopup.classList.toggle("open");
@@ -5714,6 +5892,8 @@ function TransitionDone() {
 function pingLocationReached() {
   console.log("PING LOCATION REACHED");
   miniMap.classList.toggle("disabled");
+  progress.classList.toggle("disabled");
+  locationIndicator.classList.toggle("disabled");
 
   transitionParams.transition = 0;
   new TWEEN.Tween(transitionParams)
