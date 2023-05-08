@@ -280,6 +280,17 @@ const echoChewSound = new THREE.Audio(listener);
 const echoChewSound2 = new THREE.Audio(listener);
 const echoChewSound3 = new THREE.Audio(listener);
 
+var loc_minDistance = 0;
+var loc_maxDistance = 5;
+var sound_minSpeed = 500;
+var sound_maxSpeed = 1500;
+
+const loc_soundControls = {
+  maxDistance: 5, 
+  minSpeed: 500, 
+  maxSpeed: 1500,
+}
+
 //MUSIC
 audioLoader.load(
   "/resources/sounds/music/flute-guitar.mp3",
@@ -697,10 +708,12 @@ let tutClickImage = document.getElementById("tutClickImage");
 //** PROGRESS BAR */
 let progressBar = document.getElementById("progress-bar");
 let progress = document.getElementById("progress");
+let step = document.getElementById("step-0");
 let step1 = document.getElementById("step-1");
 let step2 = document.getElementById("step-2");
 let step3 = document.getElementById("step-3");
 let step4 = document.getElementById("step-4");
+// let echoProgressIcon = document.getElementById("echoProgressIcon");
 var lessonProgress = 0;
 
 let helpButton = document.getElementById("helpButton");
@@ -1037,45 +1050,49 @@ function init() {
   labelContainerElem.appendChild(elem);
 
   //** SETUP FOR USING DAT GUI CONTROLS */
-  const guiWorld = {
-    xPos: {
-      x: 0,
-      y: 0,
-      z: 0,
-    },
-    rotPos:{
-      x: 0,
-      y: 0, 
-      z: 0,
-    }
-  };
-  gui.add(guiWorld.xPos, "x", -20, 20).onChange(() => {
-    smokeSpriteMesh.position.set(
-      guiWorld.xPos.x,
-      smokeSpriteMesh.position.y,
-      smokeSpriteMesh.position.z
-    );
+  // const guiWorld = {
+  //   xPos: {
+  //     x: 0,
+  //     y: 0,
+  //     z: 0,
+  //   },
+  //   rotPos:{
+  //     x: 0,
+  //     y: 0, 
+  //     z: 0,
+  //   }
+  // };
+  // gui.add(guiWorld.xPos, "x", -20, 20).onChange(() => {
+  //   smokeSpriteMesh.position.set(
+  //     guiWorld.xPos.x,
+  //     smokeSpriteMesh.position.y,
+  //     smokeSpriteMesh.position.z
+  //   );
 
-    console.log(smokeSpriteMesh.position);
-  });
+  //   console.log(smokeSpriteMesh.position);
+  // });
 
-  gui.add(guiWorld.xPos, "y", -100, 100).onChange(() => {
-    smokeSpriteMesh.position.set(
-      smokeSpriteMesh.position.x,
-      guiWorld.xPos.y,
-      smokeSpriteMesh.position.z
-    );
-    console.log(smokeSpriteMesh.position);
-  });
+  // gui.add(guiWorld.xPos, "y", -100, 100).onChange(() => {
+  //   smokeSpriteMesh.position.set(
+  //     smokeSpriteMesh.position.x,
+  //     guiWorld.xPos.y,
+  //     smokeSpriteMesh.position.z
+  //   );
+  //   console.log(smokeSpriteMesh.position);
+  // });
 
-  gui.add(guiWorld.xPos, "z", -20, 20).onChange(() => {
-    smokeSpriteMesh.position.set(
-      smokeSpriteMesh.position.x,
-      smokeSpriteMesh.position.y,
-      guiWorld.xPos.z
-    );
-    console.log(smokeSpriteMesh.position);
-  });
+  // gui.add(guiWorld.xPos, "z", -20, 20).onChange(() => {
+  //   smokeSpriteMesh.position.set(
+  //     smokeSpriteMesh.position.x,
+  //     smokeSpriteMesh.position.y,
+  //     guiWorld.xPos.z
+  //   );
+  //   console.log(smokeSpriteMesh.position);
+  // });
+
+  gui.add(loc_soundControls, 'maxDistance', 0, 20);
+  gui.add(loc_soundControls, 'minSpeed', 0, 1000);
+  gui.add(loc_soundControls, 'maxSpeed', 0, 3000);
 
   //** TOWER ICON INSTANTIATIONS */
   towerSpriteSetup();
@@ -3372,31 +3389,47 @@ function lessonComplete()
     
     //** WAIT FOR SCENE TRANSITION BEFORE FILLING PROGRESS BAR */
     setTimeout(() => {
-      progressBar.style.width = lessonProgress + "%";
-      console.log(lessonProgress);
-
       //** WAIT FOR BAR TO BE FILLED TO FILL IN STEP ICON */
       setTimeout(() => {
-        console.log("SECOND TIMEOUT")
         if(lessonProgress == 25)
         {
           step1.classList.toggle("active");
+          step1.classList.toggle("current");
+          step.classList.toggle("current");
+          //echoProgressIcon.style.transform = "translate(-25%, 0%);";
         }
         else if(lessonProgress == 50)
         {
           step2.classList.toggle("active");
+
+          step2.classList.toggle("current");
+          step1.classList.toggle("current");
+          //echoProgressIcon.style.transform = "translate(-60%, 0%);";
         }
-        else if(lessonProgress == 75)
+        else if(lessonProgress >= 65)
         {
+          //lessonProgress -= 5;
           step3.classList.toggle("active");
+          
+          step3.classList.toggle("current");
+          step2.classList.toggle("current");
+          //echoProgressIcon.style.transform = "translate(-90%, 0%);";
         }
-        else if(lessonProgress == 100)
+        else if(lessonProgress >= 90)
         {
-          step4.classList.toggle("active");
+          step3.classList.toggle("current");
+        }
+
+        progressBar.style.width = lessonProgress + "%";
+        console.log(lessonProgress);
+        if(lessonProgress == 75)
+        {
+          lessonProgress -= 5;
         }
         
       }, 2000);
 
+      progressBar.style.width = lessonProgress + "%";
     }, 1500);
   }
 
@@ -5517,7 +5550,7 @@ function checkLocationDistance()
         targetDistance = new Vector3(sprite_phoenix.position.x, mainCamera.position.y, sprite_chiricahuaMnts.position.z);
         distance = mainCamera.position.distanceTo(sprite_chiricahuaMnts.position);
       }
-      console.log("PING:" + distance + ", lessons Completed: " + lessonsCompleted);
+      //console.log("PING:" + distance + ", lessons Completed: " + lessonsCompleted);
     }
     checkLocationDistance();
   }, 500);
@@ -5530,16 +5563,16 @@ function playDistanceSound()
     if (currentSceneNumber == 1 && !tutorial)
     {
       
-      playbackSpeed = scale(distance, 0, 5, 500, 1500);
+      playbackSpeed = scale(distance, 0, loc_soundControls.maxDistance, loc_soundControls.minSpeed, loc_soundControls.maxSpeed);
       locationIndicator.style.animationDuration = playbackSpeed + "ms";
 
-      if(distance < 5)
+      if(distance < loc_soundControls.maxDistance)
       {
         if(!locationIndicator.classList.contains("ping"))
         {
           locationIndicator.classList.toggle("ping");
         }
-        //clickSound.play();
+        
         locationIndicatorSound.play();
       }
       else
@@ -5549,8 +5582,6 @@ function playDistanceSound()
           locationIndicator.classList.toggle("ping");
         }
       }
-  
-      console.log("PLAY LOCATION SOUND")
     }
     else
     {

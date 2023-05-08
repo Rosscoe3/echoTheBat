@@ -1821,6 +1821,14 @@ button {
   color: white;
   text-align: center;
 
+  background-image: url("/resources/images/locationPingIcon.png");
+  background-repeat: no-repeat;
+  background-size: 100%;
+  margin-left: auto;
+  margin-right: auto;
+
+  background-color: rgba(255, 255, 255, 0);
+
   font-family: roboto-condensed, sans-serif;
   transition: all 0.25s;
 }
@@ -1831,29 +1839,23 @@ button {
   transition: all 0.25s;
 }
 
-.locationIndicator:hover
-{
-  opacity: 50%;
-  transition: all 0.25s;
-}
-
 .locationIndicator.ping {
   animation-name: pulse;
   animation-duration: 1.5s;
   animation-iteration-count: infinite;
-  animation-timing-function: linear;
+  animation-timing-function: ease-in-out;
   background-color: rgba(255, 255, 255, 0);
   transition: all 0.25s;
 }
 
 @keyframes pulse {
   0% {
-    box-shadow: 0px 0px 5px 0px rgba(255, 255, 255, 0.3);
+    box-shadow: 0px 0px 5px 0px rgba(255, 255, 255, 0.1);
     background-color: rgba(255, 255, 255, 0.3);
     transition: all 0.25s;
   }
   65% {
-    box-shadow: 0px 0px 5px 13px rgba(255, 255, 255, 0.5);
+    box-shadow: 0px 0px 5px 13px rgba(255, 255, 255, 0.25);
     background-color: rgba(255, 255, 255, 0.5);
     transition: all 0.25s;
   }
@@ -2168,12 +2170,12 @@ button {
   left: 50%;
   transform: translate(-50%, -50%);
   opacity: 100%;
-  transition: all .5 ease-in-out;
+  transition: all .5s ease-in-out;
 }
 
 #progress.disabled {
   opacity: 0%;
-  transition: all .5 ease-in-out;
+  transition: all .5s ease-in-out;
 }
 
 #progress-bar {
@@ -2194,6 +2196,7 @@ button {
   list-style: none;
   display: flex;
   justify-content: space-between;
+  transition: all .5s ease-in-out;
 }
 
 #progress-num::before {
@@ -2213,6 +2216,9 @@ button {
 #progress-num .step {
   border: 3px solid rgb(138, 138, 138);
   border-radius: 100%;
+
+  transform: translate(0%, 1vh);
+
   width: 2vh;
   height: 2vh;
   line-height: 25px;
@@ -2224,9 +2230,57 @@ button {
   z-index: 1;
 }
 
+#progress-num .echoProgressIcon{
+  position: absolute;
+  left: 0%;
+
+  transform: translate(-50%, 0%);
+
+  border: 3px solid rgb(97, 97, 97);
+  background-color: rgb(138, 138, 138);
+  border-radius: 100%;
+  width: 4vh;
+  height: 4vh;
+  z-index: 10;
+
+  background-image: url("/resources/images/echo-profile-1.png");
+  background-repeat: no-repeat;
+  background-size: 100%;
+  transition: all 0.25s;
+}
+
 #progress-num .step.active {
   border-color: lightgray;
   background-color: white;
   color: white;
   transition: all 0.25s ease-in-out;
+}
+
+#progress-num .step.end {
+  transform: translate(0%, 0%);
+
+  width: 4vh;
+  height: 4vh;
+  transition: all 0.25s ease-in-out;
+
+  background-image: url("/resources/images/cave-icon-1.png");
+  background-repeat: no-repeat;
+  background-size: 100%;
+  transition: all 0.25s;
+}
+
+#progress-num .step.current {
+  transform: translate(0%, 0%);
+
+  width: 4vh;
+  height: 4vh;
+  transition: all 0.25s ease-in-out;
+
+  border-color: rgb(138, 138, 138);
+  background-color: rgb(97, 97, 97);
+
+  background-image: url("/resources/images/echo-profile-1.png");
+  background-repeat: no-repeat;
+  background-size: 100%;
+  transition: all 0.25s;
 }
