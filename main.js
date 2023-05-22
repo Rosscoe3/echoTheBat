@@ -656,7 +656,9 @@ EchoMom.name = 'EchoMom';
 var mixer, momMixer;
 var echoBox, echoActions, echoMomActions;
 var echoClicked = false;
-var echoLocTween, echoRotTween, echoScaleTween;
+var echoLocTween, echoRotTween, echoScaleTween, echoWobbleTween;
+var echoWobbleY, echoWobbleZ, echoWobbleTime;
+var echoWobble = true;
 
 let phoenixModel = new THREE.Group();
 phoenixModel.name = "phoenixModel";
@@ -2470,6 +2472,10 @@ function updateLessonScene(index)
   {
     echoScaleTween.stop();
   }
+  if(echoWobbleTween)
+  {
+    echoWobbleTween.stop();
+  }
 
   console.log("UPDATE LESSON SCENE!!!");
 
@@ -4083,6 +4089,7 @@ function toggleLessonPopup() {
     controls.enabled = false;
     toggleLessonPopupOpen = true;
     togglePopupOpen = true;
+    echoWobble = false;
     console.log("LESSON POPUP ON");
     //startLesson();
 
@@ -4634,6 +4641,10 @@ function playEchoAnimation(index, tween, transition)
         });
         echoRotTween.start();
 
+        //** USED FOR ECHO's WOBBLE */
+        echoWobble = true;
+        echoWobbleRandomize();
+
         echoScaleTween = new TWEEN.Tween(Echo.scale)
         .to(
           {
@@ -5059,6 +5070,35 @@ function textFadeTween(obj, fadeIn) {
   fadeTween.easing(TWEEN.Easing.Quadratic.InOut);
   fadeTween.onUpdate(() => {});
   fadeTween.start();
+}
+
+//** USED TO GENERATE RANDOM RANGE */
+function randomRange(min, max) {
+  let cal = (Math.random() * (max - min) + min);
+  return parseFloat(cal);
+}
+
+//** RANDOMIZE WOBBLE NUMBERS */
+function echoWobbleRandomize(){
+  if(echoWobble)
+  {
+    echoWobbleTween = new TWEEN.Tween(Echo.position)
+    .to(
+      {
+        y: Echo.position.y + randomRange(-0.25, 0.25),
+        z: Echo.position.z + randomRange(-0.1, 0.1),
+      }, 150)
+      .repeat(1)
+      .yoyo(true)
+      .dynamic(true)
+      .easing(TWEEN.Easing.Sinusoidal.In);
+      echoWobbleTween.start();
+      echoWobbleTween.onComplete(echoWobbleRandomize);
+    }
+
+    //randomRange(100, 300)
+
+  console.log("echoWobbleRandomize" + " Y: " + echoWobbleY + " Z: " + echoWobbleZ);
 }
 
 //** USED TO GO NAVIGATE BETWEEN SLIDES */
