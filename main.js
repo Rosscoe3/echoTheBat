@@ -3397,14 +3397,14 @@ function lessonComplete()
     setTimeout(() => {
       //** WAIT FOR BAR TO BE FILLED TO FILL IN STEP ICON */
       setTimeout(() => {
-        if(lessonProgress == 25)
+        if(currentLessonSceneIndex == 0)
         {
           step1.classList.toggle("active");
           step1.classList.toggle("current");
           step.classList.toggle("current");
           //echoProgressIcon.style.transform = "translate(-25%, 0%);";
         }
-        else if(lessonProgress == 50)
+        else if(currentLessonSceneIndex == 1)
         {
           step2.classList.toggle("active");
 
@@ -3412,7 +3412,7 @@ function lessonComplete()
           step1.classList.toggle("current");
           //echoProgressIcon.style.transform = "translate(-60%, 0%);";
         }
-        else if(lessonProgress >= 65)
+        else if(currentLessonSceneIndex == 2)
         {
           //lessonProgress -= 5;
           step3.classList.toggle("active");
@@ -3421,7 +3421,7 @@ function lessonComplete()
           step2.classList.toggle("current");
           //echoProgressIcon.style.transform = "translate(-90%, 0%);";
         }
-        else if(lessonProgress >= 90)
+        else if(currentLessonSceneIndex == 3)
         {
           step3.classList.toggle("current");
         }
@@ -3454,7 +3454,6 @@ function lessonComplete()
       console.log("ADDING A NEW PING");
       echoPingLocation = makeEchoPing(towerIcons[lessonsCompleted].position.x, towerIcons[lessonsCompleted].position.z);
     }
-    
     
     //** SETUP ALL LOCATION SPRITES */
     lessonLocation_phoenix_sprite.material.opacity = 1;
@@ -4107,6 +4106,12 @@ function toggleLessonPopup() {
   }
 }
 
+function flyUpComplete(){
+  console.log("Fly Up Complete!");
+  echoWobble = true;
+  echoWobbleRandomize();
+}
+
 function clickEvent() {
   var intersects;
 
@@ -4583,6 +4588,19 @@ function playEchoAnimation(index, tween, transition)
 {
   echoActiveAction = mixer.clipAction(echoActions[echoCurrentAnim]);
   echoCurrentAnim = index;
+
+  echoActions[2].timeScale = 5;
+
+  if(index == 2)
+  {
+    mixer.timeScale = 1.5;
+    mixer.update();
+  }
+  else
+  {
+    mixer.timeScale = 1;
+    mixer.update();
+  }
   
   if(!transition)
   {
@@ -4600,62 +4618,59 @@ function playEchoAnimation(index, tween, transition)
     //** PHOENIX */
     if(currentLessonSceneIndex == 0)
     {
-
       var flyUpTween = new TWEEN.Tween(Echo.position)
       .to(
         {
-          x: Echo.position.x,
           y: Echo.position.y + 1,
-          z: Echo.position.z,
         },
-        1000)
+        400)
         flyUpTween.easing(TWEEN.Easing.Quadratic.Out);
         flyUpTween.onUpdate(() => {
       });
       flyUpTween.start();
+      flyUpTween.onComplete(flyUpComplete);
 
+      echoLocTween = new TWEEN.Tween(Echo.position)
+        .to(
+          {
+            x: -30,
+            z: Echo.position.z,
+          },
+          5000)
+          echoLocTween.easing(TWEEN.Easing.Sinusoidal.In);
+          echoLocTween.onComplete(toggleLessonPopup);
+        echoLocTween.start();
+
+      echoRotTween = new TWEEN.Tween(Echo.rotation)
+      .to(
+        {
+          x: lessonCamera.rotation.x,
+          y: lessonCamera.rotation.y + Math.PI/2,
+          z: lessonCamera.rotation.z,
+        },
+        1200)
+        echoRotTween.easing(TWEEN.Easing.Cubic.InOut);
+        echoRotTween.onUpdate(() => {
+      });
+      echoRotTween.start();
+
+      //** USED FOR ECHO's WOBBLE */
+      // echoWobble = true;
+      // echoWobbleRandomize();
+
+      echoScaleTween = new TWEEN.Tween(Echo.scale)
+      .to(
+        {
+          x: 0,
+          y: 0,
+          z: 0,
+        },
+        10000)
+        echoScaleTween.easing(TWEEN.Easing.Cubic.InOut);
+      echoScaleTween.start();
       setTimeout(function()
       {
-        echoLocTween = new TWEEN.Tween(Echo.position)
-          .to(
-            {
-              x: -30,
-              y: 0,
-              z: Echo.position.z,
-            },
-            7500)
-            echoLocTween.easing(TWEEN.Easing.Sinusoidal.In);
-            echoLocTween.onComplete(toggleLessonPopup);
-          echoLocTween.start();
-  
-        echoRotTween = new TWEEN.Tween(Echo.rotation)
-        .to(
-          {
-            x: lessonCamera.rotation.x,
-            y: lessonCamera.rotation.y + Math.PI/2,
-            z: lessonCamera.rotation.z,
-          },
-          2500)
-          echoRotTween.easing(TWEEN.Easing.Cubic.InOut);
-          echoRotTween.onUpdate(() => {
-        });
-        echoRotTween.start();
-
-        //** USED FOR ECHO's WOBBLE */
-        echoWobble = true;
-        echoWobbleRandomize();
-
-        echoScaleTween = new TWEEN.Tween(Echo.scale)
-        .to(
-          {
-            x: 0,
-            y: 0,
-            z: 0,
-          },
-          10000)
-          echoScaleTween.easing(TWEEN.Easing.Cubic.InOut);
-        echoScaleTween.start();
-      },1000);
+      },500);
     }
     //** HORSESHOE BEND */
     else if(currentLessonSceneIndex == 1)
@@ -4663,54 +4678,53 @@ function playEchoAnimation(index, tween, transition)
       var flyUpTween = new TWEEN.Tween(Echo.position)
       .to(
         {
-          x: Echo.position.x,
           y: -0.9,
-          z: Echo.position.z,
         },
-        1000)
+        400)
         flyUpTween.easing(TWEEN.Easing.Quadratic.Out);
         flyUpTween.onUpdate(() => {
       });
       flyUpTween.start();
+      flyUpTween.onComplete(flyUpComplete);
+      
+      echoLocTween = new TWEEN.Tween(Echo.position)
+      .to(
+        {
+          x: -30,
+          z: -5,
+        },
+        7500)
+        echoLocTween.easing(TWEEN.Easing.Sinusoidal.In);
+        echoLocTween.onComplete(toggleLessonPopup);
+      echoLocTween.start();
+
+      echoRotTween = new TWEEN.Tween(Echo.rotation)
+      .to(
+        {
+          x: lessonCamera.rotation.x,
+          y: lessonCamera.rotation.y + Math.PI/2,
+          z: lessonCamera.rotation.z,
+        },
+        1250)
+        echoRotTween.easing(TWEEN.Easing.Cubic.InOut);
+        echoRotTween.onUpdate(() => {
+      });
+      echoRotTween.start();
+
+      echoScaleTween = new TWEEN.Tween(Echo.scale)
+      .to(
+        {
+          x: 0,
+          y: 0,
+          z: 0,
+        },
+        15000)
+        echoScaleTween.easing(TWEEN.Easing.Cubic.InOut);
+      echoScaleTween.start();
 
       setTimeout(function()
       {
-        echoLocTween = new TWEEN.Tween(Echo.position)
-        .to(
-          {
-            x: -30,
-            y: -2,
-            z: -5,
-          },
-          10000)
-          echoLocTween.easing(TWEEN.Easing.Sinusoidal.In);
-          echoLocTween.onComplete(toggleLessonPopup);
-        echoLocTween.start();
-
-        echoRotTween = new TWEEN.Tween(Echo.rotation)
-        .to(
-          {
-            x: lessonCamera.rotation.x,
-            y: lessonCamera.rotation.y + Math.PI/2,
-            z: lessonCamera.rotation.z,
-          },
-          2500)
-          echoRotTween.easing(TWEEN.Easing.Cubic.InOut);
-          echoRotTween.onUpdate(() => {
-        });
-        echoRotTween.start();
-
-        echoScaleTween = new TWEEN.Tween(Echo.scale)
-        .to(
-          {
-            x: 0,
-            y: 0,
-            z: 0,
-          },
-          15000)
-          echoScaleTween.easing(TWEEN.Easing.Cubic.InOut);
-        echoScaleTween.start();
-      },1500);
+      },500);
     }
     //** GRASSHOPPER */
     else if(currentLessonSceneIndex == 2)
@@ -4718,54 +4732,49 @@ function playEchoAnimation(index, tween, transition)
       var flyUpTween = new TWEEN.Tween(Echo.position)
       .to(
         {
-          x: Echo.position.x,
           y: -0.85,
-          z: Echo.position.z,
         },
-        1000)
+        400)
         flyUpTween.easing(TWEEN.Easing.Quadratic.Out);
         flyUpTween.onUpdate(() => {
       });
       flyUpTween.start();
+      flyUpTween.onComplete(flyUpComplete);
 
-      setTimeout(function()
-      {
-        echoLocTween = new TWEEN.Tween(Echo.position)
-        .to(
-          {
-            x: -10,
-            y: 0,
-            z: -4,
-          },
-          10000)
-          echoLocTween.easing(TWEEN.Easing.Sinusoidal.In);
-          echoLocTween.onComplete(toggleLessonPopup);
-        echoLocTween.start();
+      echoLocTween = new TWEEN.Tween(Echo.position)
+      .to(
+        {
+          x: -10,
+          z: -4,
+        },
+        4500)
+        echoLocTween.easing(TWEEN.Easing.Sinusoidal.In);
+        echoLocTween.onComplete(toggleLessonPopup);
+      echoLocTween.start();
 
-        echoRotTween = new TWEEN.Tween(Echo.rotation)
-        .to(
-          {
-            x: lessonCamera.rotation.x,
-            y: lessonCamera.rotation.y + Math.PI/4,
-            z: lessonCamera.rotation.z,
-          },
-          2500)
-          echoRotTween.easing(TWEEN.Easing.Cubic.InOut);
-          echoRotTween.onUpdate(() => {
-        });
-        echoRotTween.start();
+      echoRotTween = new TWEEN.Tween(Echo.rotation)
+      .to(
+        {
+          x: lessonCamera.rotation.x,
+          y: lessonCamera.rotation.y + Math.PI/4,
+          z: lessonCamera.rotation.z,
+        },
+        1250)
+        echoRotTween.easing(TWEEN.Easing.Cubic.InOut);
+        echoRotTween.onUpdate(() => {
+      });
+      echoRotTween.start();
 
-        echoScaleTween = new TWEEN.Tween(Echo.scale)
-        .to(
-          {
-            x: 0,
-            y: 0,
-            z: 0,
-          },
-          15000)
-          echoScaleTween.easing(TWEEN.Easing.Cubic.InOut);
-        echoScaleTween.start();
-      },1500);
+      echoScaleTween = new TWEEN.Tween(Echo.scale)
+      .to(
+        {
+          x: 0,
+          y: 0,
+          z: 0,
+        },
+        15000)
+        echoScaleTween.easing(TWEEN.Easing.Cubic.InOut);
+      echoScaleTween.start();
     }
     //** BLACK MESA */
     else if(currentLessonSceneIndex == 3)
@@ -4773,54 +4782,49 @@ function playEchoAnimation(index, tween, transition)
       var flyUpTween = new TWEEN.Tween(Echo.position)
       .to(
         {
-          x: Echo.position.x,
           y: -0.68,
-          z: Echo.position.z,
         },
-        1000)
+        400)
         flyUpTween.easing(TWEEN.Easing.Quadratic.Out);
         flyUpTween.onUpdate(() => {
       });
       flyUpTween.start();
+      flyUpTween.onComplete(flyUpComplete);
 
-      setTimeout(function()
-      {
-        echoLocTween = new TWEEN.Tween(Echo.position)
-        .to(
-          {
-            x: -10,
-            y: -0.25,
-            z: -4,
-          },
-          10000)
-          echoLocTween.easing(TWEEN.Easing.Sinusoidal.In);
-          echoLocTween.onComplete(toggleLessonPopup);
-        echoLocTween.start();
+      echoLocTween = new TWEEN.Tween(Echo.position)
+      .to(
+        {
+          x: -10,
+          z: -4,
+        },
+        5000)
+        echoLocTween.easing(TWEEN.Easing.Sinusoidal.In);
+        echoLocTween.onComplete(toggleLessonPopup);
+      echoLocTween.start();
 
-        echoRotTween = new TWEEN.Tween(Echo.rotation)
-        .to(
-          {
-            x: lessonCamera.rotation.x,
-            y: lessonCamera.rotation.y + Math.PI/4,
-            z: lessonCamera.rotation.z,
-          },
-          2500)
-          echoRotTween.easing(TWEEN.Easing.Cubic.InOut);
-          echoRotTween.onUpdate(() => {
-        });
-        echoRotTween.start();
+      echoRotTween = new TWEEN.Tween(Echo.rotation)
+      .to(
+        {
+          x: lessonCamera.rotation.x,
+          y: lessonCamera.rotation.y + Math.PI/4,
+          z: lessonCamera.rotation.z,
+        },
+        1250)
+        echoRotTween.easing(TWEEN.Easing.Cubic.InOut);
+        echoRotTween.onUpdate(() => {
+      });
+      echoRotTween.start();
 
-        echoScaleTween = new TWEEN.Tween(Echo.scale)
-        .to(
-          {
-            x: 0,
-            y: 0,
-            z: 0,
-          },
-          15000)
-          echoScaleTween.easing(TWEEN.Easing.Cubic.InOut);
-        echoScaleTween.start();
-      },1500);
+      echoScaleTween = new TWEEN.Tween(Echo.scale)
+      .to(
+        {
+          x: 0,
+          y: 0,
+          z: 0,
+        },
+        15000)
+        echoScaleTween.easing(TWEEN.Easing.Cubic.InOut);
+      echoScaleTween.start();
     }
 
     console.log("ECHO TWEENING!: " + currentLessonSceneIndex);
@@ -5082,12 +5086,28 @@ function randomRange(min, max) {
 function echoWobbleRandomize(){
   if(echoWobble)
   {
+    
+    var wiggleAmount = 0.25;
+
+    if(currentLessonSceneIndex == 1)
+    {
+      wiggleAmount = 0.05;
+    }
+    else if(currentLessonSceneIndex == 2)
+    {
+      wiggleAmount = 0.05;
+    }
+    else if(currentLessonSceneIndex == 3)
+    {
+      wiggleAmount = 0.05;
+    }
+    
     echoWobbleTween = new TWEEN.Tween(Echo.position)
     .to(
       {
-        y: Echo.position.y + randomRange(-0.25, 0.25),
-        z: Echo.position.z + randomRange(-0.1, 0.1),
-      }, 150)
+        y: Echo.position.y + randomRange(-wiggleAmount, wiggleAmount),
+        // z: Echo.position.z + randomRange(-0.1, 0.1),
+      }, randomRange(150, 250))
       .repeat(1)
       .yoyo(true)
       .dynamic(true)
@@ -5411,7 +5431,6 @@ function animate() {
     renderer.render(hubScene, hubCamera);
     return;
   }
-
 
   //console.log(mainCamera.position.distanceTo(lessonLocation_horseshoe_sprite.position));
 
